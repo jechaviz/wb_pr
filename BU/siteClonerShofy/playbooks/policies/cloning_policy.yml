@@ -1,0 +1,83 @@
+﻿version: 2
+policy_id: "waiba.site-cloner.hard-policy"
+title: "WAIBA Cloning Hard Policy"
+description: "Mandatory phased policy for ecommerce site cloning with premium real parity as a hard completion condition."
+
+hard_contract:
+  premium_real_parity_mandatory: true
+  statement: "Every clone must reach premium real parity. If premium parity is not achieved, the task is not complete."
+
+phases:
+  - id: "P1_template_coverage"
+    name: "Template Coverage"
+    objective: "Generate all relevant sections with route completeness."
+    required:
+      - "All requested section routes/pages exist."
+      - "Desktop shell is generated and navigable."
+      - "Reusable structure is playbook-driven."
+      - "Reference capture must include full-page screenshots (not only viewport)."
+      - "Browser automation must run in single-tab reuse mode, background/minimized by default, without opening extra tabs."
+    evidence:
+      - "template/index.html"
+      - "template/src/routes.js"
+      - "template/src/pages/*.vue"
+
+  - id: "P2_visual_parity"
+    name: "Visual Parity"
+    objective: "Reach premium real visual parity, especially above the fold."
+    required:
+      - "Critical pages match source layout hierarchy and design language."
+      - "Micro-interactions must be reconstructed (hover transitions, reveal actions, active/selected states)."
+      - "Typography hierarchy, spacing rhythm, and visual density must be close to source."
+      - "Megamenu/navigation structure is present when source has it."
+      - "Header navigation must preserve hierarchical depth (dropdown levels and grouped links), not flat links only."
+      - "Footer must preserve multi-column information architecture and lower taxonomy/tag rows when present."
+      - "Responsive views are implemented and evidenced."
+      - "Icon system uses Font Awesome Free latest by default (SVG only when no FA equivalent is feasible)."
+      - "Images use source-original assets first; fallback to Unsplash only when source assets are unavailable."
+    evidence:
+      - "playbooks/output/template_home.png"
+      - "playbooks/output/responsive_preview_desktop.png"
+      - "playbooks/output/responsive_preview_tablet.png"
+      - "playbooks/output/responsive_preview_mobile.png"
+      - "template/index.html"
+
+  - id: "P3_visible_functionality"
+    name: "Visible Functionality"
+    objective: "Rebuild visible ecommerce behavior at premium parity level, not only static UI."
+    required:
+      - "Banner/popup/cookie-like interactions when visible in source."
+      - "Carousel/hero interactions when visible in source."
+      - "Product cards expose premium interactions when visible in source (quick actions, hover states, badges, compare/wishlist/cart shortcuts)."
+      - "Product detail supports variant/attribute behavior when source exposes it (e.g., size/color/options)."
+      - "Cart, wishlist, compare, checkout flows functional."
+      - "Item remove/update/move actions functional."
+      - "Counters/countdowns live and synchronized."
+      - "Capture real source flow evidence: search -> product list -> product detail -> cart -> checkout."
+      - "Capture user, vendor, and admin dashboard/login reference evidence when routes are discoverable."
+    evidence:
+      - "template/src/main.js"
+      - "template/src/pages/main_page.vue"
+      - "template/src/pages/cart.vue"
+      - "template/src/pages/wishlist.vue"
+      - "template/src/pages/compare.vue"
+      - "template/src/pages/checkout.vue"
+
+  - id: "P4_design_upgrade"
+    name: "Design Upgrade"
+    objective: "Deliver a differentiated, branded upgrade after parity."
+    required:
+      - "Preserve functional parity while improving identity."
+      - "Upgrade typography, spacing, components, and visual accents."
+      - "Do not regress core ecommerce behavior."
+    evidence:
+      - "playbooks/output/readiness_report.json"
+      - "playbooks/output/step_evolution.yml"
+
+gates:
+  - "Pipeline must fail if P3 functional requirements are missing."
+  - "Pipeline must fail if responsive evidence artifacts are missing."
+  - "Pipeline must fail if premium real parity checks fail (micro-interactions, variant behavior, and storefront behavior depth)."
+  - "Placeholder-only outputs are invalid for ecommerce cloning."
+  - "Image sourcing must be source-first; generic placeholders are invalid unless explicit fallback is logged."
+  - "Pipeline must fail if cloning phases enable opening new browser tabs by default."

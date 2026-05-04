@@ -1,0 +1,15 @@
+steps:
+  - name: Ensure WAIBA_PLAYBOOK_LIB_DIR is available
+    if_not: "${WAIBA_PLAYBOOK_LIB_DIR}"
+    action: Fail
+    params:
+      text: "Missing WAIBA_PLAYBOOK_LIB_DIR before reusable Odoo module install."
+
+  - name: Install eCommerce module via reusable Odoo RPC skill
+    playbook: "${WAIBA_PLAYBOOK_LIB_DIR}\\odoo\\odoo-rpc-playbooks\\playbooks\\01_modules_ensure\\playbook.yml"
+    with:
+      ODOO_MODULE_NAMES:
+        - website_sale
+      ODOO_MODULES_INSTALL_TIMEOUT_MS: 300000
+      ODOO_MODULES_POLL_MS: 1500
+      ODOO_CHECKPOINT_PATH: "${OUTPUT_DIR}\\odoo_ecommerce_install_checkpoint.json"

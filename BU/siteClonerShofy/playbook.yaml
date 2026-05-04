@@ -1,0 +1,138 @@
+﻿metadata:
+  category: "web"
+  subcategory: "site-cloning"
+  customer: "BU"
+  course: "generic"
+  lesson: "default"
+
+variables:
+  PROJECT_NAME: "SiteClonerShofy"
+  PROJECT_SKILL_PATH: "Web.SiteCloner.Shofy"
+  PROJECT_SKILL_N0: "Web"
+  PROJECT_SKILL_N1: "SiteCloner"
+  PROJECT_SKILL_N2: "Shofy"
+  PROJECT_SKILL_N3: ""
+  PROJECT_DIR: "${ROOT_PLAYBOOK_DIR}"
+  PLAYBOOKS_DIR: "${PROJECT_DIR}\\playbooks"
+  OUTPUT_DIR: "${PLAYBOOKS_DIR}\\output"
+  JS_DIR: "${PLAYBOOKS_DIR}\\js"
+  TASK_NAME: "Clone Shofy storefront sections into a reusable Vue3 + Tailwind4 + DaisyUI5 template"
+  TASK_SUMMARY: "Capture visual/interactive references from shofy.botble.com and scaffold a no-Node Vue3 SFC template with Set-of-Marks refinement workflow."
+  DEBUG_PORT: 9222
+  PREVIEW_PORT: 5510
+  PREVIEW_URL: "http://127.0.0.1:${PREVIEW_PORT}"
+  MAX_UNITS: 22
+  EXPECTED_SECTION_COUNT: 22
+  RUN_MINIMIZED: true
+  ENABLE_VISION_ANALYSIS: true
+  ENABLE_SET_OF_MARKS_REVIEW: false
+  CLONE_SOURCE_URL: "https://shofy.botble.com"
+  CLONE_SOURCE_HOST_FILTER: "shofy.botble.com"
+  CLONING_POLICY_VERSION: "2"
+  CLONING_POLICY_ID: "waiba.site-cloner.hard-policy"
+  CLONING_POLICY_FILE: "${PLAYBOOKS_DIR}\\policies\\cloning_policy.yml"
+  TEMPLATE_DIR: "${PROJECT_DIR}\\template"
+  WAIBA_HOME: "C:\\Users\\jecha\\.waiba"
+  SHARED_WEB_DIR: "C:\\git\\wb_pr\\_shared\\web"
+  SKILL_SITE_CLONER_ROOT: "${SHARED_WEB_DIR}\\site-cloner-playbooks"
+  SKILL_SITE_CLONER_PLAYBOOK_DIR: "${SKILL_SITE_CLONER_ROOT}\\playbooks"
+  SKILL_SITE_CLONER_ASSETS_DIR: "${SKILL_SITE_CLONER_PLAYBOOK_DIR}\\assets"
+
+  CLONE_SECTIONS:
+    - slug: "main_page"
+      title: "Main Page"
+      path: "/"
+    - slug: "blog"
+      title: "Blog"
+      path: "/blog"
+    - slug: "brands"
+      title: "Brands"
+      path: "/brands"
+    - slug: "careers"
+      title: "Careers"
+      path: "/careers"
+    - slug: "cart"
+      title: "Cart"
+      path: "/cart"
+    - slug: "categories"
+      title: "Categories"
+      path: "/categories"
+    - slug: "coming-soon"
+      title: "Coming Soon"
+      path: "/coming-soon"
+    - slug: "compare"
+      title: "Compare"
+      path: "/compare"
+    - slug: "contact"
+      title: "Contact"
+      path: "/contact"
+    - slug: "cookie-policy"
+      title: "Cookie Policy"
+      path: "/cookie-policy"
+    - slug: "coupons"
+      title: "Coupons"
+      path: "/coupons"
+    - slug: "faqs"
+      title: "FAQs"
+      path: "/faqs"
+    - slug: "login"
+      title: "Login"
+      path: "/login"
+    - slug: "our-story"
+      title: "Our Story"
+      path: "/our-story"
+    - slug: "products-grid"
+      title: "Products Grid"
+      path: "/products-grid"
+    - slug: "products-list"
+      title: "Products List"
+      path: "/products-list"
+    - slug: "product-detail"
+      title: "Product Detail"
+      path: "/product-detail"
+    - slug: "product-compare"
+      title: "Product Compare"
+      path: "/product-compare"
+    - slug: "register"
+      title: "Register"
+      path: "/register"
+    - slug: "shipping"
+      title: "Shipping"
+      path: "/shipping"
+    - slug: "stores"
+      title: "Stores"
+      path: "/stores"
+    - slug: "wishlist"
+      title: "Wishlist"
+      path: "/wishlist"
+
+steps:
+  prod:
+    - name: Bootstrap docs and governance
+      playbook: "./playbooks/01_bootstrap/01_docs/playbook.yml"
+
+    - name: Bootstrap runtime and policy
+      playbook: "./playbooks/01_bootstrap/02_runtime/playbook.yml"
+
+    - name: Execute site clone task
+      playbook: "./playbooks/02_task/01_execute/playbook.yml"
+
+    - name: Validate outputs
+      playbook: "./playbooks/03_finalize/01_validate/playbook.yml"
+
+    - name: Mark task completed
+      playbook: "./playbooks/03_finalize/01_complete/playbook.yml"
+
+  review_som:
+    - action: Set
+      params:
+        name: ENABLE_SET_OF_MARKS_REVIEW
+        value: true
+
+    - name: Execute site clone task with SOM review
+      playbook: "./playbooks/02_task/01_execute/playbook.yml"
+
+  debug:
+    - action: Note
+      params:
+        text: "SiteClonerShofy debug environment"

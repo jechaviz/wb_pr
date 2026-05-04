@@ -1,0 +1,14 @@
+{
+"name": "waiba-site-clone-template",
+"private": true,
+"type": "module",
+"scripts": {
+"css:build": "bunx @tailwindcss/cli -i ./src/app.css -o ./src/app.generated.css --minify",
+"css:watch": "bunx @tailwindcss/cli -i ./src/app.css -o ./src/app.generated.css --watch"
+},
+"devDependencies": {
+"@tailwindcss/cli": "^4.1.18",
+"daisyui": "^5.5.18",
+"tailwindcss": "^4.1.18"
+}
+}

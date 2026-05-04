@@ -1,0 +1,14 @@
+﻿steps:
+  - name: Validate phase 4 design ownership upgrade baseline
+    action: Shell.RunJson
+    register: phase4_design
+    params:
+      unsafe: true
+      command: 'powershell -NoProfile -Command "$css=''${TEMPLATE_DIR}\\src\\app.css''; $ok=$true; $missing=@(); $cssText=if(Test-Path $css){Get-Content -Raw $css}else{''''}; if($cssText -notmatch ''--shfy-primary''){ $ok=$false; $missing += ''brand token missing'' }; if($cssText -notmatch ''shfy-promo-modal''){ $ok=$false; $missing += ''popup style missing'' }; if($cssText -notmatch ''shfy-mega-panel''){ $ok=$false; $missing += ''mega menu style missing'' }; @{ ok=$ok; missing=$missing } | ConvertTo-Json -Compress; if($ok){exit 0}else{exit 1}"'
+
+  - name: Persist phase 4 result
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\phase4_design_upgrade.json"
+      overwrite: true
+      value: "${phase4_design.json}"

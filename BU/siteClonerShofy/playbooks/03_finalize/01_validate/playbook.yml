@@ -1,0 +1,271 @@
+﻿steps:
+  - name: Verify template index exists
+    action: FS.Exists
+    register: has_template_index
+    params:
+      path: "${TEMPLATE_DIR}\\index.html"
+
+  - name: Verify main.js exists
+    action: FS.Exists
+    register: has_template_main
+    params:
+      path: "${TEMPLATE_DIR}\\src\\main.js"
+
+  - name: Verify routes.js exists
+    action: FS.Exists
+    register: has_template_routes
+    params:
+      path: "${TEMPLATE_DIR}\\src\\routes.js"
+
+  - name: Verify reference capture baseline exists
+    action: FS.Exists
+    register: has_reference_home
+    params:
+      path: "${OUTPUT_DIR}\\reference\\main_page.png"
+
+  - name: Verify dynamic flow screenshot exists (search -> product list)
+    action: FS.Exists
+    register: has_flow_product_list
+    params:
+      path: "${OUTPUT_DIR}\\reference\\flow_product_list_from_search.png"
+
+  - name: Verify dynamic flow screenshot exists (product detail)
+    action: FS.Exists
+    register: has_flow_product_detail
+    params:
+      path: "${OUTPUT_DIR}\\reference\\flow_product_detail.png"
+
+  - name: Verify dynamic flow screenshot exists (cart)
+    action: FS.Exists
+    register: has_flow_cart
+    params:
+      path: "${OUTPUT_DIR}\\reference\\flow_cart.png"
+
+  - name: Verify dynamic flow screenshot exists (checkout)
+    action: FS.Exists
+    register: has_flow_checkout
+    params:
+      path: "${OUTPUT_DIR}\\reference\\flow_checkout.png"
+
+  - name: Verify dashboard screenshot exists (user)
+    action: FS.Exists
+    register: has_dashboard_user
+    params:
+      path: "${OUTPUT_DIR}\\reference\\dashboard_user_dashboard.png"
+
+  - name: Verify dashboard screenshot exists (vendor)
+    action: FS.Exists
+    register: has_dashboard_vendor
+    params:
+      path: "${OUTPUT_DIR}\\reference\\dashboard_vendor_dashboard.png"
+
+  - name: Verify dashboard screenshot exists (admin)
+    action: FS.Exists
+    register: has_dashboard_admin
+    params:
+      path: "${OUTPUT_DIR}\\reference\\dashboard_admin_dashboard.png"
+
+  - name: Verify responsive desktop evidence exists
+    action: FS.Exists
+    register: has_responsive_desktop
+    params:
+      path: "${OUTPUT_DIR}\\responsive_preview_desktop.png"
+
+  - name: Verify responsive tablet evidence exists
+    action: FS.Exists
+    register: has_responsive_tablet
+    params:
+      path: "${OUTPUT_DIR}\\responsive_preview_tablet.png"
+
+  - name: Verify responsive mobile evidence exists
+    action: FS.Exists
+    register: has_responsive_mobile
+    params:
+      path: "${OUTPUT_DIR}\\responsive_preview_mobile.png"
+
+  - name: Verify resolved cloning policy exists
+    action: FS.Exists
+    register: has_cloning_policy
+    params:
+      path: "${OUTPUT_DIR}\\cloning_policy.resolved.yml"
+
+  - name: Verify phase 3 functionality artifact exists
+    action: FS.Exists
+    register: has_phase3_artifact
+    params:
+      path: "${OUTPUT_DIR}\\phase3_visible_functionality.json"
+
+  - name: Verify phase 4 design artifact exists
+    action: FS.Exists
+    register: has_phase4_artifact
+    params:
+      path: "${OUTPUT_DIR}\\phase4_design_upgrade.json"
+
+  - name: Validate Font Awesome latest CDN is present
+    action: Shell.Run
+    params:
+      command: 'cmd /c findstr /C:"@fortawesome/fontawesome-free@latest/css/all.min.css" "${TEMPLATE_DIR}\\index.html" >nul'
+      unsafe: true
+
+  - name: Validate Font Awesome classes are used in UI
+    action: Shell.Run
+    params:
+      command: 'cmd /c findstr /S /C:"fa-" "${TEMPLATE_DIR}\\src\\*.js" "${TEMPLATE_DIR}\\src\\pages\\*.vue" >nul'
+      unsafe: true
+
+  - name: Validate generated page count
+    action: Shell.RunJson
+    register: template_page_count
+    params:
+      command: 'powershell -NoProfile -Command "$count=(Get-ChildItem -Path ''${TEMPLATE_DIR}\\src\\pages'' -Filter ''*.vue'' -File | Measure-Object).Count; $expected=[int]''${EXPECTED_SECTION_COUNT}''; @{ ok = ($count -ge $expected); count = $count; expected = $expected } | ConvertTo-Json -Compress; if ($count -ge $expected) { exit 0 } else { exit 1 }"'
+      unsafe: true
+
+  - name: Validate ecommerce + parity functionality policy
+    action: Shell.RunJson
+    register: ecommerce_core
+    params:
+      command: 'powershell -NoProfile -Command "$mainFile=''${TEMPLATE_DIR}\\src\\main.js''; $homeFile=''${TEMPLATE_DIR}\\src\\pages\\main_page.vue''; $cartFile=''${TEMPLATE_DIR}\\src\\pages\\cart.vue''; $wishFile=''${TEMPLATE_DIR}\\src\\pages\\wishlist.vue''; $compareFile=''${TEMPLATE_DIR}\\src\\pages\\compare.vue''; $checkoutFile=''${TEMPLATE_DIR}\\src\\pages\\checkout.vue''; $ok=$true; $missing=@(); $mainText=if(Test-Path $mainFile){Get-Content -Raw $mainFile}else{''''}; $homeText=if(Test-Path $homeFile){Get-Content -Raw $homeFile}else{''''}; $cartText=if(Test-Path $cartFile){Get-Content -Raw $cartFile}else{''''}; $wishText=if(Test-Path $wishFile){Get-Content -Raw $wishFile}else{''''}; $compareText=if(Test-Path $compareFile){Get-Content -Raw $compareFile}else{''''}; if(!(Test-Path $cartFile)){ $ok=$false; $missing += ''cart.vue missing'' }; if(!(Test-Path $wishFile)){ $ok=$false; $missing += ''wishlist.vue missing'' }; if(!(Test-Path $compareFile)){ $ok=$false; $missing += ''compare.vue missing'' }; if(!(Test-Path $checkoutFile)){ $ok=$false; $missing += ''checkout.vue missing'' }; if($mainText -notmatch ''__shfyCommerce''){ $ok=$false; $missing += ''missing runtime commerce store'' }; if($mainText -notmatch ''shfy-mega-panel''){ $ok=$false; $missing += ''missing megamenu panel'' }; if($mainText -notmatch ''shfy-mobile-nav''){ $ok=$false; $missing += ''missing mobile navigation'' }; if($mainText -notmatch ''promoOpen''){ $ok=$false; $missing += ''missing popup behavior'' }; if($mainText -notmatch ''cookieVisible''){ $ok=$false; $missing += ''missing cookie banner behavior'' }; if($mainText -notmatch ''goTo\(''''wishlist''''\)''){ $ok=$false; $missing += ''missing wishlist link'' }; if($mainText -notmatch ''goTo\(''''cart''''\)''){ $ok=$false; $missing += ''missing cart link'' }; if($homeText -notmatch ''heroSlides''){ $ok=$false; $missing += ''missing carousel slides'' }; if($homeText -notmatch ''addItem''){ $ok=$false; $missing += ''missing add to cart action'' }; if($homeText -notmatch ''addWish''){ $ok=$false; $missing += ''missing add to wishlist action'' }; if($homeText -notmatch ''addCompare''){ $ok=$false; $missing += ''missing add to compare action'' }; if($homeText -notmatch ''shofy\.botble\.com/storage''){ $ok=$false; $missing += ''missing source-first image candidates'' }; if($homeText -notmatch ''source\.unsplash\.com''){ $ok=$false; $missing += ''missing Unsplash fallback policy'' }; if($cartText -notmatch ''Proceed to checkout''){ $ok=$false; $missing += ''missing checkout CTA from cart'' }; if($wishText -notmatch ''moveToCart''){ $ok=$false; $missing += ''missing move wishlist to cart'' }; if($compareText -notmatch ''moveToCart''){ $ok=$false; $missing += ''missing move compare to cart'' }; @{ ok=$ok; missing=$missing; has_checkout=(Test-Path $checkoutFile) } | ConvertTo-Json -Compress; if($ok){exit 0}else{exit 1}"'
+      unsafe: true
+
+  - name: Validate premium real parity hard gate
+    action: Shell.RunJson
+    register: premium_parity
+    params:
+      command: 'powershell -NoProfile -Command "$mainFile=''${TEMPLATE_DIR}\\src\\main.js''; $homeFile=''${TEMPLATE_DIR}\\src\\pages\\main_page.vue''; $gridFile=''${TEMPLATE_DIR}\\src\\pages\\products-grid.vue''; $detailFile=''${TEMPLATE_DIR}\\src\\pages\\product-detail.vue''; $ok=$true; $missing=@(); $mainText=if(Test-Path $mainFile){Get-Content -Raw $mainFile}else{''''}; $homeText=if(Test-Path $homeFile){Get-Content -Raw $homeFile}else{''''}; $gridText=if(Test-Path $gridFile){Get-Content -Raw $gridFile}else{''''}; $detailText=if(Test-Path $detailFile){Get-Content -Raw $detailFile}else{''''}; if($homeText -notmatch ''hover:'' -and $homeText -notmatch ''group-hover''){ $ok=$false; $missing += ''missing premium hover interactions on home'' }; if($mainText -notmatch ''shfy-nav-dd''){ $ok=$false; $missing += ''missing hierarchical dropdown navigation'' }; if($gridText -notmatch ''sortMode''){ $ok=$false; $missing += ''missing catalog sort behavior'' }; if($gridText -notmatch ''selectedCategory''){ $ok=$false; $missing += ''missing category filter behavior'' }; if($detailText -notmatch ''variant'' -and $detailText -notmatch ''size'' -and $detailText -notmatch ''color'' -and $detailText -notmatch ''swatch'' -and $detailText -notmatch ''option''){ $ok=$false; $missing += ''missing product attribute/variant interaction model'' }; @{ ok=$ok; missing=$missing } | ConvertTo-Json -Compress; if($ok){exit 0}else{exit 1}"'
+      unsafe: true
+
+  - name: Fail if index is missing
+    if_not: "${has_template_index}"
+    action: Fail
+    params:
+      text: "Missing generated template index.html"
+
+  - name: Fail if main.js is missing
+    if_not: "${has_template_main}"
+    action: Fail
+    params:
+      text: "Missing generated template src/main.js"
+
+  - name: Fail if routes.js is missing
+    if_not: "${has_template_routes}"
+    action: Fail
+    params:
+      text: "Missing generated template src/routes.js"
+
+  - name: Fail if source capture baseline is missing
+    if_not: "${has_reference_home}"
+    action: Fail
+    params:
+      text: "Missing reference capture for main_page"
+
+  - name: Fail if dynamic product-list flow capture is missing
+    if_not: "${has_flow_product_list}"
+    action: Fail
+    params:
+      text: "Missing flow capture: search -> product list"
+
+  - name: Fail if dynamic product-detail flow capture is missing
+    if_not: "${has_flow_product_detail}"
+    action: Fail
+    params:
+      text: "Missing flow capture: product detail"
+
+  - name: Fail if dynamic cart flow capture is missing
+    if_not: "${has_flow_cart}"
+    action: Fail
+    params:
+      text: "Missing flow capture: cart"
+
+  - name: Fail if dynamic checkout flow capture is missing
+    if_not: "${has_flow_checkout}"
+    action: Fail
+    params:
+      text: "Missing flow capture: checkout"
+
+  - name: Fail if user dashboard capture is missing
+    if_not: "${has_dashboard_user}"
+    action: Fail
+    params:
+      text: "Missing user dashboard reference capture"
+
+  - name: Fail if vendor dashboard capture is missing
+    if_not: "${has_dashboard_vendor}"
+    action: Fail
+    params:
+      text: "Missing vendor dashboard reference capture"
+
+  - name: Fail if admin dashboard capture is missing
+    if_not: "${has_dashboard_admin}"
+    action: Fail
+    params:
+      text: "Missing admin dashboard reference capture"
+
+  - name: Fail if responsive desktop evidence is missing
+    if_not: "${has_responsive_desktop}"
+    action: Fail
+    params:
+      text: "Missing desktop responsive evidence screenshot"
+
+  - name: Fail if responsive tablet evidence is missing
+    if_not: "${has_responsive_tablet}"
+    action: Fail
+    params:
+      text: "Missing tablet responsive evidence screenshot"
+
+  - name: Fail if responsive mobile evidence is missing
+    if_not: "${has_responsive_mobile}"
+    action: Fail
+    params:
+      text: "Missing mobile responsive evidence screenshot"
+
+  - name: Fail if resolved cloning policy is missing
+    if_not: "${has_cloning_policy}"
+    action: Fail
+    params:
+      text: "Missing resolved cloning policy artifact"
+
+  - name: Fail if phase 3 artifact is missing
+    if_not: "${has_phase3_artifact}"
+    action: Fail
+    params:
+      text: "Missing phase 3 visible functionality artifact"
+
+  - name: Fail if phase 4 artifact is missing
+    if_not: "${has_phase4_artifact}"
+    action: Fail
+    params:
+      text: "Missing phase 4 design upgrade artifact"
+
+  - name: Write readiness report
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\readiness_report.json"
+      overwrite: true
+      value:
+        ok: true
+        clone_source: "${CLONE_SOURCE_URL}"
+        expected_sections: "${EXPECTED_SECTION_COUNT}"
+        generated_pages: "${template_page_count.json.count}"
+        preview_url: "${PREVIEW_URL}"
+        set_of_marks_enabled: "${ENABLE_SET_OF_MARKS_REVIEW}"
+        has_template_index: "${has_template_index}"
+        has_template_main: "${has_template_main}"
+        has_template_routes: "${has_template_routes}"
+        has_reference_home: "${has_reference_home}"
+        has_flow_product_list: "${has_flow_product_list}"
+        has_flow_product_detail: "${has_flow_product_detail}"
+        has_flow_cart: "${has_flow_cart}"
+        has_flow_checkout: "${has_flow_checkout}"
+        has_dashboard_user: "${has_dashboard_user}"
+        has_dashboard_vendor: "${has_dashboard_vendor}"
+        has_dashboard_admin: "${has_dashboard_admin}"
+        has_responsive_desktop: "${has_responsive_desktop}"
+        has_responsive_tablet: "${has_responsive_tablet}"
+        has_responsive_mobile: "${has_responsive_mobile}"
+        has_cloning_policy: "${has_cloning_policy}"
+        has_phase3_artifact: "${has_phase3_artifact}"
+        has_phase4_artifact: "${has_phase4_artifact}"
+        ecommerce_core_ok: "${ecommerce_core.json.ok}"
+        ecommerce_core_missing: "${ecommerce_core.json.missing}"
+        premium_parity_ok: "${premium_parity.json.ok}"
+        premium_parity_missing: "${premium_parity.json.missing}"

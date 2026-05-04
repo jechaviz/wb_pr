@@ -1,0 +1,14 @@
+﻿steps:
+  - name: Validate phase 3 visible functionality baseline
+    action: Shell.RunJson
+    register: phase3_functionality
+    params:
+      unsafe: true
+      command: 'powershell -NoProfile -Command "$main=''${TEMPLATE_DIR}\\src\\main.js''; $homeFile=''${TEMPLATE_DIR}\\src\\pages\\main_page.vue''; $cart=''${TEMPLATE_DIR}\\src\\pages\\cart.vue''; $wish=''${TEMPLATE_DIR}\\src\\pages\\wishlist.vue''; $compare=''${TEMPLATE_DIR}\\src\\pages\\compare.vue''; $checkout=''${TEMPLATE_DIR}\\src\\pages\\checkout.vue''; $ok=$true; $missing=@(); $mainText=if(Test-Path $main){Get-Content -Raw $main}else{''''}; $homeText=if(Test-Path $homeFile){Get-Content -Raw $homeFile}else{''''}; if($mainText -notmatch ''promoOpen''){ $ok=$false; $missing += ''popup missing'' }; if($mainText -notmatch ''cookieVisible''){ $ok=$false; $missing += ''cookie banner missing'' }; if($homeText -notmatch ''heroSlides''){ $ok=$false; $missing += ''carousel missing'' }; if(!(Test-Path $cart)){ $ok=$false; $missing += ''cart page missing'' }; if(!(Test-Path $wish)){ $ok=$false; $missing += ''wishlist page missing'' }; if(!(Test-Path $compare)){ $ok=$false; $missing += ''compare page missing'' }; if(!(Test-Path $checkout)){ $ok=$false; $missing += ''checkout page missing'' }; @{ ok=$ok; missing=$missing } | ConvertTo-Json -Compress; if($ok){exit 0}else{exit 1}"'
+
+  - name: Persist phase 3 result
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\phase3_visible_functionality.json"
+      overwrite: true
+      value: "${phase3_functionality.json}"

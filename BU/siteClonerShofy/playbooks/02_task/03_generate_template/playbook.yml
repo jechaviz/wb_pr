@@ -1,0 +1,153 @@
+steps:
+  - name: Check if template scaffold already exists
+    action: FS.Exists
+    register: has_existing_template
+    params:
+      path: "${TEMPLATE_DIR}\\index.html"
+
+  - name: Run reusable template scaffold module
+    if_not: "${has_existing_template}"
+    playbook: "${SKILL_SITE_CLONER_PLAYBOOK_DIR}\\02_template_scaffold\\playbook.yml"
+
+  - name: Build Tailwind + DaisyUI CSS bundle
+    action: Shell.Run
+    params:
+      command: "cmd /c bun run css:build"
+      workdir: "${TEMPLATE_DIR}"
+      unsafe: true
+
+  - name: Start preview server via python
+    ignore_errors: true
+    once: true
+    once_key: "site-cloner.preview.python.${PREVIEW_PORT}"
+    action: Shell.Run
+    params:
+      command: 'cmd /c start "" /min python -m http.server ${PREVIEW_PORT} --directory "${TEMPLATE_DIR}"'
+      allow_fail: true
+      unsafe: true
+
+  - name: Start preview server via bun fallback
+    ignore_errors: true
+    once: true
+    once_key: "site-cloner.preview.bun.${PREVIEW_PORT}"
+    action: Shell.Run
+    params:
+      command: 'cmd /c start "" /min bunx serve --listen ${PREVIEW_PORT}'
+      workdir: "${TEMPLATE_DIR}"
+      allow_fail: true
+      unsafe: true
+
+  - name: Open preview home page
+    action: Helium.StartEdge
+    params:
+      port: "${DEBUG_PORT}"
+      open_url: "${PREVIEW_URL}"
+      reuse_existing_tab: true
+      allow_new_tab: false
+      target_type: page
+      target_url_contains: "127.0.0.1:${PREVIEW_PORT}"
+      exclude_url_contains: "devtools://|edge://|chrome://"
+      minimize_window: "${RUN_MINIMIZED}"
+
+  - name: Capture generated home screenshot
+    action: DemoCreator.CaptureScreenshot
+    params:
+      port: "${DEBUG_PORT}"
+      target_type: page
+      target_url_contains: "127.0.0.1:${PREVIEW_PORT}"
+      output_path: "${OUTPUT_DIR}\\template_home.png"
+      format: "png"
+
+  - name: Navigate preview to main route for responsive captures
+    action: CDP.Navigate
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${PREVIEW_URL}#/main_page"
+      wait_ms: 6000
+      wait_until: "complete"
+
+  - name: Set viewport desktop
+    action: CDP.Send
+    params:
+      port: "${DEBUG_PORT}"
+      method: "Emulation.setDeviceMetricsOverride"
+      params:
+        width: 1366
+        height: 768
+        deviceScaleFactor: 1
+        mobile: false
+
+  - name: Wait desktop viewport settle
+    action: CDP.Wait
+    params:
+      ms: 900
+
+  - name: Capture responsive desktop screenshot
+    action: DemoCreator.CaptureScreenshot
+    params:
+      port: "${DEBUG_PORT}"
+      target_type: page
+      target_url_contains: "127.0.0.1:${PREVIEW_PORT}"
+      output_path: "${OUTPUT_DIR}\\responsive_preview_desktop.png"
+      format: "png"
+
+  - name: Set viewport tablet
+    action: CDP.Send
+    params:
+      port: "${DEBUG_PORT}"
+      method: "Emulation.setDeviceMetricsOverride"
+      params:
+        width: 1024
+        height: 768
+        deviceScaleFactor: 1
+        mobile: false
+
+  - name: Wait tablet viewport settle
+    action: CDP.Wait
+    params:
+      ms: 900
+
+  - name: Capture responsive tablet screenshot
+    action: DemoCreator.CaptureScreenshot
+    params:
+      port: "${DEBUG_PORT}"
+      target_type: page
+      target_url_contains: "127.0.0.1:${PREVIEW_PORT}"
+      output_path: "${OUTPUT_DIR}\\responsive_preview_tablet.png"
+      format: "png"
+
+  - name: Set viewport mobile
+    action: CDP.Send
+    params:
+      port: "${DEBUG_PORT}"
+      method: "Emulation.setDeviceMetricsOverride"
+      params:
+        width: 390
+        height: 844
+        deviceScaleFactor: 2
+        mobile: true
+
+  - name: Wait mobile viewport settle
+    action: CDP.Wait
+    params:
+      ms: 900
+
+  - name: Capture responsive mobile screenshot
+    action: DemoCreator.CaptureScreenshot
+    params:
+      port: "${DEBUG_PORT}"
+      target_type: page
+      target_url_contains: "127.0.0.1:${PREVIEW_PORT}"
+      output_path: "${OUTPUT_DIR}\\responsive_preview_mobile.png"
+      format: "png"
+
+  - name: Reset viewport to default desktop
+    action: CDP.Send
+    params:
+      port: "${DEBUG_PORT}"
+      method: "Emulation.setDeviceMetricsOverride"
+      params:
+        width: 1366
+        height: 768
+        deviceScaleFactor: 1
+        mobile: false

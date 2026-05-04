@@ -1,0 +1,3 @@
+﻿steps:
+  - name: Run reusable reference capture module
+    playbook: "${SKILL_SITE_CLONER_PLAYBOOK_DIR}\\01_reference_capture\\playbook.yml"

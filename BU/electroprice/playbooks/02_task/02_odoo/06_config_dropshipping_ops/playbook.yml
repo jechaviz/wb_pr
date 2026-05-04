@@ -1,0 +1,52 @@
+steps:
+  - name: Ensure ODOO_URL exists
+    if_not: "${ODOO_URL}"
+    action: Fail
+    params:
+      text: "Missing ODOO_URL before dropshipping configuration."
+
+  - name: Connect to Odoo tab
+    action: CDP.Connect
+    params:
+      port: "${DEBUG_PORT}"
+      open_url: "${ODOO_URL}"
+      target_type: page
+      target_url_contains: ".odoo.com"
+
+  - name: Navigate to Odoo instance
+    confirm_progress: false
+    action: CDP.Navigate
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${ODOO_URL}"
+      wait_ms: 2500
+
+  - name: Load Odoo dropshipping configurator script
+    action: FS.ReadText
+    register: js_odoo_dropshipping
+    params:
+      path: "${PLAYBOOKS_DIR}\\js\\odoo\\rpc_configure_dropshipping.js"
+
+  - name: Execute Odoo dropshipping configuration via in-session JSON-RPC
+    action: CDP.EvaluateJson
+    register: dropshipping_result
+    params:
+      port: "${DEBUG_PORT}"
+      await_promise: true
+      expression: "${js_odoo_dropshipping}"
+
+  - name: Abort if dropshipping configuration did not complete
+    if_not: "${dropshipping_result.ok}"
+    action: Fail
+    params:
+      text: "Dropshipping configuration failed: ${dropshipping_result.error}${dropshipping_result.reason}"
+
+  - name: Persist dropshipping operations checkpoint
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\odoo_dropshipping_ops_checkpoint.json"
+      overwrite: true
+      value:
+        ok: "${dropshipping_result.ok}"
+        odoo_url: "${ODOO_URL}"
+        dropshipping: "${dropshipping_result}"

@@ -1,0 +1,9 @@
+﻿@import "tailwindcss";
+@source "../index.html";
+@source "./**/*.{js,vue}";
+@plugin "daisyui" {
+  themes: light --default, business;
+}
+
+@import "./styles/shfy-layout-core.css";
+@import "./styles/shfy-layout-extended.css";

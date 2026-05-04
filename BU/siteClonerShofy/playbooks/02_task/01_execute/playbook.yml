@@ -1,0 +1,16 @@
+﻿steps:
+  - name: Phase 1 - Capture source references
+    playbook: "../02_capture_reference/playbook.yml"
+
+  - name: Phase 1 - Generate template scaffold
+    playbook: "../03_generate_template/playbook.yml"
+
+  - name: Phase 2 - Run Set-of-Marks review
+    if: "${ENABLE_SET_OF_MARKS_REVIEW}"
+    playbook: "../04_set_of_marks/playbook.yml"
+
+  - name: Phase 3 - Reconstruct visible functionality
+    playbook: "../05_functionality_reconstruction/playbook.yml"
+
+  - name: Phase 4 - Apply design ownership upgrade
+    playbook: "../06_design_upgrade/playbook.yml"

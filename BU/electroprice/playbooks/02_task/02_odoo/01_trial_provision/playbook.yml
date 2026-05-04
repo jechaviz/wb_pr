@@ -1,0 +1,9 @@
+steps:
+  - name: Ensure WAIBA shared playbook library root is available
+    if_not: "${WAIBA_PLAYBOOK_LIB_DIR}"
+    action: Fail
+    params:
+      text: "Missing WAIBA_PLAYBOOK_LIB_DIR in context. Run bootstrap runtime policy first."
+
+  - name: Import reusable Odoo trial provision flow
+    playbook: "${WAIBA_PLAYBOOK_LIB_DIR}\\ecommerce\\odoo-online-playbooks\\playbooks\\01_trial_provision\\playbook.yml"

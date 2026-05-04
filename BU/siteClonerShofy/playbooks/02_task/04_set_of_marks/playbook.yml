@@ -1,0 +1,3 @@
+﻿steps:
+  - name: Run reusable Set-of-Marks review module
+    playbook: "${SKILL_SITE_CLONER_PLAYBOOK_DIR}\\03_set_of_marks_review\\playbook.yml"

@@ -1,0 +1,9 @@
+steps:
+  - name: Clone/Pull electroprice repo
+    playbook: "../../01_bootstrap/03_clone_product_repo/playbook.yml"
+
+  - name: Odoo trial provisioning (create + activation + authenticated session)
+    playbook: "../02_odoo/01_trial_provision/playbook.yml"
+
+  - name: Odoo instance configuration (modules + branding + dropshipping + marketplace)
+    playbook: "../02_odoo/02_instance_configure/playbook.yml"

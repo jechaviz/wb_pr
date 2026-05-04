@@ -1,0 +1,20 @@
+﻿# Runtime artifacts
+playbooks/output/
+waiba_cli.log
+
+# Secrets
+secrets.yml
+*.secret.yml
+.env.local.yml
+
+# Temporary files
+tmp_*
+smoke_*
+
+# IDE
+.vscode/
+.idea/
+
+# JS/Bun deps
+node_modules/
+template/node_modules/

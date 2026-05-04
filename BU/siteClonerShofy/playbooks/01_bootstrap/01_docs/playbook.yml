@@ -1,0 +1,33 @@
+﻿steps:
+  - name: Ensure project docs exist
+    action: Framework.EnsureProjectDocs
+    params:
+      project_dir: "${PROJECT_DIR}"
+      project_name: "${PROJECT_NAME}"
+      category: "web"
+      subcategory: "site-cloning"
+      customer: "BU"
+      course: "generic"
+      lesson: "default"
+      task_name: "${TASK_NAME}"
+      task_summary: "${TASK_SUMMARY}"
+      debug_port: "${DEBUG_PORT}"
+      max_units: "${MAX_UNITS}"
+
+  - name: Ensure autonomy doctrine docs exist
+    action: Framework.EnsureAutonomyDoctrine
+    params:
+      project_dir: "${PROJECT_DIR}"
+      project_name: "${PROJECT_NAME}"
+      category: "web"
+      subcategory: "site-cloning"
+      customer: "BU"
+      task_name: "${TASK_NAME}"
+      task_summary: "${TASK_SUMMARY}"
+
+  - name: Track framework growth baseline
+    action: Framework.TrackGrowth
+    params:
+      project_dir: "${PROJECT_DIR}"
+      category: "web"
+      note: "Project initialized for Shofy cloning with SOM workflow"

@@ -1,0 +1,106 @@
+﻿metadata:
+  category: "ecommerce"
+  subcategory: "dropshipping"
+  customer: "BU"
+  course: "generic"
+  lesson: "default"
+
+variables:
+  PROJECT_NAME: "Electroprice"
+  PROJECT_SKILL_PATH: "Ecommerce.Electroprice"
+  PROJECT_SKILL_N0: "Ecommerce"
+  PROJECT_SKILL_N1: "Electroprice"
+  PROJECT_SKILL_N2: ""
+  PROJECT_SKILL_N3: ""
+  PROJECT_DIR: "${ROOT_PLAYBOOK_DIR}"
+  PLAYBOOKS_DIR: "${PROJECT_DIR}\\playbooks"
+  WAIBA_PLAYBOOK_LIB_DIR: "C:\\git\\wb_pr\\_shared"
+  TASK_NAME: "Operationalize Electroprice dropshipping on a verified user-owned Odoo instance"
+  TASK_SUMMARY: "Sync electroprice repo, provision/configure Odoo for dropshipping, and complete with verified authenticated account identity and readiness artifacts."
+  DEBUG_PORT: 9222
+  ELECTROPRICE_GIT_URL: "https://github.com/jechaviz/electroprice"
+  ELECTROPRICE_REPO_DIR: "C:\\git\\customers\\bu\\electroprice"
+  ODOO_TRIAL_URL: "https://www.odoo.com/trial"
+  MAIL_URL: "https://mail.google.com/"
+  OUTPUT_DIR: "${PLAYBOOKS_DIR}\\output"
+  JS_DIR: "${PLAYBOOKS_DIR}\\js"
+  ODOO_INSTANCE_ALIAS_BASE: "electroprice3"
+  TRIAL_CONTACT_NAME: "Electroprice Ops"
+  TRIAL_COMPANY_NAME: "Electroprice"
+  # Defaults from `${SCRIPT_DIR}\\secrets.yml` or `${PROJECT_DIR}\\secrets.yml` / `${PROJECT_DIR}\\.secrets.yml` (optional).
+  TRIAL_EMAIL: "${secrets.odoo.trial_email}"
+  TRIAL_PHONE: "${secrets.odoo.trial_phone}"
+  ODOO_LOGIN_EMAIL: "${secrets.odoo.login_email}"
+  ODOO_LOGIN_PASSWORD: "${secrets.odoo.login_password}"
+  AUTONOMOUS_MODE: true
+  ALLOW_LIVE_ODOO_TAB_DISCOVERY: false
+  FORCE_NEW_ODOO_TRIAL: false
+  FORCE_RESET_CHECKPOINTS: false
+  PULL_EXISTING_REPO: false
+  # This WAIBA project repo (playbooks + docs). The product repo is ELECTROPRICE_GIT_URL.
+  PROJECT_REPO_OWNER: "jechaviz"
+  PROJECT_REPO_NAME: "wb_pr-electroprice"
+  PROJECT_REPO_URL: "https://github.com/${PROJECT_REPO_OWNER}/${PROJECT_REPO_NAME}"
+  PROJECT_REPO_GIT_URL: "${PROJECT_REPO_URL}.git"
+  PUBLISH_PROJECT_REPO: true
+  MAX_UNITS: 5
+
+steps:
+  prod:
+    - name: Bootstrap docs and governance
+      playbook: "./playbooks/01_bootstrap/01_docs/playbook.yml"
+
+    - name: Bootstrap runtime
+      playbook: "./playbooks/01_bootstrap/02_runtime/playbook.yml"
+
+    - name: Publish WAIBA project repo (first run)
+      if: "${PUBLISH_PROJECT_REPO}"
+      playbook: "./playbooks/01_bootstrap/04_publish_project_repo/playbook.yml"
+
+    - name: Execute main task
+      playbook: "./playbooks/02_task/01_execute/playbook.yml"
+
+    - name: Validate readiness artifacts
+      playbook: "./playbooks/03_finalize/01_validate/playbook.yml"
+
+    - name: Mark task completed
+      playbook: "./playbooks/03_finalize/01_complete/playbook.yml"
+
+  sync:
+    - action: Set
+      params:
+        name: DEBUG_EVIDENCE
+        value: true
+
+    - action: Set
+      params:
+        name: DEBUG_SCREENSHOTS
+        value: true
+
+    - name: Bootstrap runtime
+      playbook: "./playbooks/01_bootstrap/02_runtime/playbook.yml"
+
+    - name: Publish WAIBA project repo
+      playbook: "./playbooks/01_bootstrap/04_publish_project_repo/playbook.yml"
+
+  trial_only:
+    - action: Set
+      params:
+        name: DEBUG_EVIDENCE
+        value: false
+
+    - action: Set
+      params:
+        name: DEBUG_SCREENSHOTS
+        value: false
+
+    - name: Bootstrap runtime
+      playbook: "./playbooks/01_bootstrap/02_runtime/playbook.yml"
+
+    - name: Provision Odoo trial (create + activation + authenticated session)
+      playbook: "./playbooks/02_task/02_odoo/01_trial_provision/playbook.yml"
+
+  debug:
+    - action: Note
+      params:
+        text: "Template modular playbook for ${PROJECT_NAME}"

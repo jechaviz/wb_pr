@@ -1,0 +1,71 @@
+﻿steps:
+  - name: Ensure output directory exists
+    action: FS.EnsureDir
+    params:
+      path: "${OUTPUT_DIR}"
+
+  - name: Ensure JS directory exists
+    action: FS.EnsureDir
+    params:
+      path: "${JS_DIR}"
+
+  - name: Publish cloning hard policy into project output
+    steps:
+      - action: FS.ReadText
+        register: cloning_policy_text
+        params:
+          path: "${CLONING_POLICY_FILE}"
+      - action: FS.WriteText
+        params:
+          path: "${OUTPUT_DIR}\\cloning_policy.resolved.yml"
+          overwrite: true
+          text: "${cloning_policy_text}"
+
+  - name: Check if project secrets.yml exists
+    action: FS.Exists
+    register: has_project_secrets_yml
+    params:
+      path: "${PROJECT_DIR}\\secrets.yml"
+
+  - name: Auto-create project secrets.yml when missing
+    if_not: "${has_project_secrets_yml}"
+    action: FS.WriteText
+    params:
+      path: "${PROJECT_DIR}\\secrets.yml"
+      overwrite: false
+      text: |
+        # Project-local secrets (not committed)
+        # Keep this file minimal to avoid overriding global secrets with empty values.
+        # If needed, uncomment and set non-empty values:
+        # llm.provider: "zai"
+        # llm.model: "glm-5"
+        # llm.vision_model: "glm-4.6v"
+        # zai.api_key: "<non-empty>"
+
+  - name: Apply WAIBA policy roots and global skill registry
+    action: Framework.Policy.Apply
+    register: waiba_policy
+    params:
+      category: "web"
+      subcategory: "site-cloning"
+      project_dir: "${PROJECT_DIR}"
+
+  - name: Import project skills from skills.yml
+    action: Framework.Policy.ImportSkills
+    register: waiba_skills_import
+    params:
+      project_dir: "${PROJECT_DIR}"
+      project_name: "${PROJECT_NAME}"
+      category: "web"
+      subcategory: "site-cloning"
+      project_skill_path: "${PROJECT_SKILL_PATH}"
+
+  - name: Enforce autonomy policy contract
+    action: Framework.Policy.EnsureAutonomy
+    params:
+      project_dir: "${PROJECT_DIR}"
+      project_name: "${PROJECT_NAME}"
+      category: "web"
+      subcategory: "site-cloning"
+      task_name: "${TASK_NAME}"
+      task_summary: "${TASK_SUMMARY}"
