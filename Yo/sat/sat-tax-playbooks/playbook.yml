@@ -48,6 +48,7 @@ variables:
   SAT_SAFE_STATE_INCLUDE_BODY_PREVIEW: false
   SAT_FILL_ZEROES: true
   SAT_REPAIR_PREVIEW_READINESS: true
+  SAT_DECLARATION_PDF_DIR: "C:\\Users\\jecha\\OneDrive\\Documentos\\declaraciones"
   SAT_USE_DEFAULT_CHECKED_OBLIGATIONS: false
 
 steps:

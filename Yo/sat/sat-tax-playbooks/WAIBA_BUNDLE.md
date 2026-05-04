@@ -57,6 +57,7 @@ Key variables (edit `C:\\git\\wb_pr\\Yo\\sat\\sat-tax-playbooks\\playbook.yml`):
 - `SAT_OBLIGATION_IDS` (checkbox ids to select)
 - `SAT_FILL_ZEROES` (default `true`): best-effort fill of empty numeric/amount fields with `0` on the SAT Formulario page; existing SAT values are preserved
 - `SAT_REPAIR_PREVIEW_READINESS` (default `true`): repair stale section/group navigation readiness when there are no visible errors and preview is blocked only by SAT UI state
+- `SAT_DECLARATION_PDF_DIR` (default `C:\\Users\\jecha\\OneDrive\\Documentos\\declaraciones`): writes the final submitted PDF copy as `YYMM.pdf`
 - `SAT_DO_SUBMIT` (default `false`): when `true` clicks **Enviar declaracion** and prints acuse PDF
 - `SAT_DO_PREVIEW` (default `true`): prints a preview PDF before submission
 - `SAT_PRE_SUBMIT_CONFIRM` (default empty): second operator gate after reviewing pre-submit evidence

@@ -14,5 +14,6 @@ Safety:
 - Informational prefill/instructions modals may be closed by the month flow before learning, preview, or the pre-submit checkpoint.
 - Preserve SAT-prefilled and computed amounts by default. A strict zero declaration is now an explicit mode, not the default.
 - When SAT leaves `Vista previa` disabled after all sections are complete, the month flow may repair stale navigation readiness before preview; it does not click submit.
+- Final submitted PDFs are copied to `C:\Users\jecha\OneDrive\Documentos\declaraciones` as `YYMM.pdf`.
 - Hidden/orphan Decreto/Relocalización badges are pre-submit blockers unless explicitly validated.
 - Keep generated evidence under `playbooks\output`.

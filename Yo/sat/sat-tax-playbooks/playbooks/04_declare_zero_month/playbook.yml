@@ -135,6 +135,13 @@ steps:
       name: SAT_REPAIR_PREVIEW_READINESS
       value: true
 
+  - name: Default operator declaration PDF directory
+    if_not: "${SAT_DECLARATION_PDF_DIR}"
+    action: Set
+    params:
+      name: SAT_DECLARATION_PDF_DIR
+      value: "C:\\Users\\jecha\\OneDrive\\Documentos\\declaraciones"
+
   - name: Default select-all obligations flag
     if_not: "${SAT_SELECT_ALL_OBLIGATIONS}"
     action: Set
@@ -196,6 +203,19 @@ steps:
     action: FS.EnsureDir
     params:
       path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\preview"
+
+  - name: Ensure operator declaration PDF directory
+    action: FS.EnsureDir
+    params:
+      path: "${SAT_DECLARATION_PDF_DIR}"
+
+  - name: Resolve operator declaration PDF filename
+    action: Shell.RunJson
+    register: sat_operator_pdf_name
+    params:
+      unsafe: true
+      timeout_ms: 15000
+      command: "powershell -NoProfile -Command \"$year=[int]'${SAT_TARGET_YEAR}'; $month=[int]'${SAT_TARGET_MONTH}'; $yy=('{0:d4}' -f $year).Substring(2,2); $mm='{0:d2}' -f $month; $file=$yy+$mm+'.pdf'; @{ file_name=$file; path=(Join-Path '${SAT_DECLARATION_PDF_DIR}' $file) } | ConvertTo-Json -Compress\""
 
   - name: Configure supercontrol NAV_URL for SAT declaration month
     if: "${SAT_USE_NAV_SUPERCONTROL}"
@@ -1307,6 +1327,14 @@ steps:
       overwrite: true
       base64: "${sat_acuse_pdf.result.data}"
 
+  - name: Save operator declaration PDF copy
+    if: "${sat_form_gates.can_submit}"
+    action: FS.WriteBase64
+    params:
+      path: "${sat_operator_pdf_name.json.path}"
+      overwrite: true
+      base64: "${sat_acuse_pdf.result.data}"
+
   - name: Persist declare-month result
     action: FS.WriteJson
     params:
@@ -1342,3 +1370,4 @@ steps:
           acuse_link: "${sat_acuse_link}"
           acuse_route: "${sat_acuse_route}"
           acuse_pdf_path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\acuse\\${SAT_TARGET_YEAR}_${SAT_TARGET_MONTH}.acuse.pdf"
+          operator_pdf_path: "${sat_operator_pdf_name.json.path}"
