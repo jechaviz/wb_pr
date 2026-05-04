@@ -8,7 +8,8 @@ variables:
   OUTPUT_DIR: "${PLAYBOOK_DIR}\\playbooks\\output"
   SAT_PROFILE_URL: "https://pstcdypisr.clouda.sat.gob.mx/Declaracion/Temporales"
   SAT_ACUSE_URL: "https://pstcdypisr.clouda.sat.gob.mx/Formulario/pdf/acuse.pdf"
-  SKILL_NAV_SUPERCONTROL_PLAYBOOK: "${PLAYBOOK_DIR}\\..\\waiba-navigation-supercontrol\\playbooks\\01_supercontrol\\playbook.yml"
+  WAIBA_PLAYBOOK_LIB_DIR: "C:\\git\\wb_pr\\_shared"
+  SKILL_NAV_SUPERCONTROL_PLAYBOOK: "${WAIBA_PLAYBOOK_LIB_DIR}\\web\\waiba-navigation-supercontrol\\playbooks\\01_supercontrol\\playbook.yml"
   SAT_USE_NAV_SUPERCONTROL: true
   SAT_NAV_ENABLE_OCR: false
   SAT_RENDER_READY_TIMEOUT_SECS: 35

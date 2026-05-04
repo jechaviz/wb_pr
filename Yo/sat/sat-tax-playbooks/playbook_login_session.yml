@@ -1,0 +1,53 @@
+metadata:
+  category: "finance"
+  subcategory: "sat-declaration"
+  workflow: "sat-login-session-only"
+
+variables:
+  PROJECT_NAME: "sat-tax-playbooks"
+  PROJECT_SKILL_PATH: "Yo.SAT.TaxPlaybooks"
+  PROJECT_DIR: "${ROOT_PLAYBOOK_DIR}"
+  PLAYBOOKS_DIR: "${PROJECT_DIR}\\playbooks"
+  OUTPUT_DIR: "${PLAYBOOKS_DIR}\\output"
+  JS_DIR: "${PLAYBOOKS_DIR}\\assets"
+  TASK_NAME: "Open SAT portal session only"
+  TASK_SUMMARY: "Open the SAT declaration portal and wait for manual RFC, password, and CAPTCHA login without preparing or submitting declarations."
+  DEBUG_PORT: 9333
+  RUN_MINIMIZED: false
+  WAIBA_HOME: "C:\\Users\\jecha\\.waiba"
+  WAIBA_PLAYBOOK_LIB_DIR: "C:\\git\\wb_pr\\_shared"
+  SKILL_SAT_TAX_ROOT: "${PROJECT_DIR}"
+  SKILL_NAV_SUPERCONTROL_ROOT: "${WAIBA_PLAYBOOK_LIB_DIR}\\web\\waiba-navigation-supercontrol"
+  SKILL_NAV_SUPERCONTROL_PLAYBOOK: "${SKILL_NAV_SUPERCONTROL_ROOT}\\playbooks\\01_supercontrol\\playbook.yml"
+  SAT_USE_NAV_SUPERCONTROL: true
+  SAT_NAV_ENABLE_OCR: false
+  SAT_LOGIN_URL: "https://pstcdypisr.clouda.sat.gob.mx/"
+  SAT_RFC: "${secrets.sat.rfc}"
+  SAT_PASSWORD: "${secrets.sat.password}"
+  SAT_LOGIN_TIMEOUT_SECS: 900
+
+steps:
+  prod:
+    - name: SAT research checklist
+      playbook: "${PLAYBOOKS_DIR}\\01_tax_research_plan\\playbook.yml"
+
+    - name: SAT portal login/session only
+      playbook: "${PLAYBOOKS_DIR}\\02_sat_portal_session\\playbook.yml"
+
+  prod_clean:
+    - name: Ensure clean browser session for SAT port
+      action: Helium.KillBrowser
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+
+    - name: SAT research checklist
+      playbook: "${PLAYBOOKS_DIR}\\01_tax_research_plan\\playbook.yml"
+
+    - name: SAT portal login/session only
+      playbook: "${PLAYBOOKS_DIR}\\02_sat_portal_session\\playbook.yml"
+
+  debug:
+    - action: Note
+      params:
+        text: "sat-tax-playbooks login-session debug mode"

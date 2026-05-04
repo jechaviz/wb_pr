@@ -14,7 +14,7 @@ imports:
       source: C:\git\wb_pr\_shared\web\waiba-navigation-supercontrol
     - id: security.captcha-solver
       kind: runtime_skill
-      source: %USERPROFILE%\.waiba\skills\security\captcha-solver
+      source: "%USERPROFILE%\\.waiba\\skills\\security\\captcha-solver"
   actions: []
 policy:
   autonomy_contract_required: 1

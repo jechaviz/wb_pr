@@ -6,6 +6,13 @@ steps:
       name: WAIBA_HOME
       value: "C:\\Users\\jecha\\.waiba"
 
+  - name: Default WAIBA playbook library directory when missing
+    if_not: "${WAIBA_PLAYBOOK_LIB_DIR}"
+    action: Set
+    params:
+      name: WAIBA_PLAYBOOK_LIB_DIR
+      value: "C:\\git\\wb_pr\\_shared"
+
   - name: Default SAT skill root when missing
     if_not: "${SKILL_SAT_TAX_ROOT}"
     action: Set
@@ -53,7 +60,7 @@ steps:
     action: Set
     params:
       name: SKILL_NAV_SUPERCONTROL_PLAYBOOK
-      value: "${SKILL_SAT_TAX_ROOT}\\..\\waiba-navigation-supercontrol\\playbooks\\01_supercontrol\\playbook.yml"
+      value: "${WAIBA_PLAYBOOK_LIB_DIR}\\web\\waiba-navigation-supercontrol\\playbooks\\01_supercontrol\\playbook.yml"
 
   - name: Default SAT supercontrol OCR toggle when missing
     if_not: "${SAT_NAV_ENABLE_OCR}"
