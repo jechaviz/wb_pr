@@ -1,0 +1,34 @@
+# Secrets
+secrets.yml
+.secrets.yml
+*.secret.yml
+*.secrets.yml
+.env
+.env.*
+!.env.example
+
+# Local dependencies and caches
+**/node_modules/
+**/.venv/
+**/venv/
+**/__pycache__/
+**/.pytest_cache/
+**/.cache/
+
+# WAIBA runtime artifacts
+**/output/
+**/playbooks/output/
+**/waiba_cli.log
+**/*.log
+**/*.jsonl
+
+# Generated media artifacts
+**/playbooks/tutorial/render/
+**/playbooks/tutorial/segments/
+**/*.mp4
+
+# OS/editor noise
+Thumbs.db
+.DS_Store
+.idea/
+.vscode/
