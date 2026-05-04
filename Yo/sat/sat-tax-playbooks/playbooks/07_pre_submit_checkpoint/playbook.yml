@@ -221,6 +221,8 @@ steps:
           - The SAT page is the expected Formulario surface for the target period.
           - No CAPTCHA, login wall, validation blocker, or missing required field is visible.
           - SAT dynamic state reports errores=false and complete navigation checks.
+          - Informational SAT prefill/instructions modals should be closed by the calling month flow before this checkpoint.
+          - Error, amount, payment, final confirmation, and Decreto/Relocalización modals block submit.
           - On VistaPrevia, encoded SAT preview data reports errores=false.
           - The preview PDF was generated earlier in the month flow when preview is enabled.
           - Amount state matches the intended declaration. For zero declarations, nonzero amount fields block submit unless SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS is true.

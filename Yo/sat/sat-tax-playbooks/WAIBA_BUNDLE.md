@@ -20,6 +20,7 @@ Bundled assets:
 - `playbooks/assets/sat_select_obligations_and_next.js`
 - `playbooks/assets/sat_form_probe.js`
 - `playbooks/assets/sat_fill_zero_amounts.js`
+- `playbooks/assets/sat_dismiss_safe_info_modals.js`
 - `playbooks/assets/sat_safe_state_probe.js`
 
 Helium coverage / generalizations:
@@ -34,6 +35,8 @@ Design contract:
 - Keep captcha as manual checkpoint.
 - Use observation-only learning for live SAT screen/form diagnosis.
 - Require the pre-submit checkpoint before any automated submit click.
+- Treat SAT prefill/instructions and "Formularios no enviados" dialogs as informational-only modals that may be dismissed before probing.
+- Treat hidden or orphan Decreto/Relocalización, credit, PODEBI, or disaster-zone badges as pre-submit blockers until explicitly explained.
 - Persist artifacts for each run under `${OUTPUT_DIR}\\sat`.
 - Reuse `waiba-navigation-supercontrol` for browser attach/open behavior across SAT flows.
 - Use render-ready waits before screenshot/DOM evidence capture.

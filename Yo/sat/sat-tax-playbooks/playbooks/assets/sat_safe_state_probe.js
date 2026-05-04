@@ -186,6 +186,59 @@
       missing_tabs: missing.slice(0, 20)
     };
   })();
+  const satPolicyTermOf = (text) => {
+    const t = fold(text);
+    const terms = [
+      ["decreto", /\bdecreto\b/],
+      ["relocalizacion", /\brelocalizacion\b/],
+      ["credito_fiscal", /\bcreditos?\s+fiscales?\b|\bcredito\s+fiscal\b/],
+      ["podebi", /\bpodebi\b/],
+      ["zona_de_desastre", /\bzonas?\b(?:\s+\w+){0,5}\s+\bdesastre\b/]
+    ];
+    const hit = terms.find(([, re]) => re.test(t));
+    return hit ? hit[0] : "";
+  };
+  const badgeish = (e) =>
+    e.hasAttribute("data-badge") ||
+    /(^|\s)(badge|tag|pill|chip|etiqueta|label-(default|primary|success|info|warning|danger))([\s_-]|$)/i
+      .test(String(e.className || ""));
+  const badgeContext = (e) => {
+    const own = norm([
+      e.innerText,
+      e.textContent,
+      e.getAttribute("aria-label"),
+      e.getAttribute("title")
+    ].join(" "));
+    const parents = [];
+    let p = e.parentElement;
+    for (let depth = 0; p && p !== document.body && depth < 4; depth += 1, p = p.parentElement) {
+      const txt = norm(p.innerText || p.textContent || "");
+      if (txt && txt.length <= 900) parents.push(txt);
+    }
+    return { own, parent: norm(parents.join(" ")) };
+  };
+  const satPolicyBadges = Array.from(document.querySelectorAll(".badge,.label,.tag,.pill,.chip,[data-badge],[class]"))
+    .filter(badgeish)
+    .map((e) => {
+      const ctx = badgeContext(e);
+      const combined = norm(ctx.own + " " + ctx.parent);
+      const term = satPolicyTermOf(combined);
+      if (!term) return null;
+      const ownTerm = satPolicyTermOf(ctx.own);
+      return {
+        term,
+        selector: selectorOf(e),
+        tag: String((e.tagName || "").toLowerCase()),
+        id: String(e.id || ""),
+        hidden: !visible(e) || !!e.closest("[hidden],[aria-hidden='true']"),
+        orphaned: !ctx.own && !!ctx.parent,
+        parent_keyword: !ownTerm && !!satPolicyTermOf(ctx.parent),
+        text: clip(redact(combined), 300)
+      };
+    })
+    .filter(Boolean)
+    .filter((x, i, arr) => arr.findIndex((y) => y.term === x.term && y.selector === x.selector && y.text === x.text) === i)
+    .slice(0, 40);
   const routeFlags = {
     on_temporales: /Declaracion\/Temporales/i.test(location.href || ""),
     on_perfil: /Declaracion\/PerfilDeclaracion/i.test(location.href || ""),
@@ -328,6 +381,7 @@
   if (satConfig && satConfig.errores) blockers.push("sat_config_errors_true");
   if (satPreviewData && satPreviewData.errores) blockers.push("sat_preview_errors_true");
   if (satNavigation.total_tabs > 0 && satNavigation.incomplete_tabs > 0) blockers.push("sat_navigation_incomplete");
+  if (satPolicyBadges.length) blockers.push("sat_policy_badge_detected");
 
   const submitButtons = clickables.filter((b) => b.intent === "submit" && !b.disabled);
   const previewButtons = clickables.filter((b) => b.intent === "preview" && !b.disabled);
@@ -362,7 +416,8 @@
     sat_dynamic_state: {
       config: satConfig,
       preview_data: satPreviewData,
-      navigation: satNavigation
+      navigation: satNavigation,
+      policy_badges: satPolicyBadges
     },
     forms,
     fields,

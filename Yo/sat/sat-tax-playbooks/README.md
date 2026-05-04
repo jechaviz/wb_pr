@@ -11,4 +11,6 @@ Safety:
 - Use preview mode before submit flows.
 - Submission requires an explicit `SAT_SUBMIT_CONFIRM` value.
 - Submit flows run `07_pre_submit_checkpoint` and require `SAT_PRE_SUBMIT_CONFIRM` when enabled.
+- Informational prefill/instructions modals may be closed by the month flow before learning, preview, or the pre-submit checkpoint.
+- Hidden/orphan Decreto/Relocalización badges are pre-submit blockers unless explicitly validated.
 - Keep generated evidence under `playbooks\output`.

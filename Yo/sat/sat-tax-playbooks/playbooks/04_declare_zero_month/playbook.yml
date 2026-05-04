@@ -947,6 +947,29 @@ steps:
       port: "${DEBUG_PORT}"
       expression: "(() => ({ url: location.href || '', on_formulario: /Formulario/i.test(location.href || '') }))()"
 
+  - name: Load SAT safe informational modal dismiss JS
+    if: "${sat_form_nav_check.on_formulario}"
+    action: FS.ReadText
+    register: js_sat_dismiss_safe_info_modals
+    params:
+      path: "${SKILL_SAT_TAX_ASSETS_DIR}\\sat_dismiss_safe_info_modals.js"
+
+  - name: Dismiss SAT safe informational modals after form load
+    if: "${sat_form_nav_check.on_formulario}"
+    action: CDP.EvaluateJson
+    register: sat_safe_info_modal_dismiss_form
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_sat_dismiss_safe_info_modals}"
+
+  - name: Persist SAT safe informational modal dismiss result
+    if: "${sat_form_nav_check.on_formulario}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.safe_info_modal_dismiss.form.json"
+      overwrite: true
+      value: "${sat_safe_info_modal_dismiss_form}"
+
   - name: Compute gates for preview/submit (requires Formulario)
     if: "${sat_oblig_next.marked_count}"
     action: CDP.EvaluateJson
@@ -1055,6 +1078,22 @@ steps:
     params:
       ms: 2500
 
+  - name: Dismiss SAT safe informational modals after preview render
+    if: "${sat_form_gates.can_preview}"
+    action: CDP.EvaluateJson
+    register: sat_safe_info_modal_dismiss_preview
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_sat_dismiss_safe_info_modals}"
+
+  - name: Persist SAT safe informational modal dismiss result after preview
+    if: "${sat_form_gates.can_preview}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\preview\\${SAT_TARGET_YEAR}_${SAT_TARGET_MONTH}.safe_info_modal_dismiss.preview.json"
+      overwrite: true
+      value: "${sat_safe_info_modal_dismiss_preview}"
+
   - name: Print preview to PDF (CDP)
     if: "${sat_form_gates.can_preview}"
     action: CDP.Send
@@ -1070,6 +1109,22 @@ steps:
       path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\preview\\${SAT_TARGET_YEAR}_${SAT_TARGET_MONTH}.vista_previa.pdf"
       overwrite: true
       base64: "${sat_preview_pdf.result.data}"
+
+  - name: Dismiss SAT safe informational modals before pre-submit checkpoint
+    if: "${sat_form_gates.can_submit}"
+    action: CDP.EvaluateJson
+    register: sat_safe_info_modal_dismiss_pre_submit
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_sat_dismiss_safe_info_modals}"
+
+  - name: Persist SAT safe informational modal dismiss result before pre-submit
+    if: "${sat_form_gates.can_submit}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.safe_info_modal_dismiss.pre_submit.json"
+      overwrite: true
+      value: "${sat_safe_info_modal_dismiss_pre_submit}"
 
   - name: Run pre-submit checkpoint before Enviar declaracion
     if: "${sat_form_gates.can_submit}"
@@ -1236,12 +1291,15 @@ steps:
         on_formulario: "${sat_form_nav_check.on_formulario}"
         gates: "${sat_form_gates}"
         form_probe: "${sat_form_probe}"
+        safe_info_modal_dismiss_form: "${sat_safe_info_modal_dismiss_form}"
         sin_operaciones_click: "${sat_click_sin_operaciones}"
         zero_fill: "${sat_zero_fill}"
         preview:
           enabled: "${SAT_DO_PREVIEW}"
           click: "${sat_click_preview}"
+          safe_info_modal_dismiss: "${sat_safe_info_modal_dismiss_preview}"
           pdf_path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\preview\\${SAT_TARGET_YEAR}_${SAT_TARGET_MONTH}.vista_previa.pdf"
+        safe_info_modal_dismiss_pre_submit: "${sat_safe_info_modal_dismiss_pre_submit}"
         submit:
           enabled: "${SAT_DO_SUBMIT}"
           click: "${sat_click_submit}"
