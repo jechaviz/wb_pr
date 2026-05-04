@@ -42,16 +42,32 @@
       buttons: buttons.map(textOf).filter(Boolean).slice(0, 8)
     };
 
-    if (!safeInfo(text) || dangerous(text) || !button) {
-      blocked.push({ ...item, reason: !button ? "no_allowed_button" : dangerous(text) ? "dangerous_or_error_text" : "not_known_info_modal" });
+    if (!safeInfo(text) || dangerous(text)) {
+      blocked.push({ ...item, reason: dangerous(text) ? "dangerous_or_error_text" : "not_known_info_modal" });
+      continue;
+    }
+
+    if (button) {
+      try {
+        button.click();
+        clicked.push({ ...item, clicked_button: textOf(button) });
+      } catch (e) {
+        blocked.push({ ...item, reason: "click_failed", error: String((e && e.message) || e || "click_failed") });
+      }
       continue;
     }
 
     try {
-      button.click();
-      clicked.push({ ...item, clicked_button: textOf(button) });
+      if (window.jQuery && typeof window.jQuery(modal).modal === "function") window.jQuery(modal).modal("hide");
+    } catch (_) {}
+    try {
+      modal.remove();
+      document.querySelectorAll(".modal-backdrop").forEach((e) => e.remove());
+      document.body.classList.remove("modal-open");
+      document.body.style.removeProperty("padding-right");
+      clicked.push({ ...item, clicked_button: "", removed_safe_no_button_modal: true });
     } catch (e) {
-      blocked.push({ ...item, reason: "click_failed", error: String((e && e.message) || e || "click_failed") });
+      blocked.push({ ...item, reason: "safe_no_button_remove_failed", error: String((e && e.message) || e || "remove_failed") });
     }
   }
 

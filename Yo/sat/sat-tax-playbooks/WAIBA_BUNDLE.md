@@ -1,6 +1,6 @@
 ---
 name: sat-tax-playbooks
-description: WAIBA project playbooks for SAT Mexico declarations with reproducible entrypoints, login/session bootstrap, iframe diagnostics, monthly zero declarations, preview, recovery, and explicitly confirmed submit flows.
+description: WAIBA project playbooks for SAT Mexico declarations with reproducible entrypoints, login/session bootstrap, iframe diagnostics, monthly declarations, preview, recovery, and explicitly confirmed submit flows.
 ---
 
 # SAT Tax Playbooks
@@ -22,6 +22,7 @@ Bundled assets:
 - `playbooks/assets/sat_fill_zero_amounts.js`
 - `playbooks/assets/sat_dismiss_safe_info_modals.js`
 - `playbooks/assets/sat_safe_state_probe.js`
+- `playbooks/assets/sat_repair_preview_readiness.js`
 
 Helium coverage / generalizations:
 - Page probe: use `Helium.Probe` (replaces the old `sat_page_probe.js` helper).
@@ -36,6 +37,8 @@ Design contract:
 - Use observation-only learning for live SAT screen/form diagnosis.
 - Require the pre-submit checkpoint before any automated submit click.
 - Treat SAT prefill/instructions and "Formularios no enviados" dialogs as informational-only modals that may be dismissed before probing.
+- Preserve SAT-prefilled and computed amounts by default. Fill only empty auxiliary numeric fields with `0`; do not force a zero declaration when SAT computes ISR/IVA amounts.
+- If SAT sections are complete but `Vista previa` stays disabled because group navigation lacks `.recorrido`, repair only local navigation/readiness state before preview. This repair performs no click and never enables submit intentionally.
 - Treat hidden or orphan Decreto/Relocalización, credit, PODEBI, or disaster-zone badges as pre-submit blockers until explicitly explained.
 - Persist artifacts for each run under `${OUTPUT_DIR}\\sat`.
 - Reuse `waiba-navigation-supercontrol` for browser attach/open behavior across SAT flows.
@@ -52,13 +55,14 @@ Run:
 Key variables (edit `C:\\git\\wb_pr\\Yo\\sat\\sat-tax-playbooks\\playbook.yml`):
 - `SAT_FROM_YEAR`, `SAT_FROM_MONTH`, `SAT_TO_YEAR`, `SAT_TO_MONTH` (range)
 - `SAT_OBLIGATION_IDS` (checkbox ids to select)
-- `SAT_FILL_ZEROES` (default `true`): best-effort fill of empty numeric/amount fields with `0` on the SAT Formulario page
+- `SAT_FILL_ZEROES` (default `true`): best-effort fill of empty numeric/amount fields with `0` on the SAT Formulario page; existing SAT values are preserved
+- `SAT_REPAIR_PREVIEW_READINESS` (default `true`): repair stale section/group navigation readiness when there are no visible errors and preview is blocked only by SAT UI state
 - `SAT_DO_SUBMIT` (default `false`): when `true` clicks **Enviar declaracion** and prints acuse PDF
 - `SAT_DO_PREVIEW` (default `true`): prints a preview PDF before submission
 - `SAT_PRE_SUBMIT_CONFIRM` (default empty): second operator gate after reviewing pre-submit evidence
 - `SAT_REQUIRE_PRE_SUBMIT_CONFIRM` (default `true`): requires the second gate before submit
-- `SAT_EXPECT_ZERO_DECLARATION` (default `true`): pre-submit safe-state gate treats nonzero amount fields as blockers
-- `SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS` (default `false`): override when a nonzero declaration is intentional
+- `SAT_EXPECT_ZERO_DECLARATION` (default `false`): when `true`, pre-submit safe-state gate treats nonzero amount fields as blockers
+- `SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS` (default `true`): allow intentional nonzero SAT-computed declarations after explicit operator confirmation
 - `SAT_SAFE_STATE_INCLUDE_BODY_PREVIEW` (default `false`): keep safe-state body text previews disabled unless needed
 - `SAT_USE_NAV_SUPERCONTROL` (default `true`): use `waiba-navigation-supercontrol` for SAT browser session bootstrap
 - `SKILL_NAV_SUPERCONTROL_PLAYBOOK`: override path to the supercontrol core playbook when needed

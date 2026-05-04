@@ -47,14 +47,14 @@ steps:
       action: Set
       params:
         name: SAT_EXPECT_ZERO_DECLARATION
-        value: true
+        value: false
 
     - name: Default nonzero amount allowance when missing
       if_not: "${SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS}"
       action: Set
       params:
         name: SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS
-        value: false
+        value: true
 
     - name: Default safe body preview flag when missing
       if_not: "${SAT_SAFE_STATE_INCLUDE_BODY_PREVIEW}"
@@ -225,7 +225,8 @@ steps:
           - Error, amount, payment, final confirmation, and Decreto/Relocalización modals block submit.
           - On VistaPrevia, encoded SAT preview data reports errores=false.
           - The preview PDF was generated earlier in the month flow when preview is enabled.
-          - Amount state matches the intended declaration. For zero declarations, nonzero amount fields block submit unless SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS is true.
+          - Amount state matches the intended declaration. Preserve SAT-prefilled amounts unless the operator explicitly confirms a zero-declaration mode.
+          - For zero declarations, nonzero amount fields block submit unless SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS is true.
           - SAT_SUBMIT_CONFIRM is set, and SAT_PRE_SUBMIT_CONFIRM is set when SAT_REQUIRE_PRE_SUBMIT_CONFIRM is true.
 
           This checkpoint performs no click, navigation, dialog accept, submit, payment, or CAPTCHA action.

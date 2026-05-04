@@ -112,14 +112,14 @@ steps:
     action: Set
     params:
       name: SAT_EXPECT_ZERO_DECLARATION
-      value: true
+      value: false
 
   - name: Default nonzero amount allowance
     if_not: "${SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS}"
     action: Set
     params:
       name: SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS
-      value: false
+      value: true
 
   - name: Default safe body preview flag
     if_not: "${SAT_SAFE_STATE_INCLUDE_BODY_PREVIEW}"
@@ -127,6 +127,13 @@ steps:
     params:
       name: SAT_SAFE_STATE_INCLUDE_BODY_PREVIEW
       value: false
+
+  - name: Default preview-readiness repair flag
+    if_not: "${SAT_REPAIR_PREVIEW_READINESS}"
+    action: Set
+    params:
+      name: SAT_REPAIR_PREVIEW_READINESS
+      value: true
 
   - name: Default select-all obligations flag
     if_not: "${SAT_SELECT_ALL_OBLIGATIONS}"
@@ -1020,16 +1027,19 @@ steps:
       overwrite: true
       value: "${sat_form_probe}"
 
-  - name: Try mark "Sin operaciones" (best effort)
+  - name: Try zero-operation shortcut only on Formulario
     if: "${sat_form_nav_check.on_formulario}"
-    ignore_errors: true
-    action: Helium.ClickAny
-    register: sat_click_sin_operaciones
-    params:
-      port: "${DEBUG_PORT}"
-      text_candidates: "Sin operaciones|Sin Operaciones|Declaración sin operaciones|Declaracion sin operaciones|Sin actividad|Sin Actividad"
-      implicit_wait_ms: 1800
-      find_in_page_fallback: true
+    steps:
+      - name: Try mark "Sin operaciones" only for intentional zero declarations
+        if: "${SAT_EXPECT_ZERO_DECLARATION}"
+        ignore_errors: true
+        action: Helium.ClickAny
+        register: sat_click_sin_operaciones
+        params:
+          port: "${DEBUG_PORT}"
+          text_candidates: "Sin operaciones|Sin Operaciones|Declaracion sin operaciones|Sin actividad|Sin Actividad"
+          implicit_wait_ms: 1800
+          find_in_page_fallback: true
 
   - name: Load SAT fill-zero amounts JS
     if: "${sat_form_nav_check.on_formulario}"
@@ -1053,6 +1063,29 @@ steps:
       path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.zero_fill.json"
       overwrite: true
       value: "${sat_zero_fill}"
+
+  - name: Load SAT preview readiness repair JS
+    if: "${sat_form_nav_check.on_formulario}"
+    action: FS.ReadText
+    register: js_sat_repair_preview_readiness
+    params:
+      path: "${SKILL_SAT_TAX_ASSETS_DIR}\\sat_repair_preview_readiness.js"
+
+  - name: Repair SAT preview readiness after validation learning
+    if: "${sat_form_nav_check.on_formulario}"
+    action: CDP.EvaluateJson
+    register: sat_preview_readiness_repair
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_sat_repair_preview_readiness}"
+
+  - name: Persist SAT preview readiness repair result
+    if: "${sat_form_nav_check.on_formulario}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.preview_readiness_repair.json"
+      overwrite: true
+      value: "${sat_preview_readiness_repair}"
 
   - name: Click Vista previa
     if: "${sat_form_gates.can_preview}"
@@ -1294,6 +1327,7 @@ steps:
         safe_info_modal_dismiss_form: "${sat_safe_info_modal_dismiss_form}"
         sin_operaciones_click: "${sat_click_sin_operaciones}"
         zero_fill: "${sat_zero_fill}"
+        preview_readiness_repair: "${sat_preview_readiness_repair}"
         preview:
           enabled: "${SAT_DO_PREVIEW}"
           click: "${sat_click_preview}"

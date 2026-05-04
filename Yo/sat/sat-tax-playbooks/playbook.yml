@@ -43,10 +43,11 @@ variables:
   SAT_SUBMIT_CONFIRM: ""
   SAT_PRE_SUBMIT_CONFIRM: ""
   SAT_REQUIRE_PRE_SUBMIT_CONFIRM: true
-  SAT_EXPECT_ZERO_DECLARATION: true
-  SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS: false
+  SAT_EXPECT_ZERO_DECLARATION: false
+  SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS: true
   SAT_SAFE_STATE_INCLUDE_BODY_PREVIEW: false
   SAT_FILL_ZEROES: true
+  SAT_REPAIR_PREVIEW_READINESS: true
   SAT_USE_DEFAULT_CHECKED_OBLIGATIONS: false
 
 steps:
@@ -57,7 +58,7 @@ steps:
     - name: SAT portal login/session
       playbook: "${PLAYBOOKS_DIR}\\02_sat_portal_session\\playbook.yml"
 
-    - name: Declare zero from 2025 onward
+    - name: Prepare monthly SAT declarations from 2025 onward
       playbook: "${PLAYBOOKS_DIR}\\05_declare_zero_2025_onward\\playbook.yml"
 
   learn:
@@ -78,7 +79,7 @@ steps:
     - name: SAT portal login/session
       playbook: "${PLAYBOOKS_DIR}\\02_sat_portal_session\\playbook.yml"
 
-    - name: Declare zero from 2025 onward
+    - name: Prepare monthly SAT declarations from 2025 onward
       playbook: "${PLAYBOOKS_DIR}\\05_declare_zero_2025_onward\\playbook.yml"
 
   prod_submit:
@@ -101,7 +102,7 @@ steps:
     - name: SAT portal login/session
       playbook: "${PLAYBOOKS_DIR}\\02_sat_portal_session\\playbook.yml"
 
-    - name: Declare zero from 2025 onward
+    - name: Prepare monthly SAT declarations from 2025 onward
       playbook: "${PLAYBOOKS_DIR}\\05_declare_zero_2025_onward\\playbook.yml"
 
   prod_submit_clean:
@@ -130,7 +131,7 @@ steps:
     - name: SAT portal login/session
       playbook: "${PLAYBOOKS_DIR}\\02_sat_portal_session\\playbook.yml"
 
-    - name: Declare zero from 2025 onward
+    - name: Prepare monthly SAT declarations from 2025 onward
       playbook: "${PLAYBOOKS_DIR}\\05_declare_zero_2025_onward\\playbook.yml"
 
   debug:

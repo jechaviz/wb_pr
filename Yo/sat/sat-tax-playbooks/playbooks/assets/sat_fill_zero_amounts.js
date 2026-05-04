@@ -161,6 +161,7 @@
 
   const changed = [];
   const changedSelects = [];
+  const preservedPrefilled = [];
 
   for (const el of selects) {
     const i = el.selectedIndex;
@@ -191,7 +192,14 @@
 
   for (const el of inputs) {
     const before = norm(el.value || "");
-    if (before !== "") continue;
+    if (before !== "") {
+      preservedPrefilled.push({
+        id: el.id || "",
+        name: el.name || "",
+        value_state: /^[-+]?\$?\s*0+(?:[.,]0+)?$/.test(before) ? "zero" : "present"
+      });
+      continue;
+    }
     setValue(el, "0");
     const after = norm(el.value || "");
     changed.push({
@@ -209,7 +217,13 @@
     filled_count: changed.length,
     select_candidates_count: selects.length,
     candidates_count: inputs.length,
+    preserved_prefilled_count: preservedPrefilled.length,
     changed_select_sample: changedSelects.slice(0, 60),
-    changed_sample: changed.slice(0, 80)
+    changed_sample: changed.slice(0, 80),
+    preserved_prefilled_sample: preservedPrefilled.slice(0, 80),
+    policy: {
+      overwrites_existing_values: false,
+      fills_empty_amount_like_fields_only: true
+    }
   };
 })();

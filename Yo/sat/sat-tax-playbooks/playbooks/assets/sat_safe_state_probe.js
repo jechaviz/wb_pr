@@ -167,23 +167,50 @@
   const satNavigation = (() => {
     const tabs = Array.from(document.querySelectorAll(".contenedor-secciones .nav-tabsCheck"));
     const missing = tabs
-      .map((li) => {
-        const a = li.querySelector("a[data-titulo-seccion]");
+      .map((a) => {
         return {
-          group: String(li.closest(".contenedor-secciones")?.id || ""),
+          group: String(a.closest(".contenedor-secciones")?.id || ""),
           section: String(a?.getAttribute("data-id-seccion") || ""),
-          title: redact(a?.textContent || li.textContent || ""),
-          hidden: !visible(li),
-          checked: !!a?.querySelector("i.recorrido.fa-check")
+          title: redact(a?.textContent || ""),
+          hidden: !visible(a.closest("li") || a),
+          checked: !!a?.querySelector(".recorrido.fa-check,.fa-check.recorrido,.recorrido")
         };
       })
       .filter((item) => !item.checked);
+    const groups = Array.from(document.querySelectorAll("#menu-principal .opcion-menu"));
+    const missingGroups = groups
+      .map((a) => ({
+        href: String(a.getAttribute("href") || ""),
+        title: redact(a.textContent || ""),
+        hidden: !visible(a),
+        checked: !!a.querySelector(".recorrido")
+      }))
+      .filter((item) => !item.checked);
+    let nativeSectionErrors = null;
+    let nativeGroupComplete = null;
+    try {
+      nativeSectionErrors = window.AppDeclaracionesSAT && typeof AppDeclaracionesSAT.validaErroresSecciones === "function"
+        ? AppDeclaracionesSAT.validaErroresSecciones()
+        : null;
+    } catch (_) {}
+    try {
+      nativeGroupComplete = window.AppDeclaracionesSAT && typeof AppDeclaracionesSAT.validarNavegacionCompletaGrupos === "function"
+        ? AppDeclaracionesSAT.validarNavegacionCompletaGrupos()
+        : null;
+    } catch (_) {}
     return {
       total_tabs: tabs.length,
-      checked_tabs: document.querySelectorAll(".recorrido.fa-check").length,
+      checked_tabs: tabs.length - missing.length,
       incomplete_tabs: missing.length,
       hidden_incomplete_tabs: missing.filter((item) => item.hidden).length,
-      missing_tabs: missing.slice(0, 20)
+      missing_tabs: missing.slice(0, 20),
+      total_groups: groups.length,
+      checked_groups: groups.length - missingGroups.length,
+      incomplete_groups: missingGroups.length,
+      hidden_incomplete_groups: missingGroups.filter((item) => item.hidden).length,
+      missing_groups: missingGroups.slice(0, 20),
+      native_section_errors: nativeSectionErrors,
+      native_group_complete: nativeGroupComplete
     };
   })();
   const satPolicyTermOf = (text) => {
@@ -380,7 +407,8 @@
   if (cfg.expectZero && !cfg.allowNonZeroAmounts && amountSummary.nonzero > 0) blockers.push("nonzero_amounts_visible");
   if (satConfig && satConfig.errores) blockers.push("sat_config_errors_true");
   if (satPreviewData && satPreviewData.errores) blockers.push("sat_preview_errors_true");
-  if (satNavigation.total_tabs > 0 && satNavigation.incomplete_tabs > 0) blockers.push("sat_navigation_incomplete");
+  if (satNavigation.total_tabs > 0 && satNavigation.incomplete_tabs > 0) blockers.push("sat_navigation_sections_incomplete");
+  if (satNavigation.total_groups > 0 && satNavigation.incomplete_groups > 0) blockers.push("sat_navigation_groups_incomplete");
   if (satPolicyBadges.length) blockers.push("sat_policy_badge_detected");
 
   const submitButtons = clickables.filter((b) => b.intent === "submit" && !b.disabled);
