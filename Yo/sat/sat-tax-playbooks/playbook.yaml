@@ -18,6 +18,11 @@ steps:
     - name: Run SAT project entrypoint
       playbook: "./playbook.yml"
 
+  learn:
+    - name: Capture SAT interactive learning checkpoint
+      playbook: "${PLAYBOOKS_DIR}\\06_interactive_learning_session\\playbook.yml"
+      env: prod
+
   debug:
     - action: Note
       params:

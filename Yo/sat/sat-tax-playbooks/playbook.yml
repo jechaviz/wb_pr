@@ -41,6 +41,11 @@ variables:
   SAT_DO_PREVIEW: true
   SAT_DO_SUBMIT: false
   SAT_SUBMIT_CONFIRM: ""
+  SAT_PRE_SUBMIT_CONFIRM: ""
+  SAT_REQUIRE_PRE_SUBMIT_CONFIRM: true
+  SAT_EXPECT_ZERO_DECLARATION: true
+  SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS: false
+  SAT_SAFE_STATE_INCLUDE_BODY_PREVIEW: false
   SAT_FILL_ZEROES: true
   SAT_USE_DEFAULT_CHECKED_OBLIGATIONS: false
 
@@ -54,6 +59,11 @@ steps:
 
     - name: Declare zero from 2025 onward
       playbook: "${PLAYBOOKS_DIR}\\05_declare_zero_2025_onward\\playbook.yml"
+
+  learn:
+    - name: Capture SAT interactive learning checkpoint
+      playbook: "${PLAYBOOKS_DIR}\\06_interactive_learning_session\\playbook.yml"
+      env: prod
 
   prod_clean:
     - name: Ensure clean browser session for SAT port (kills Edge)

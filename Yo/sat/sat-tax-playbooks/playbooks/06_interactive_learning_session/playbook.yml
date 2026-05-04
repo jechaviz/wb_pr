@@ -1,0 +1,229 @@
+steps:
+  prod:
+    - name: Default DEBUG_PORT when missing
+      if_not: "${DEBUG_PORT}"
+      action: Set
+      params:
+        name: DEBUG_PORT
+        value: 9333
+
+    - name: Default OUTPUT_DIR when missing
+      if_not: "${OUTPUT_DIR}"
+      action: Set
+      params:
+        name: OUTPUT_DIR
+        value: "${PLAYBOOK_DIR}\\..\\output"
+
+    - name: Default SAT assets directory when missing
+      if_not: "${SKILL_SAT_TAX_ASSETS_DIR}"
+      action: Set
+      params:
+        name: SKILL_SAT_TAX_ASSETS_DIR
+        value: "${PLAYBOOK_DIR}\\..\\assets"
+
+    - name: Default learning label when missing
+      if_not: "${SAT_LEARN_LABEL}"
+      action: Set
+      params:
+        name: SAT_LEARN_LABEL
+        value: "interactive_session"
+
+    - name: Default screenshot evidence flag when missing
+      if_not: "${SAT_LEARN_CAPTURE_SCREENSHOT}"
+      action: Set
+      params:
+        name: SAT_LEARN_CAPTURE_SCREENSHOT
+        value: true
+
+    - name: Default safe body preview flag when missing
+      if_not: "${SAT_SAFE_STATE_INCLUDE_BODY_PREVIEW}"
+      action: Set
+      params:
+        name: SAT_SAFE_STATE_INCLUDE_BODY_PREVIEW
+        value: false
+
+    - name: Default render-ready timeout when missing
+      if_not: "${SAT_RENDER_READY_TIMEOUT_SECS}"
+      action: Set
+      params:
+        name: SAT_RENDER_READY_TIMEOUT_SECS
+        value: 35
+
+    - name: Configure safe-state label for learning capture
+      action: Set
+      params:
+        name: SAT_SAFE_STATE_LABEL
+        value: "${SAT_LEARN_LABEL}"
+
+    - name: Resolve learning output directory
+      action: Set
+      params:
+        name: SAT_LEARN_OUTPUT_DIR
+        value: "${OUTPUT_DIR}\\sat\\learning\\${SAT_LEARN_LABEL}"
+
+    - name: Ensure learning output directory
+      action: FS.EnsureDir
+      params:
+        path: "${SAT_LEARN_OUTPUT_DIR}"
+
+    - name: Bind explicitly to current SAT browser target
+      action: CDP.Connect
+      params:
+        port: "${DEBUG_PORT}"
+        force_reconnect: true
+        target_type: "page"
+        target_url_contains: "sat.gob.mx"
+
+    - name: Get current SAT URL without navigation
+      action: CDP.GetUrl
+      register: sat_learn_url
+      params:
+        port: "${DEBUG_PORT}"
+
+    - name: Wait for current SAT page to be render-ready
+      action: Helium.WaitUntil
+      ignore_errors: true
+      register: sat_learn_render_wait
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: "${SAT_RENDER_READY_TIMEOUT_SECS}"
+        interval_ms: 600
+        expression: |
+          (() => {
+            const isVisible = (el) => {
+              if (!el) return false;
+              const st = window.getComputedStyle(el);
+              if (!st) return false;
+              if (st.display === "none" || st.visibility === "hidden" || st.opacity === "0") return false;
+              const r = el.getBoundingClientRect();
+              return r.width > 0 && r.height > 0;
+            };
+            const loadingSelectors = [
+              ".o_loading",
+              ".o_spinner",
+              ".spinner",
+              ".loading",
+              ".oe_loading",
+              ".skeleton",
+              ".shimmer",
+              ".progress-bar-animated",
+              "[aria-busy='true']",
+              ".modal-backdrop.show"
+            ];
+            const loadingVisible = loadingSelectors.some((sel) => Array.from(document.querySelectorAll(sel)).some(isVisible));
+            const body = document.body;
+            const hasVisibleBody = !!body && body.getBoundingClientRect().height > 0;
+            return (document.readyState === "complete" || document.readyState === "interactive") && hasVisibleBody && !loadingVisible;
+          })()
+
+    - name: Capture learning screenshot evidence
+      if: "${SAT_LEARN_CAPTURE_SCREENSHOT}"
+      action: CDP.Send
+      ignore_errors: true
+      register: sat_learn_shot
+      params:
+        port: "${DEBUG_PORT}"
+        method: "Page.captureScreenshot"
+        params:
+          format: "png"
+          fromSurface: true
+
+    - name: Save learning screenshot evidence
+      if: "${sat_learn_shot.result.data}"
+      action: FS.WriteBase64
+      params:
+        path: "${SAT_LEARN_OUTPUT_DIR}\\screen.png"
+        overwrite: true
+        base64: "${sat_learn_shot.result.data}"
+
+    - name: Load safe state probe JS
+      action: FS.ReadText
+      register: js_sat_safe_state_probe
+      params:
+        path: "${SKILL_SAT_TAX_ASSETS_DIR}\\sat_safe_state_probe.js"
+
+    - name: Capture safe non-secret state
+      action: CDP.EvaluateJson
+      register: sat_learn_safe_state
+      params:
+        port: "${DEBUG_PORT}"
+        target_type: "page"
+        target_url_contains: "sat.gob.mx"
+        expression: "${js_sat_safe_state_probe}"
+
+    - name: Save safe non-secret state
+      action: FS.WriteJson
+      params:
+        path: "${SAT_LEARN_OUTPUT_DIR}\\safe_state.json"
+        overwrite: true
+        value: "${sat_learn_safe_state}"
+
+    - name: Capture iframe map without interaction
+      action: Helium.DetectIframes
+      ignore_errors: true
+      register: sat_learn_iframes
+      params:
+        port: "${DEBUG_PORT}"
+        limit: 80
+
+    - name: Save iframe map
+      action: FS.WriteJson
+      params:
+        path: "${SAT_LEARN_OUTPUT_DIR}\\iframes.json"
+        overwrite: true
+        value: "${sat_learn_iframes}"
+
+    - name: Save interactive learning checkpoint
+      action: FS.WriteJson
+      params:
+        path: "${SAT_LEARN_OUTPUT_DIR}\\checkpoint.json"
+        overwrite: true
+        value:
+          ok: true
+          mode: "sat_interactive_learning_session"
+          label: "${SAT_LEARN_LABEL}"
+          url: "${sat_learn_url}"
+          render_wait: "${sat_learn_render_wait}"
+          screenshot_path: "${SAT_LEARN_OUTPUT_DIR}\\screen.png"
+          safe_state_path: "${SAT_LEARN_OUTPUT_DIR}\\safe_state.json"
+          iframe_map_path: "${SAT_LEARN_OUTPUT_DIR}\\iframes.json"
+          no_clicks_or_navigation: true
+          secret_policy: "safe_state.json redacts secret-like fields and does not persist raw input values"
+
+    - name: Save interactive learning bitacora
+      action: FS.WriteText
+      params:
+        path: "${SAT_LEARN_OUTPUT_DIR}\\bitacora.md"
+        overwrite: true
+        text: |
+          # SAT interactive learning bitacora
+
+          Label: ${SAT_LEARN_LABEL}
+          URL observed: ${sat_learn_url}
+
+          Evidence files:
+          - screen: ${SAT_LEARN_OUTPUT_DIR}\screen.png
+          - safe state: ${SAT_LEARN_OUTPUT_DIR}\safe_state.json
+          - iframe map: ${SAT_LEARN_OUTPUT_DIR}\iframes.json
+          - checkpoint: ${SAT_LEARN_OUTPUT_DIR}\checkpoint.json
+
+          Safety notes:
+          - This playbook observes the current CDP target only.
+          - It performs no click, navigation, submit, dialog accept, payment, or CAPTCHA action.
+          - safe_state.json redacts secret-like fields and never stores raw input values except allowlisted SAT select metadata.
+          - The screenshot is evidence of the visible screen and may contain whatever the operator left visible.
+
+          Operator review prompts:
+          - Confirm the route flag matches the intended SAT surface.
+          - Review blockers, missing_required, messages, and submit_checkpoint in safe_state.json.
+          - If iframe_map shows cross-origin frames, use the iframe recovery playbook before any form automation.
+
+    - name: Note learning evidence captured
+      action: Note
+      params:
+        text: "SAT interactive learning evidence saved to ${SAT_LEARN_OUTPUT_DIR}."
+
+  debug:
+    - action: Note
+      params:
+        text: "sat interactive learning debug mode"
