@@ -1,0 +1,70 @@
+variables:
+  UI_MODEL_PATH: "${MODELS_DIR}\\surface_map.yml"
+  UI_FIRST_IMPRESSION_PATH: "${OBSERVATIONS_DIR}\\first_impression.md"
+
+steps:
+  - name: Ensure model and observation directories exist
+    action: FS.EnsureDir
+    params:
+      path: "${MODELS_DIR}"
+
+  - name: Ensure observations directory exists
+    action: FS.EnsureDir
+    params:
+      path: "${OBSERVATIONS_DIR}"
+
+  - name: Ensure evidence directory exists
+    action: FS.EnsureDir
+    params:
+      path: "${EVIDENCE_DIR}"
+
+  - name: Seed first-impression surface model
+    action: FS.WriteText
+    params:
+      path: "${UI_MODEL_PATH}"
+      overwrite: false
+      text: |
+        app:
+          slug: ${UI_APP_SLUG}
+          display_name: "${UI_APP_DISPLAY_NAME}"
+        first_impression:
+          rule: "observe_only_no_actions"
+          screenshot_path: "${UI_SCREENSHOT_PATH}"
+          complete: false
+        regions:
+          static_chrome: []
+          dynamic_panels: []
+          workspace_surfaces: []
+          transient_ui: []
+          unknown: []
+        hypotheses: []
+        uncertainties: []
+        next_safe_observations: []
+
+  - name: Seed first-impression notes
+    action: FS.WriteText
+    params:
+      path: "${UI_FIRST_IMPRESSION_PATH}"
+      overwrite: false
+      text: |
+        # First Impression
+
+        App: ${UI_APP_DISPLAY_NAME}
+
+        Rule: observation only. Do not click, type, drag, close, submit, invoke shortcuts, or navigate during this phase.
+
+        Evidence source:
+        - screenshot_path: ${UI_SCREENSHOT_PATH}
+
+        Fill after visual/AI inspection:
+        - static chrome:
+        - dynamic panels:
+        - workspace surfaces:
+        - transient UI:
+        - purpose hypotheses:
+        - uncertainties:
+
+  - name: First impression complete
+    action: Note
+    params:
+      text: "Seeded app UI first-impression model without executing UI actions."

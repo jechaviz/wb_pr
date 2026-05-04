@@ -1,0 +1,384 @@
+steps:
+  - name: Ensure reference output directory
+    action: FS.EnsureDir
+    params:
+      path: "${OUTPUT_DIR}\\reference"
+
+  - name: Open source site (single tab reuse)
+    action: Helium.StartEdge
+    params:
+      port: "${DEBUG_PORT}"
+      open_url: "${CLONE_SOURCE_URL}"
+      reuse_existing_tab: true
+      allow_new_tab: false
+      target_type: page
+      target_url_contains: "${CLONE_SOURCE_HOST_FILTER}"
+      exclude_url_contains: "devtools://|edge://|chrome://"
+      minimize_window: "${RUN_MINIMIZED}"
+
+  - name: Load DOM snapshot JS
+    action: FS.ReadText
+    register: js_capture_dom_snapshot
+    params:
+      path: "${SKILL_SITE_CLONER_ASSETS_DIR}\\capture_dom_snapshot.js"
+
+  - name: Load flow JS - search to results
+    action: FS.ReadText
+    register: js_flow_search_to_results
+    params:
+      path: "${SKILL_SITE_CLONER_ASSETS_DIR}\\flow_search_to_results.js"
+
+  - name: Load flow JS - open first product detail
+    action: FS.ReadText
+    register: js_flow_open_first_product_detail
+    params:
+      path: "${SKILL_SITE_CLONER_ASSETS_DIR}\\flow_open_first_product_detail.js"
+
+  - name: Load flow JS - go cart
+    action: FS.ReadText
+    register: js_flow_go_cart
+    params:
+      path: "${SKILL_SITE_CLONER_ASSETS_DIR}\\flow_go_cart.js"
+
+  - name: Load discovery JS - dashboard links
+    action: FS.ReadText
+    register: js_discover_dashboard_links
+    params:
+      path: "${SKILL_SITE_CLONER_ASSETS_DIR}\\discover_dashboard_links.js"
+
+  - name: Load image source extractor JS
+    action: FS.ReadText
+    register: js_capture_image_sources
+    params:
+      path: "${SKILL_SITE_CLONER_ASSETS_DIR}\\capture_image_sources.js"
+
+  - name: Capture all declared reference sections (full page)
+    loop: "${CLONE_SECTIONS}"
+    steps:
+      - name: Navigate to source section ${loop.item.slug}
+        action: CDP.Navigate
+        params:
+          port: "${DEBUG_PORT}"
+          url: "${CLONE_SOURCE_URL}${loop.item.path}"
+          wait_ms: 3000
+          wait_until: "interactive"
+
+      - name: Capture full-page screenshot ${loop.item.slug}
+        action: DemoCreator.CaptureScreenshot
+        params:
+          port: "${DEBUG_PORT}"
+          target_type: page
+          target_url_contains: "${CLONE_SOURCE_HOST_FILTER}"
+          output_path: "${OUTPUT_DIR}\\reference\\${loop.item.slug}.png"
+          format: "png"
+          full_page: true
+          capture_beyond_viewport: true
+          max_full_page_height: 30000
+
+      - name: Capture DOM snapshot ${loop.item.slug}
+        action: CDP.EvaluateJson
+        register: source_dom_snapshot
+        params:
+          port: "${DEBUG_PORT}"
+          expression: "${js_capture_dom_snapshot}"
+
+      - name: Write DOM snapshot ${loop.item.slug}
+        action: FS.WriteJson
+        params:
+          path: "${OUTPUT_DIR}\\reference\\${loop.item.slug}.dom.json"
+          overwrite: true
+          value: "${source_dom_snapshot}"
+
+      - name: Capture image sources ${loop.item.slug}
+        action: CDP.EvaluateJson
+        register: source_images_snapshot
+        params:
+          port: "${DEBUG_PORT}"
+          expression: "${js_capture_image_sources}"
+
+      - name: Write image sources ${loop.item.slug}
+        action: FS.WriteJson
+        params:
+          path: "${OUTPUT_DIR}\\reference\\${loop.item.slug}.images.json"
+          overwrite: true
+          value: "${source_images_snapshot}"
+
+      - name: Vision describe ${loop.item.slug}
+        if: "${ENABLE_VISION_ANALYSIS}"
+        action: Vision.Analyze
+        register: source_vision_describe
+        ignore_errors: true
+        params:
+          task: "describe"
+          return_full: true
+          image_path: "${OUTPUT_DIR}\\reference\\${loop.item.slug}.png"
+          prompt: "Describe layout, spacing, typography cues, card patterns, and interactive blocks for section '${loop.item.slug}'. Keep it concise and actionable for Vue + DaisyUI cloning."
+
+      - name: Write vision describe ${loop.item.slug}
+        if: "${ENABLE_VISION_ANALYSIS}"
+        action: FS.WriteText
+        params:
+          path: "${OUTPUT_DIR}\\reference\\${loop.item.slug}.vision.txt"
+          overwrite: true
+          text: "${source_vision_describe.text}"
+
+      - name: Vision OCR ${loop.item.slug}
+        if: "${ENABLE_VISION_ANALYSIS}"
+        action: Vision.Analyze
+        register: source_vision_ocr
+        ignore_errors: true
+        params:
+          task: "ocr"
+          return_full: true
+          image_path: "${OUTPUT_DIR}\\reference\\${loop.item.slug}.png"
+          prompt: "Extract visible text in reading order for section '${loop.item.slug}'."
+
+      - name: Write vision OCR ${loop.item.slug}
+        if: "${ENABLE_VISION_ANALYSIS}"
+        action: FS.WriteText
+        params:
+          path: "${OUTPUT_DIR}\\reference\\${loop.item.slug}.ocr.txt"
+          overwrite: true
+          text: "${source_vision_ocr.text}"
+
+  - name: Navigate home before dynamic flow
+    action: CDP.Navigate
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${CLONE_SOURCE_URL}"
+      wait_ms: 2500
+      wait_until: "interactive"
+
+  - name: Run search flow to produce product list view
+    action: CDP.EvaluateJson
+    register: flow_search_result
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_flow_search_to_results}"
+
+  - name: Wait search navigation
+    action: CDP.Wait
+    params:
+      ms: 2500
+
+  - name: Capture flow screenshot - product list from search
+    action: DemoCreator.CaptureScreenshot
+    params:
+      port: "${DEBUG_PORT}"
+      target_type: page
+      target_url_contains: "${CLONE_SOURCE_HOST_FILTER}"
+      output_path: "${OUTPUT_DIR}\\reference\\flow_product_list_from_search.png"
+      format: "png"
+      full_page: true
+      capture_beyond_viewport: true
+      max_full_page_height: 30000
+
+  - name: Capture flow DOM - product list from search
+    action: CDP.EvaluateJson
+    register: flow_product_list_dom
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_capture_dom_snapshot}"
+
+  - name: Write flow DOM - product list from search
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\reference\\flow_product_list_from_search.dom.json"
+      overwrite: true
+      value: "${flow_product_list_dom}"
+
+  - name: Run flow to open first product detail
+    action: CDP.EvaluateJson
+    register: flow_product_detail_nav
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_flow_open_first_product_detail}"
+
+  - name: Wait product detail navigation
+    action: CDP.Wait
+    params:
+      ms: 2500
+
+  - name: Capture flow screenshot - product detail
+    action: DemoCreator.CaptureScreenshot
+    params:
+      port: "${DEBUG_PORT}"
+      target_type: page
+      target_url_contains: "${CLONE_SOURCE_HOST_FILTER}"
+      output_path: "${OUTPUT_DIR}\\reference\\flow_product_detail.png"
+      format: "png"
+      full_page: true
+      capture_beyond_viewport: true
+      max_full_page_height: 30000
+
+  - name: Capture flow DOM - product detail
+    action: CDP.EvaluateJson
+    register: flow_product_detail_dom
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_capture_dom_snapshot}"
+
+  - name: Write flow DOM - product detail
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\reference\\flow_product_detail.dom.json"
+      overwrite: true
+      value: "${flow_product_detail_dom}"
+
+  - name: Run flow to go cart
+    action: CDP.EvaluateJson
+    register: flow_go_cart_nav
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_flow_go_cart}"
+
+  - name: Wait cart navigation
+    action: CDP.Wait
+    params:
+      ms: 2200
+
+  - name: Capture flow screenshot - cart
+    action: DemoCreator.CaptureScreenshot
+    params:
+      port: "${DEBUG_PORT}"
+      target_type: page
+      target_url_contains: "${CLONE_SOURCE_HOST_FILTER}"
+      output_path: "${OUTPUT_DIR}\\reference\\flow_cart.png"
+      format: "png"
+      full_page: true
+      capture_beyond_viewport: true
+      max_full_page_height: 30000
+
+  - name: Navigate checkout flow page
+    action: CDP.Navigate
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${CLONE_SOURCE_URL}/checkout"
+      wait_ms: 2200
+      wait_until: "interactive"
+
+  - name: Capture flow screenshot - checkout
+    action: DemoCreator.CaptureScreenshot
+    params:
+      port: "${DEBUG_PORT}"
+      target_type: page
+      target_url_contains: "${CLONE_SOURCE_HOST_FILTER}"
+      output_path: "${OUTPUT_DIR}\\reference\\flow_checkout.png"
+      format: "png"
+      full_page: true
+      capture_beyond_viewport: true
+      max_full_page_height: 30000
+
+  - name: Discover dashboard/admin/vendor links from source
+    action: CDP.EvaluateJson
+    register: discovered_dashboard_links
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_discover_dashboard_links}"
+
+  - name: Write discovered dashboard links
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\reference\\dashboard_links.discovery.json"
+      overwrite: true
+      value: "${discovered_dashboard_links}"
+
+  - name: Capture dashboard route - user login
+    action: CDP.Navigate
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${CLONE_SOURCE_URL}/login"
+      wait_ms: 2200
+      wait_until: "interactive"
+
+  - name: Capture dashboard screenshot - user login
+    action: DemoCreator.CaptureScreenshot
+    params:
+      port: "${DEBUG_PORT}"
+      target_type: page
+      target_url_contains: "${CLONE_SOURCE_HOST_FILTER}"
+      output_path: "${OUTPUT_DIR}\\reference\\dashboard_user_login.png"
+      format: "png"
+      full_page: true
+      capture_beyond_viewport: true
+      max_full_page_height: 30000
+
+  - name: Capture dashboard route - user dashboard
+    action: CDP.Navigate
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${CLONE_SOURCE_URL}/customer/dashboard"
+      wait_ms: 2200
+      wait_until: "interactive"
+
+  - name: Capture dashboard screenshot - user dashboard
+    action: DemoCreator.CaptureScreenshot
+    params:
+      port: "${DEBUG_PORT}"
+      target_type: page
+      target_url_contains: "${CLONE_SOURCE_HOST_FILTER}"
+      output_path: "${OUTPUT_DIR}\\reference\\dashboard_user_dashboard.png"
+      format: "png"
+      full_page: true
+      capture_beyond_viewport: true
+      max_full_page_height: 30000
+
+  - name: Capture dashboard route - vendor dashboard
+    action: CDP.Navigate
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${CLONE_SOURCE_URL}/vendor/dashboard"
+      wait_ms: 2200
+      wait_until: "interactive"
+
+  - name: Capture dashboard screenshot - vendor dashboard
+    action: DemoCreator.CaptureScreenshot
+    params:
+      port: "${DEBUG_PORT}"
+      target_type: page
+      target_url_contains: "${CLONE_SOURCE_HOST_FILTER}"
+      output_path: "${OUTPUT_DIR}\\reference\\dashboard_vendor_dashboard.png"
+      format: "png"
+      full_page: true
+      capture_beyond_viewport: true
+      max_full_page_height: 30000
+
+  - name: Capture dashboard route - admin login
+    action: CDP.Navigate
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${CLONE_SOURCE_URL}/admin/login"
+      wait_ms: 2200
+      wait_until: "interactive"
+
+  - name: Capture dashboard screenshot - admin login
+    action: DemoCreator.CaptureScreenshot
+    params:
+      port: "${DEBUG_PORT}"
+      target_type: page
+      target_url_contains: "${CLONE_SOURCE_HOST_FILTER}"
+      output_path: "${OUTPUT_DIR}\\reference\\dashboard_admin_login.png"
+      format: "png"
+      full_page: true
+      capture_beyond_viewport: true
+      max_full_page_height: 30000
+
+  - name: Capture dashboard route - admin dashboard
+    action: CDP.Navigate
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${CLONE_SOURCE_URL}/admin/dashboard"
+      wait_ms: 2200
+      wait_until: "interactive"
+
+  - name: Capture dashboard screenshot - admin dashboard
+    action: DemoCreator.CaptureScreenshot
+    params:
+      port: "${DEBUG_PORT}"
+      target_type: page
+      target_url_contains: "${CLONE_SOURCE_HOST_FILTER}"
+      output_path: "${OUTPUT_DIR}\\reference\\dashboard_admin_dashboard.png"
+      format: "png"
+      full_page: true
+      capture_beyond_viewport: true
+      max_full_page_height: 30000

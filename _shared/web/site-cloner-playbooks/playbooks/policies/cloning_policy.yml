@@ -1,0 +1,52 @@
+version: 1
+policy_id: site_cloner_parity_premium
+mode: hard
+goal: premium_real_parity_plus_upgrade
+
+principles:
+  - prefer_single_tab_background_execution
+  - full_page_scroll_aware_reference_capture
+  - source_images_first_unsplash_fallback
+  - fontawesome_free_latest_default
+  - no_static_only_clone_for_ecommerce
+
+phases:
+  - id: 1
+    name: template_coverage
+    required:
+      - clone_all_relevant_sections
+      - include_home_blog_brands_careers_cart_categories_coming_soon_compare_contact_cookie_policy_coupons_faqs_login_our_story_products_grid_products_list_product_detail_product_compare_register_shipping_stores_wishlist
+      - include_user_vendor_admin_views_when_discoverable
+  - id: 2
+    name: visual_parity
+    required:
+      - close_similarity_above_the_fold
+      - footer_information_architecture_depth
+      - dropdown_and_megamenu_behavior_parity
+      - responsive_desktop_tablet_mobile_parity
+      - popup_banner_carousel_cookie_consent_parity
+  - id: 3
+    name: functional_parity
+    required:
+      - functional_routes_for_wishlist_cart_checkout
+      - cart_wishlist_compare_live_counters
+      - add_remove_update_move_to_cart_operations
+      - checkout_reachable_from_cart
+      - search_to_product_list_to_detail_to_cart_to_checkout_flow_evidence
+  - id: 4
+    name: ownership_upgrade
+    required:
+      - apply_productive_enhancements_without_regressions
+      - keep_original_brand_feel_while_add_own_design_layer
+
+acceptance_gates:
+  visual_gate:
+    - no_placeholder_only_views
+    - no_missing_critical_navigation_depth
+  functional_gate:
+    - no_dead_links_in_primary_ecommerce_paths
+    - counters_and_state_changes_observable
+  evidence_gate:
+    - viewport_and_full_page_screenshots
+    - dom_snapshots
+    - responsive_evidence_desktop_tablet_mobile

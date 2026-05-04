@@ -1,0 +1,53 @@
+tutorial:
+  id: "demo_odoo_checkout"
+  title: "Demo Odoo Checkout Walkthrough"
+  start_url: "https://yeaipsoluciones-rpp-rental.odoo.com/odoo"
+  scenario: "Guide the operator through an end-to-end checkout path."
+  resume_state_file: "demo_odoo_checkout.state"
+  source_file: "manual"
+
+case_data:
+  environment: "demo"
+  role: "operator"
+
+roles:
+  operator:
+    - "Open dashboard and review pending orders."
+    - "Confirm checkout details before posting."
+  supervisor:
+    - "Review final traceability and close."
+
+expected_result:
+  - "Operator can pause, resume, and continue from saved step."
+  - "Mouse halo and click focus are visible on each guided action."
+
+steps:
+  - id: "1"
+    title: "Open Sales Orders"
+    subtitle: "Navigate to sales order list for today's operations."
+    where_to_click: "Sales > Orders"
+    delay_ms: 2200
+    mouse:
+      x_pct: 24
+      y_pct: 28
+      click: true
+
+  - id: "2"
+    title: "Open target order"
+    subtitle: "Select the active order and open details."
+    where_to_click: "Orders list > target SO"
+    delay_ms: 2200
+    mouse:
+      x_pct: 36
+      y_pct: 40
+      click: true
+
+  - id: "3"
+    title: "Create invoice"
+    subtitle: "Create and post the invoice for the selected order."
+    where_to_click: "SO Form > Create Invoice > Post"
+    delay_ms: 2600
+    mouse:
+      x_pct: 62
+      y_pct: 34
+      click: true

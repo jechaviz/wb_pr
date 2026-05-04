@@ -1,0 +1,22 @@
+app:
+  slug: string
+  display_name: string
+surface:
+  screenshot_path: string
+  window_title: string
+regions:
+  - id: string
+    label: string
+    classification: static_chrome | dynamic_panel | workspace_surface | transient_ui | unknown
+    bounds: optional
+    purpose_hypothesis: string
+    confidence: low | medium | high
+    dynamic_signals: []
+    risks: []
+actions:
+  - id: string
+    label: string
+    action_class: read_only | reversible | destructive_requires_confirmation
+    preconditions: []
+    expected_effect: string
+    recovery_observation: string

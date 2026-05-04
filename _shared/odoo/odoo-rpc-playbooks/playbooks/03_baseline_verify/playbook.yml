@@ -1,0 +1,64 @@
+﻿variables:
+  ODOO_REQUIRED_MODULES: []
+  ODOO_EXPECTED_BRAND: ""
+  ODOO_REQUIRE_DROP_ROUTES: 0
+  ODOO_VERIFY_FAIL_ON_ERROR: 1
+  ODOO_CHECKPOINT_PATH: ""
+
+steps:
+  - name: Ensure ODOO_URL exists
+    if_not: "${ODOO_URL}"
+    action: Fail
+    params:
+      text: "Missing ODOO_URL before baseline verification."
+
+  - name: Connect to Odoo tab
+    action: CDP.Connect
+    params:
+      port: "${DEBUG_PORT}"
+      open_url: "${ODOO_URL}"
+      target_type: page
+      target_url_contains: ".odoo.com"
+
+  - name: Navigate to Odoo instance
+    confirm_progress: false
+    action: CDP.Navigate
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${ODOO_URL}"
+      wait_ms: 1200
+
+  - name: Load reusable Odoo baseline verifier script
+    action: FS.ReadText
+    register: js_odoo_baseline_verify
+    params:
+      path: "${PLAYBOOK_DIR}\\..\\..\\assets\\js\\odoo\\rpc_verify_baseline.js"
+
+  - name: Execute reusable Odoo baseline verification
+    action: CDP.EvaluateJson
+    register: odoo_baseline_verify_result
+    params:
+      port: "${DEBUG_PORT}"
+      timeout_ms: 45000
+      await_promise: true
+      expression: "${js_odoo_baseline_verify}"
+
+  - name: Abort if baseline verification failed
+    if: "${ODOO_VERIFY_FAIL_ON_ERROR}"
+    if_not: "${odoo_baseline_verify_result.ok}"
+    action: Fail
+    params:
+      text: "Reusable baseline verification failed: ${odoo_baseline_verify_result.error}${odoo_baseline_verify_result.reason}"
+
+  - name: Persist baseline checkpoint
+    if: "${ODOO_CHECKPOINT_PATH}"
+    action: FS.WriteJson
+    params:
+      path: "${ODOO_CHECKPOINT_PATH}"
+      overwrite: true
+      value:
+        ok: "${odoo_baseline_verify_result.ok}"
+        odoo_url: "${ODOO_URL}"
+        required_modules: "${ODOO_REQUIRED_MODULES}"
+        expected_brand: "${ODOO_EXPECTED_BRAND}"
+        verify: "${odoo_baseline_verify_result}"

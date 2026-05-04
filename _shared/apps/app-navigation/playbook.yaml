@@ -1,0 +1,32 @@
+metadata:
+  category: "apps"
+  subcategory: "app-navigation"
+  library: "app-navigation"
+
+variables:
+  UI_APP_SLUG: "unknown-app"
+  UI_APP_DISPLAY_NAME: "Unknown App"
+  UI_APP_ROOT: "${ROOT_PLAYBOOK_DIR}"
+  MODELS_DIR: "${UI_APP_ROOT}\\models"
+  OBSERVATIONS_DIR: "${UI_APP_ROOT}\\observations"
+  ACTIONS_DIR: "${UI_APP_ROOT}\\actions"
+  EVIDENCE_DIR: "${UI_APP_ROOT}\\evidence"
+  UI_SCREENSHOT_PATH: ""
+
+steps:
+  first_impression:
+    - name: Build first-impression model
+      playbook: "./playbooks/01_first_impression/playbook.yml"
+
+  observe_dynamics:
+    - name: Observe dynamic app workspace behavior
+      playbook: "./playbooks/02_observe_dynamics/playbook.yml"
+
+  action_readiness:
+    - name: Build app action readiness contract
+      playbook: "./playbooks/03_action_readiness/playbook.yml"
+
+  debug:
+    - action: Note
+      params:
+        text: "app-navigation shared library debug mode"

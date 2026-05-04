@@ -1,0 +1,21 @@
+steps:
+  - name: Ensure output directory
+    action: FS.EnsureDir
+    params:
+      path: "${TUTORIAL_OUTPUT_DIR}"
+
+  - name: Convert operation_examples markdown to tutorial YAML scripts
+    action: InteractiveTutorial.IngestOperationExamples
+    register: tutorial_ingest_result
+    params:
+      input_dir: "${OPERATION_EXAMPLES_DIR}"
+      output_dir: "${TUTORIAL_OUTPUT_DIR}"
+      start_url: "${TUTORIAL_START_URL}"
+
+  - name: Persist ingest summary
+    action: FS.WriteJson
+    params:
+      path: "${TUTORIAL_OUTPUT_DIR}\\ingest_summary.json"
+      overwrite: true
+      value: "${tutorial_ingest_result}"
+

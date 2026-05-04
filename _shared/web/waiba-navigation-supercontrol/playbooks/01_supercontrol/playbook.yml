@@ -1,0 +1,1319 @@
+steps:
+  prod:
+    - name: Default output directory when missing
+      if_not: "${OUTPUT_DIR}"
+      action: Set
+      params:
+        name: OUTPUT_DIR
+        value: "${PLAYBOOK_DIR}\\..\\output"
+
+    - name: Ensure output directory
+      action: FS.EnsureDir
+      params:
+        path: "${OUTPUT_DIR}"
+
+    - name: Default wait timeout when missing
+      if_not: "${NAV_WAIT_TIMEOUT_SECS}"
+      action: Set
+      params:
+        name: NAV_WAIT_TIMEOUT_SECS
+        value: 45
+
+    - name: Default render-ready timeout when missing
+      if_not: "${NAV_RENDER_READY_TIMEOUT_SECS}"
+      action: Set
+      params:
+        name: NAV_RENDER_READY_TIMEOUT_SECS
+        value: 35
+
+    - name: Default render-ready expression when missing
+      if_not: "${NAV_RENDER_READY_EXPR}"
+      action: Set
+      params:
+        name: NAV_RENDER_READY_EXPR
+        value: |
+          (() => {
+            const norm = (v) => (v == null ? "" : String(v)).replace(/\s+/g, " ").trim();
+            const isVisible = (el) => {
+              if (!el) return false;
+              const st = window.getComputedStyle(el);
+              if (!st) return false;
+              if (st.display === "none" || st.visibility === "hidden" || st.opacity === "0") return false;
+              const r = el.getBoundingClientRect();
+              return r.width > 0 && r.height > 0;
+            };
+            const loadingSelectors = [
+              ".o_loading",
+              ".o_spinner",
+              ".spinner",
+              ".loading",
+              ".oe_loading",
+              ".skeleton",
+              ".shimmer",
+              ".progress-bar-animated",
+              "[aria-busy='true']",
+              ".modal-backdrop.show"
+            ];
+            const loadingVisible = loadingSelectors.some((sel) => Array.from(document.querySelectorAll(sel)).some(isVisible));
+            const body = document.body;
+            const hasVisibleBody = !!body && body.getBoundingClientRect().height > 0;
+            const main = document.querySelector("main, .o_action_manager, .o_content, .o_web_client, #wrapwrap, #content");
+            const mainText = norm((main && main.innerText) || "");
+            const visualBlocks = Array.from(document.querySelectorAll(
+              ".o_kanban_renderer, .o_list_renderer, .o_form_view, .o_form_sheet, .o_form_sheet_bg, .o_dashboard, .o_graph_renderer, .o_pivot, .o_setting_container, .o_settings_container, .o_setting_box, table, canvas, svg, iframe, embed, object, img, video"
+            )).filter(isVisible).length;
+            const hasOnlyShell = !!document.querySelector(".o_main_navbar, .o_web_client") && mainText.length < 30 && visualBlocks < 1;
+            return document.readyState === "complete" && hasVisibleBody && !loadingVisible && !hasOnlyShell && (mainText.length >= 80 || visualBlocks >= 2);
+          })()
+
+    - name: Default min body chars when missing
+      if_not: "${NAV_NON_EMPTY_MIN_BODY_CHARS}"
+      action: Set
+      params:
+        name: NAV_NON_EMPTY_MIN_BODY_CHARS
+        value: 120
+
+    - name: Default allow-empty-capture when missing
+      if_not: "${NAV_ALLOW_EMPTY_CAPTURE}"
+      action: Set
+      params:
+        name: NAV_ALLOW_EMPTY_CAPTURE
+        value: false
+
+    - name: Default recover-on-empty-capture when missing
+      if_not: "${NAV_RECOVER_ON_EMPTY_CAPTURE}"
+      action: Set
+      params:
+        name: NAV_RECOVER_ON_EMPTY_CAPTURE
+        value: true
+
+    - name: Default fullpage capture-on-overflow when missing
+      if_not: "${NAV_CAPTURE_FULLPAGE_ON_OVERFLOW}"
+      action: Set
+      params:
+        name: NAV_CAPTURE_FULLPAGE_ON_OVERFLOW
+        value: true
+
+    - name: Default post-action wait when missing
+      if_not: "${NAV_POST_ACTION_WAIT_MS}"
+      action: Set
+      params:
+        name: NAV_POST_ACTION_WAIT_MS
+        value: 1200
+
+    - name: Default network-idle enabled when missing
+      if_not: "${NAV_ENABLE_NETWORK_IDLE}"
+      action: Set
+      params:
+        name: NAV_ENABLE_NETWORK_IDLE
+        value: true
+
+    - name: Default network-idle timeout when missing
+      if_not: "${NAV_NETWORK_IDLE_TIMEOUT_SECS}"
+      action: Set
+      params:
+        name: NAV_NETWORK_IDLE_TIMEOUT_SECS
+        value: 10
+
+    - name: Default OCR prompt when missing
+      if_not: "${NAV_OCR_PROMPT}"
+      action: Set
+      params:
+        name: NAV_OCR_PROMPT
+        value: "Extract the visible navigation hints and actionable labels."
+
+    - name: Default capture label when missing
+      if_not: "${NAV_CAPTURE_LABEL}"
+      action: Set
+      params:
+        name: NAV_CAPTURE_LABEL
+        value: "supercontrol"
+
+    - name: Default subtitle overlay enabled when missing
+      if_not: "${NAV_ENABLE_SUBTITLE_OVERLAY}"
+      action: Set
+      params:
+        name: NAV_ENABLE_SUBTITLE_OVERLAY
+        value: true
+
+    - name: Default subtitle overlay position when missing
+      if_not: "${NAV_SUBTITLE_POSITION}"
+      action: Set
+      params:
+        name: NAV_SUBTITLE_POSITION
+        value: "bottom-left"
+
+    - name: Default subtitle overlay theme when missing
+      if_not: "${NAV_SUBTITLE_THEME}"
+      action: Set
+      params:
+        name: NAV_SUBTITLE_THEME
+        value: "dark"
+
+    - name: Default subtitle playbook label when missing
+      if_not: "${NAV_SUBTITLE_PLAYBOOK_LABEL}"
+      action: Set
+      params:
+        name: NAV_SUBTITLE_PLAYBOOK_LABEL
+        value: ""
+
+    - name: Default open URL to NAV_URL when missing
+      if_not: "${NAV_START_OPEN_URL}"
+      action: Set
+      params:
+        name: NAV_START_OPEN_URL
+        value: "${NAV_URL}"
+
+    - name: Default pre hook path when missing
+      if_not: "${NAV_PRE_HOOK_PS1}"
+      action: Set
+      params:
+        name: NAV_PRE_HOOK_PS1
+        value: "${PLAYBOOK_DIR}\\..\\assets\\hooks\\pre_hook.ps1"
+
+    - name: Default post hook path when missing
+      if_not: "${NAV_POST_HOOK_PS1}"
+      action: Set
+      params:
+        name: NAV_POST_HOOK_PS1
+        value: "${PLAYBOOK_DIR}\\..\\assets\\hooks\\post_hook.ps1"
+
+    - name: Default JS patch path when missing
+      if_not: "${NAV_JS_PATCH}"
+      action: Set
+      params:
+        name: NAV_JS_PATCH
+        value: "${PLAYBOOK_DIR}\\..\\assets\\hooks\\dom_patch.js"
+
+    - name: Default subtitle JS path when missing
+      if_not: "${NAV_SUBTITLE_JS}"
+      action: Set
+      params:
+        name: NAV_SUBTITLE_JS
+        value: "${PLAYBOOK_DIR}\\..\\assets\\hooks\\subtitle_overlay_api.js"
+
+    - name: Verify pre hook file
+      action: FS.Exists
+      register: nav_pre_hook_exists
+      params:
+        path: "${NAV_PRE_HOOK_PS1}"
+
+    - name: Verify subtitle overlay JS file
+      if: "${NAV_ENABLE_SUBTITLE_OVERLAY}"
+      action: FS.Exists
+      register: nav_subtitle_js_exists
+      params:
+        path: "${NAV_SUBTITLE_JS}"
+
+    - name: Fail when subtitle overlay JS file is missing
+      if: "${NAV_ENABLE_SUBTITLE_OVERLAY}"
+      if_not: "${nav_subtitle_js_exists}"
+      action: Fail
+      params:
+        text: "Subtitle overlay is enabled but NAV_SUBTITLE_JS was not found."
+
+    - name: Load subtitle overlay JS source
+      if: "${NAV_ENABLE_SUBTITLE_OVERLAY}"
+      if_2: "${nav_subtitle_js_exists}"
+      action: FS.ReadText
+      register: nav_subtitle_js_code
+      params:
+        path: "${NAV_SUBTITLE_JS}"
+
+    - name: Run pre hook (PowerShell, optional)
+      if: "${NAV_ENABLE_PRE_HOOK}"
+      if_2: "${nav_pre_hook_exists}"
+      action: Shell.Run
+      register: nav_pre_hook_result
+      params:
+        command: "powershell -NoProfile -ExecutionPolicy Bypass -File \"${NAV_PRE_HOOK_PS1}\""
+        allow_fail: true
+        unsafe: true
+        timeout_ms: 120000
+
+    - name: Ensure NAV_URL is provided
+      if_not: "${NAV_URL}"
+      action: Fail
+      params:
+        text: "NAV_URL is required for supercontrol navigation."
+
+    - name: Attach or open browser tab
+      action: Helium.StartEdge
+      params:
+        port: "${DEBUG_PORT}"
+        open_url: "${NAV_START_OPEN_URL}"
+        reuse_existing_tab: "${NAV_REUSE_EXISTING_TAB}"
+        allow_new_tab: "${NAV_ALLOW_NEW_TAB}"
+        target_type: page
+        target_url_contains: "${NAV_TARGET_URL_CONTAINS}"
+        exclude_url_contains: "${NAV_EXCLUDE_URL_CONTAINS}"
+        minimize_window: "${RUN_MINIMIZED}"
+
+    - name: Navigate to target URL
+      action: CDP.Navigate
+      params:
+        port: "${DEBUG_PORT}"
+        url: "${NAV_URL}"
+        wait_ms: 2200
+        wait_until: "interactive"
+
+    - name: Detect offline shell after navigation
+      action: CDP.EvaluateJson
+      register: nav_offline_probe
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const text = String((document.body && document.body.innerText) || "");
+            const title = String(document.title || "");
+            const offlineLike = /offline|check again|try again|retry/i.test(title) || /offline|check again|try again|retry/i.test(text);
+            return { ok: true, is_offline: offlineLike, title, url: String(location.href || ""), body_preview: text.slice(0, 600) };
+          })()
+
+    - name: Offline recovery click retry/check-again
+      if: "${nav_offline_probe.is_offline}"
+      action: Helium.ClickAny
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+        text_candidates: "Check again|Try again|Retry|Recargar|Reintentar"
+        implicit_wait_ms: 1800
+        find_in_page_fallback: true
+
+    - name: Offline recovery hard reload target URL
+      if: "${nav_offline_probe.is_offline}"
+      action: CDP.Navigate
+      params:
+        port: "${DEBUG_PORT}"
+        url: "${NAV_URL}"
+        wait_ms: 2600
+        wait_until: "interactive"
+
+    - name: Wait for custom expression when provided
+      if: "${NAV_WAIT_EXPR}"
+      action: Helium.WaitUntil
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: "${NAV_WAIT_TIMEOUT_SECS}"
+        interval_ms: 900
+        expression: "${NAV_WAIT_EXPR}"
+
+    - name: Wait for expected host when provided
+      if: "${NAV_EXPECT_HOST_ENDSWITH}"
+      action: Helium.WaitUntilUrl
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: "${NAV_WAIT_TIMEOUT_SECS}"
+        host_endswith: "${NAV_EXPECT_HOST_ENDSWITH}"
+
+    - name: Network-idle pre-pass before pre-search render-ready
+      if: "${NAV_ENABLE_NETWORK_IDLE}"
+      action: Helium.WaitForNetworkIdle
+      ignore_errors: true
+      register: nav_network_idle_pre
+      params:
+        port: "${DEBUG_PORT}"
+        event: networkAlmostIdle
+        timeout_secs: "${NAV_NETWORK_IDLE_TIMEOUT_SECS}"
+        also_wait_ready_state: true
+        also_check_loading_ui: false
+
+    - name: Wait for render-ready before pre-search capture
+      action: Helium.WaitUntil
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: "${NAV_RENDER_READY_TIMEOUT_SECS}"
+        interval_ms: 600
+        expression: "${NAV_RENDER_READY_EXPR}"
+
+    - name: Prepare pre-search fullpage capture surface when overflow exists
+      if: "${NAV_CAPTURE_FULLPAGE_ON_OVERFLOW}"
+      action: CDP.EvaluateJson
+      ignore_errors: true
+      register: nav_pre_capture_prepare
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const visible = (el) => {
+              if (!el) return false;
+              const r = el.getBoundingClientRect();
+              const s = getComputedStyle(el);
+              return r.width > 0 && r.height > 0 && s.display !== "none" && s.visibility !== "hidden" && s.opacity !== "0";
+            };
+            const maxExpandedHeightCap = 12000;
+            const restore = [];
+            const remembered = new WeakSet();
+            const remember = (el) => {
+              if (!el || remembered.has(el)) return;
+              remembered.add(el);
+              restore.push({
+                el,
+                style: el.getAttribute("style") || "",
+                scrollTop: typeof el.scrollTop === "number" ? el.scrollTop : 0,
+                scrollLeft: typeof el.scrollLeft === "number" ? el.scrollLeft : 0
+              });
+            };
+            const score = (el) => {
+              if (!visible(el)) return null;
+              const st = getComputedStyle(el);
+              const oy = String(st.overflowY || "").toLowerCase();
+              const ox = String(st.overflowX || "").toLowerCase();
+              const scrollHeight = el.scrollHeight || 0;
+              const clientHeight = el.clientHeight || 0;
+              const overflow = scrollHeight - clientHeight;
+              const byStyle = /auto|scroll|overlay/.test(oy) || /auto|scroll|overlay/.test(ox);
+              if (!(overflow > 24 || byStyle)) return null;
+              const r = el.getBoundingClientRect();
+              return {
+                el,
+                overflow,
+                scrollHeight,
+                clientHeight,
+                area: (r.width || 0) * (r.height || 0)
+              };
+            };
+            const baseCandidates = [
+              document.querySelector(".o_content"),
+              document.querySelector(".o_action_manager"),
+              document.querySelector(".o_web_client"),
+              document.querySelector(".o_setting_container"),
+              document.querySelector(".settings"),
+              document.querySelector("main"),
+              document.querySelector("#wrapwrap"),
+              document.scrollingElement,
+              document.documentElement,
+              document.body
+            ].filter((el) => !!el);
+            const allOverflow = Array.from(document.querySelectorAll("*")).map(score).filter((v) => !!v);
+            const merged = [];
+            const seen = new WeakSet();
+            for (const el of baseCandidates) {
+              const s = score(el);
+              if (s && !seen.has(s.el)) {
+                seen.add(s.el);
+                merged.push(s);
+              }
+            }
+            for (const s of allOverflow) {
+              if (!seen.has(s.el)) {
+                seen.add(s.el);
+                merged.push(s);
+              }
+            }
+            merged.sort((a, b) => (b.overflow - a.overflow) || (b.area - a.area));
+            const targets = merged.slice(0, 12);
+            for (const t of targets) {
+              remember(t.el);
+              t.el.scrollTop = 0;
+              t.el.scrollLeft = 0;
+              t.el.style.overflowY = "visible";
+              t.el.style.overflowX = "visible";
+              t.el.style.maxHeight = "none";
+              const expanded = Math.max(t.clientHeight || 0, Math.min(t.scrollHeight || 0, maxExpandedHeightCap));
+              if (expanded > (t.clientHeight || 0) + 8) t.el.style.height = `${expanded}px`;
+              t.el.style.minHeight = `${expanded}px`;
+              let parent = t.el.parentElement;
+              let hops = 0;
+              while (parent && hops < 12) {
+                remember(parent);
+                parent.style.overflow = "visible";
+                parent.style.maxHeight = "none";
+                parent.style.height = "auto";
+                parent = parent.parentElement;
+                hops += 1;
+              }
+            }
+            remember(document.body);
+            remember(document.documentElement);
+            document.body.style.overflow = "visible";
+            document.documentElement.style.overflow = "visible";
+            const rootExpanded = Math.min(
+              maxExpandedHeightCap,
+              Math.max(
+                document.documentElement.scrollHeight || 0,
+                document.body.scrollHeight || 0,
+                ...targets.map((t) => t.scrollHeight || 0)
+              )
+            );
+            if (rootExpanded > 0) {
+              document.documentElement.style.height = `${rootExpanded}px`;
+              document.body.style.height = `${rootExpanded}px`;
+              document.documentElement.style.minHeight = `${rootExpanded}px`;
+              document.body.style.minHeight = `${rootExpanded}px`;
+            }
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+            window.__waibaCaptureRestore = restore;
+            return {
+              ok: true,
+              has_overflow: targets.length > 0,
+              candidate_count: merged.length,
+              targets_count: targets.length,
+              max_overflow_px: targets.length ? targets[0].overflow : 0,
+              max_scroll_height: targets.length ? targets[0].scrollHeight : 0
+            };
+          })()
+
+    - name: Bootstrap subtitle overlay before pre-search screenshot
+      if: "${NAV_ENABLE_SUBTITLE_OVERLAY}"
+      if_2: "${nav_subtitle_js_exists}"
+      action: CDP.EvaluateJson
+      ignore_errors: true
+      register: nav_subtitle_bootstrap_pre
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${nav_subtitle_js_code}"
+
+    - name: Set subtitle overlay for pre-search screenshot
+      if: "${NAV_ENABLE_SUBTITLE_OVERLAY}"
+      if_2: "${nav_subtitle_js_exists}"
+      action: CDP.EvaluateJson
+      ignore_errors: true
+      register: nav_subtitle_pre_set
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const api = window.__waibaSubtitleOverlay;
+            if (!api || typeof api.set !== "function") return { ok: false, reason: "subtitle_api_missing" };
+            const target = String("${NAV_URL}" || "");
+            const findText = String("${NAV_FIND_TEXT}" || "");
+            return api.set({
+              visible: true,
+              theme: "${NAV_SUBTITLE_THEME}",
+              position: "${NAV_SUBTITLE_POSITION}",
+              playbook: "${NAV_SUBTITLE_PLAYBOOK_LABEL}",
+              step: "Pre-capture",
+              title: "Baseline navigation screenshot",
+              subtitle: findText ? "**Target text:** `" + findText + "`" : "No target text filter",
+              intent: "_Intent:_ capture the screen before action search/click flow",
+              detail: "**URL:** `" + target + "`",
+              show_playbook: false,
+              show_timestamp: true
+            });
+          })()
+
+    - name: Capture pre-search viewport
+      action: CDP.Send
+      register: nav_pre_capture
+      params:
+        port: "${DEBUG_PORT}"
+        method: "Page.captureScreenshot"
+        params:
+          format: "png"
+          captureBeyondViewport: true
+
+    - name: Save pre-search viewport
+      action: FS.WriteBase64
+      params:
+        path: "${OUTPUT_DIR}\\${NAV_CAPTURE_LABEL}_pre_viewport.png"
+        overwrite: true
+        base64: "${nav_pre_capture.result.data}"
+
+    - name: Restore page styles after pre-search capture
+      if: "${NAV_CAPTURE_FULLPAGE_ON_OVERFLOW}"
+      action: CDP.EvaluateJson
+      ignore_errors: true
+      register: nav_pre_capture_restore
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const restore = Array.isArray(window.__waibaCaptureRestore) ? window.__waibaCaptureRestore : [];
+            for (let i = restore.length - 1; i >= 0; i -= 1) {
+              const rec = restore[i];
+              if (!rec || !rec.el) continue;
+              if (rec.style) rec.el.setAttribute("style", rec.style);
+              else rec.el.removeAttribute("style");
+              if (typeof rec.scrollTop === "number") rec.el.scrollTop = rec.scrollTop;
+              if (typeof rec.scrollLeft === "number") rec.el.scrollLeft = rec.scrollLeft;
+            }
+            delete window.__waibaCaptureRestore;
+            return { ok: true, restored: restore.length };
+          })()
+
+    - name: OCR pre-search viewport (best effort)
+      if: "${NAV_ENABLE_OCR}"
+      action: Vision.OCR
+      ignore_errors: true
+      register: nav_pre_ocr
+      params:
+        image_path: "${OUTPUT_DIR}\\${NAV_CAPTURE_LABEL}_pre_viewport.png"
+        prompt: "${NAV_OCR_PROMPT}"
+
+    - name: Save OCR diagnostics when enabled
+      if: "${NAV_ENABLE_OCR}"
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\${NAV_CAPTURE_LABEL}_pre_ocr.json"
+        overwrite: true
+        value: "${nav_pre_ocr}"
+
+    - name: Verify JS hot patch file
+      action: FS.Exists
+      register: nav_js_patch_exists
+      params:
+        path: "${NAV_JS_PATCH}"
+
+    - name: Load JS hot patch
+      if: "${NAV_ENABLE_JS_PATCH}"
+      if_2: "${nav_js_patch_exists}"
+      action: FS.ReadText
+      register: nav_js_patch_code
+      params:
+        path: "${NAV_JS_PATCH}"
+
+    - name: Execute JS hot patch
+      if: "${NAV_ENABLE_JS_PATCH}"
+      if_2: "${nav_js_patch_exists}"
+      action: CDP.EvaluateJson
+      register: nav_js_patch_result
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${nav_js_patch_code}"
+
+    - name: Execute runtime CDP expression before navigation actions
+      if: "${NAV_CDP_BEFORE_EXPR}"
+      action: CDP.EvaluateJson
+      register: nav_cdp_before_result
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${NAV_CDP_BEFORE_EXPR}"
+
+    - name: Execute custom shell command when provided
+      if: "${NAV_SHELL_COMMAND}"
+      action: Shell.Run
+      register: nav_shell_result
+      params:
+        command: "${NAV_SHELL_COMMAND}"
+        allow_fail: true
+        unsafe: true
+        timeout_ms: 180000
+
+    - name: Find target text using Ctrl+F style search
+      if: "${NAV_FIND_TEXT}"
+      action: Helium.FindInPage
+      register: nav_find_result
+      params:
+        port: "${DEBUG_PORT}"
+        text: "${NAV_FIND_TEXT}"
+        repeat: 1
+        wrap: true
+        include_placeholders: true
+        highlight_ms: 700
+
+    - name: Click find result point
+      if: "${NAV_FIND_TEXT}"
+      if_2: "${nav_find_result.found}"
+      action: Helium.ClickNative
+      params:
+        port: "${DEBUG_PORT}"
+        element: "${nav_find_result.point}"
+
+    - name: Click fallback text candidates when Ctrl+F misses
+      if: "${NAV_FIND_TEXT}"
+      if_not: "${nav_find_result.found}"
+      if_2: "${NAV_CLICK_TEXTS}"
+      action: Helium.ClickAny
+      register: nav_clickany_on_miss
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+        text_candidates: "${NAV_CLICK_TEXTS}"
+        implicit_wait_ms: 1800
+        find_in_page_fallback: true
+
+    - name: Fallback navigate when Ctrl+F misses
+      if: "${NAV_FIND_TEXT}"
+      if_not: "${nav_find_result.found}"
+      if_2: "${NAV_FALLBACK_URL}"
+      action: CDP.Navigate
+      params:
+        port: "${DEBUG_PORT}"
+        url: "${NAV_FALLBACK_URL}"
+        wait_ms: 2200
+        wait_until: "interactive"
+
+    - name: Click text candidates directly when no Ctrl+F target is configured
+      if: "${NAV_CLICK_TEXTS}"
+      if_not: "${NAV_FIND_TEXT}"
+      action: Helium.ClickAny
+      register: nav_clickany_direct
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+        text_candidates: "${NAV_CLICK_TEXTS}"
+        implicit_wait_ms: 1800
+        find_in_page_fallback: true
+
+    - name: Small stabilization wait after navigation actions
+      action: CDP.Wait
+      params:
+        ms: "${NAV_POST_ACTION_WAIT_MS}"
+
+    - name: Execute runtime CDP expression after navigation actions
+      if: "${NAV_CDP_AFTER_EXPR}"
+      action: CDP.EvaluateJson
+      register: nav_cdp_after_result
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${NAV_CDP_AFTER_EXPR}"
+
+    - name: Network-idle pre-pass before final evidence render-ready
+      if: "${NAV_ENABLE_NETWORK_IDLE}"
+      action: Helium.WaitForNetworkIdle
+      ignore_errors: true
+      register: nav_network_idle_final
+      params:
+        port: "${DEBUG_PORT}"
+        event: networkAlmostIdle
+        timeout_secs: "${NAV_NETWORK_IDLE_TIMEOUT_SECS}"
+        also_wait_ready_state: true
+        also_check_loading_ui: false
+
+    - name: Wait for render-ready before final evidence
+      action: Helium.WaitUntil
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: "${NAV_RENDER_READY_TIMEOUT_SECS}"
+        interval_ms: 600
+        expression: "${NAV_RENDER_READY_EXPR}"
+
+    - name: Probe surface before final evidence
+      action: CDP.EvaluateJson
+      register: nav_surface_probe
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const norm = (v) => (v == null ? "" : String(v)).replace(/\s+/g, " ").trim();
+            const isVisible = (el) => {
+              if (!el) return false;
+              const st = window.getComputedStyle(el);
+              if (!st) return false;
+              if (st.display === "none" || st.visibility === "hidden" || st.opacity === "0") return false;
+              const r = el.getBoundingClientRect();
+              return r.width > 0 && r.height > 0;
+            };
+            const loadingSelectors = [
+              ".o_loading",
+              ".o_spinner",
+              ".spinner",
+              ".loading",
+              ".oe_loading",
+              ".skeleton",
+              ".shimmer",
+              ".progress-bar-animated",
+              "[aria-busy='true']",
+              ".modal-backdrop.show"
+            ];
+            const loadingVisible = loadingSelectors.some((sel) => Array.from(document.querySelectorAll(sel)).some(isVisible));
+            const bodyText = norm((document.body && document.body.innerText) || "");
+            const main = document.querySelector("main, .o_action_manager, .o_content, .o_web_client, #wrapwrap, #content");
+            const mainText = norm((main && main.innerText) || "");
+            const visualBlocks = Array.from(document.querySelectorAll(
+              ".o_kanban_renderer, .o_list_renderer, .o_form_view, .o_form_sheet, .o_dashboard, table, canvas, svg, iframe, embed, object, img, video"
+            )).filter(isVisible).length;
+            const minChars = Number("${NAV_NON_EMPTY_MIN_BODY_CHARS}") || 0;
+            const hasOnlyShell = !!document.querySelector(".o_main_navbar, .o_web_client") && mainText.length < 30 && visualBlocks < 1;
+            const appearsEmpty = hasOnlyShell || (bodyText.length < minChars && mainText.length < Math.max(20, Math.floor(minChars / 2)) && visualBlocks < 2);
+            return {
+              ok: true,
+              url: String(location.href || ""),
+              title: String(document.title || ""),
+              ready_state: String(document.readyState || ""),
+              loading_visible: loadingVisible,
+              body_length: bodyText.length,
+              main_text_length: mainText.length,
+              visible_blocks: visualBlocks,
+              appears_empty: appearsEmpty,
+              body_preview: bodyText.slice(0, 1200)
+            };
+          })()
+
+    - name: Empty-capture quick recovery open app launcher on Odoo shell
+      if: "${NAV_RECOVER_ON_EMPTY_CAPTURE}"
+      if_not: "${NAV_ALLOW_EMPTY_CAPTURE}"
+      if_2: "${nav_surface_probe.appears_empty}"
+      action: CDP.EvaluateJson
+      ignore_errors: true
+      register: nav_shell_launcher_recovery
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const path = String(location.pathname || "");
+            const onOdooShell = /^\/odoo(\/)?$/i.test(path);
+            const selectors = [
+              "button.o_menu_toggle",
+              ".o_main_navbar .o_navbar_apps_menu button",
+              ".o_main_navbar button[aria-label*='Home']",
+              ".o_main_navbar .o_menu_brand"
+            ];
+            let clicked = "";
+            if (onOdooShell) {
+              for (const sel of selectors) {
+                const el = document.querySelector(sel);
+                if (!el) continue;
+                el.click();
+                clicked = sel;
+                break;
+              }
+            }
+            return { ok: true, on_odoo_shell: onOdooShell, clicked_selector: clicked };
+          })()
+
+    - name: Empty-capture quick recovery settle after app launcher open
+      if: "${NAV_RECOVER_ON_EMPTY_CAPTURE}"
+      if_not: "${NAV_ALLOW_EMPTY_CAPTURE}"
+      if_2: "${nav_surface_probe.appears_empty}"
+      action: CDP.Wait
+      params:
+        ms: 1400
+
+    - name: Re-probe surface after app launcher quick recovery
+      if: "${NAV_RECOVER_ON_EMPTY_CAPTURE}"
+      if_not: "${NAV_ALLOW_EMPTY_CAPTURE}"
+      if_2: "${nav_surface_probe.appears_empty}"
+      action: CDP.EvaluateJson
+      register: nav_surface_probe
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const norm = (v) => (v == null ? "" : String(v)).replace(/\s+/g, " ").trim();
+            const isVisible = (el) => {
+              if (!el) return false;
+              const st = window.getComputedStyle(el);
+              if (!st) return false;
+              if (st.display === "none" || st.visibility === "hidden" || st.opacity === "0") return false;
+              const r = el.getBoundingClientRect();
+              return r.width > 0 && r.height > 0;
+            };
+            const loadingSelectors = [
+              ".o_loading",
+              ".o_spinner",
+              ".spinner",
+              ".loading",
+              ".oe_loading",
+              ".skeleton",
+              ".shimmer",
+              ".progress-bar-animated",
+              "[aria-busy='true']",
+              ".modal-backdrop.show"
+            ];
+            const loadingVisible = loadingSelectors.some((sel) => Array.from(document.querySelectorAll(sel)).some(isVisible));
+            const bodyText = norm((document.body && document.body.innerText) || "");
+            const main = document.querySelector("main, .o_action_manager, .o_content, .o_web_client, #wrapwrap, #content");
+            const mainText = norm((main && main.innerText) || "");
+            const visualBlocks = Array.from(document.querySelectorAll(
+              ".o_kanban_renderer, .o_list_renderer, .o_form_view, .o_form_sheet, .o_dashboard, table, canvas, svg, iframe, embed, object, img, video"
+            )).filter(isVisible).length;
+            const minChars = Number("${NAV_NON_EMPTY_MIN_BODY_CHARS}") || 0;
+            const hasOnlyShell = !!document.querySelector(".o_main_navbar, .o_web_client") && mainText.length < 30 && visualBlocks < 1;
+            const appearsEmpty = hasOnlyShell || (bodyText.length < minChars && mainText.length < Math.max(20, Math.floor(minChars / 2)) && visualBlocks < 2);
+            return {
+              ok: true,
+              url: String(location.href || ""),
+              title: String(document.title || ""),
+              ready_state: String(document.readyState || ""),
+              loading_visible: loadingVisible,
+              body_length: bodyText.length,
+              main_text_length: mainText.length,
+              visible_blocks: visualBlocks,
+              appears_empty: appearsEmpty,
+              body_preview: bodyText.slice(0, 1200)
+            };
+          })()
+
+    - name: Read current URL for empty-capture recovery
+      if: "${NAV_RECOVER_ON_EMPTY_CAPTURE}"
+      if_not: "${NAV_ALLOW_EMPTY_CAPTURE}"
+      if_2: "${nav_surface_probe.appears_empty}"
+      action: CDP.GetUrl
+      register: nav_current_url
+      params:
+        port: "${DEBUG_PORT}"
+
+    - name: Recover empty capture by reloading current page
+      if: "${NAV_RECOVER_ON_EMPTY_CAPTURE}"
+      if_not: "${NAV_ALLOW_EMPTY_CAPTURE}"
+      if_2: "${nav_surface_probe.appears_empty}"
+      action: CDP.Navigate
+      params:
+        port: "${DEBUG_PORT}"
+        url: "${nav_current_url}"
+        wait_ms: 2200
+        wait_until: "interactive"
+
+    - name: Network-idle pre-pass before empty-capture recovery render-ready
+      if: "${NAV_RECOVER_ON_EMPTY_CAPTURE}"
+      if_not: "${NAV_ALLOW_EMPTY_CAPTURE}"
+      if_2: "${nav_surface_probe.appears_empty}"
+      action: Helium.WaitForNetworkIdle
+      ignore_errors: true
+      register: nav_network_idle_recovery
+      params:
+        port: "${DEBUG_PORT}"
+        event: networkAlmostIdle
+        timeout_secs: "${NAV_NETWORK_IDLE_TIMEOUT_SECS}"
+        also_wait_ready_state: true
+        also_check_loading_ui: false
+
+    - name: Wait render-ready after empty-capture recovery
+      if: "${NAV_RECOVER_ON_EMPTY_CAPTURE}"
+      if_not: "${NAV_ALLOW_EMPTY_CAPTURE}"
+      if_2: "${nav_surface_probe.appears_empty}"
+      action: Helium.WaitUntil
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: "${NAV_RENDER_READY_TIMEOUT_SECS}"
+        interval_ms: 600
+        expression: "${NAV_RENDER_READY_EXPR}"
+
+    - name: Re-probe surface after empty-capture recovery
+      if: "${NAV_RECOVER_ON_EMPTY_CAPTURE}"
+      if_not: "${NAV_ALLOW_EMPTY_CAPTURE}"
+      if_2: "${nav_surface_probe.appears_empty}"
+      action: CDP.EvaluateJson
+      register: nav_surface_probe
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const norm = (v) => (v == null ? "" : String(v)).replace(/\s+/g, " ").trim();
+            const isVisible = (el) => {
+              if (!el) return false;
+              const st = window.getComputedStyle(el);
+              if (!st) return false;
+              if (st.display === "none" || st.visibility === "hidden" || st.opacity === "0") return false;
+              const r = el.getBoundingClientRect();
+              return r.width > 0 && r.height > 0;
+            };
+            const loadingSelectors = [
+              ".o_loading",
+              ".o_spinner",
+              ".spinner",
+              ".loading",
+              ".oe_loading",
+              ".skeleton",
+              ".shimmer",
+              ".progress-bar-animated",
+              "[aria-busy='true']",
+              ".modal-backdrop.show"
+            ];
+            const loadingVisible = loadingSelectors.some((sel) => Array.from(document.querySelectorAll(sel)).some(isVisible));
+            const bodyText = norm((document.body && document.body.innerText) || "");
+            const main = document.querySelector("main, .o_action_manager, .o_content, .o_web_client, #wrapwrap, #content");
+            const mainText = norm((main && main.innerText) || "");
+            const visualBlocks = Array.from(document.querySelectorAll(
+              ".o_kanban_renderer, .o_list_renderer, .o_form_view, .o_form_sheet, .o_dashboard, table, canvas, svg, iframe, embed, object, img, video"
+            )).filter(isVisible).length;
+            const minChars = Number("${NAV_NON_EMPTY_MIN_BODY_CHARS}") || 0;
+            const hasOnlyShell = !!document.querySelector(".o_main_navbar, .o_web_client") && mainText.length < 30 && visualBlocks < 1;
+            const appearsEmpty = hasOnlyShell || (bodyText.length < minChars && mainText.length < Math.max(20, Math.floor(minChars / 2)) && visualBlocks < 2);
+            return {
+              ok: true,
+              url: String(location.href || ""),
+              title: String(document.title || ""),
+              ready_state: String(document.readyState || ""),
+              loading_visible: loadingVisible,
+              body_length: bodyText.length,
+              main_text_length: mainText.length,
+              visible_blocks: visualBlocks,
+              appears_empty: appearsEmpty,
+              body_preview: bodyText.slice(0, 1200)
+            };
+          })()
+
+    - name: Fail if capture surface is still empty
+      if_not: "${NAV_ALLOW_EMPTY_CAPTURE}"
+      if: "${nav_surface_probe.appears_empty}"
+      action: Fail
+      params:
+        text: "Capture surface still appears empty after render synchronization."
+
+    - name: Prepare final fullpage capture surface when overflow exists
+      if: "${NAV_CAPTURE_FULLPAGE_ON_OVERFLOW}"
+      action: CDP.EvaluateJson
+      ignore_errors: true
+      register: nav_final_capture_prepare
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const visible = (el) => {
+              if (!el) return false;
+              const r = el.getBoundingClientRect();
+              const s = getComputedStyle(el);
+              return r.width > 0 && r.height > 0 && s.display !== "none" && s.visibility !== "hidden" && s.opacity !== "0";
+            };
+            const maxExpandedHeightCap = 12000;
+            const restore = [];
+            const remembered = new WeakSet();
+            const remember = (el) => {
+              if (!el || remembered.has(el)) return;
+              remembered.add(el);
+              restore.push({
+                el,
+                style: el.getAttribute("style") || "",
+                scrollTop: typeof el.scrollTop === "number" ? el.scrollTop : 0,
+                scrollLeft: typeof el.scrollLeft === "number" ? el.scrollLeft : 0
+              });
+            };
+            const score = (el) => {
+              if (!visible(el)) return null;
+              const st = getComputedStyle(el);
+              const oy = String(st.overflowY || "").toLowerCase();
+              const ox = String(st.overflowX || "").toLowerCase();
+              const scrollHeight = el.scrollHeight || 0;
+              const clientHeight = el.clientHeight || 0;
+              const overflow = scrollHeight - clientHeight;
+              const byStyle = /auto|scroll|overlay/.test(oy) || /auto|scroll|overlay/.test(ox);
+              if (!(overflow > 24 || byStyle)) return null;
+              const r = el.getBoundingClientRect();
+              return {
+                el,
+                overflow,
+                scrollHeight,
+                clientHeight,
+                area: (r.width || 0) * (r.height || 0)
+              };
+            };
+            const baseCandidates = [
+              document.querySelector(".o_content"),
+              document.querySelector(".o_action_manager"),
+              document.querySelector(".o_web_client"),
+              document.querySelector(".o_setting_container"),
+              document.querySelector(".settings"),
+              document.querySelector("main"),
+              document.querySelector("#wrapwrap"),
+              document.scrollingElement,
+              document.documentElement,
+              document.body
+            ].filter((el) => !!el);
+            const allOverflow = Array.from(document.querySelectorAll("*")).map(score).filter((v) => !!v);
+            const merged = [];
+            const seen = new WeakSet();
+            for (const el of baseCandidates) {
+              const s = score(el);
+              if (s && !seen.has(s.el)) {
+                seen.add(s.el);
+                merged.push(s);
+              }
+            }
+            for (const s of allOverflow) {
+              if (!seen.has(s.el)) {
+                seen.add(s.el);
+                merged.push(s);
+              }
+            }
+            merged.sort((a, b) => (b.overflow - a.overflow) || (b.area - a.area));
+            const targets = merged.slice(0, 12);
+            for (const t of targets) {
+              remember(t.el);
+              t.el.scrollTop = 0;
+              t.el.scrollLeft = 0;
+              t.el.style.overflowY = "visible";
+              t.el.style.overflowX = "visible";
+              t.el.style.maxHeight = "none";
+              const expanded = Math.max(t.clientHeight || 0, Math.min(t.scrollHeight || 0, maxExpandedHeightCap));
+              if (expanded > (t.clientHeight || 0) + 8) t.el.style.height = `${expanded}px`;
+              t.el.style.minHeight = `${expanded}px`;
+              let parent = t.el.parentElement;
+              let hops = 0;
+              while (parent && hops < 12) {
+                remember(parent);
+                parent.style.overflow = "visible";
+                parent.style.maxHeight = "none";
+                parent.style.height = "auto";
+                parent = parent.parentElement;
+                hops += 1;
+              }
+            }
+            remember(document.body);
+            remember(document.documentElement);
+            document.body.style.overflow = "visible";
+            document.documentElement.style.overflow = "visible";
+            const rootExpanded = Math.min(
+              maxExpandedHeightCap,
+              Math.max(
+                document.documentElement.scrollHeight || 0,
+                document.body.scrollHeight || 0,
+                ...targets.map((t) => t.scrollHeight || 0)
+              )
+            );
+            if (rootExpanded > 0) {
+              document.documentElement.style.height = `${rootExpanded}px`;
+              document.body.style.height = `${rootExpanded}px`;
+              document.documentElement.style.minHeight = `${rootExpanded}px`;
+              document.body.style.minHeight = `${rootExpanded}px`;
+            }
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+            window.__waibaCaptureRestore = restore;
+            return {
+              ok: true,
+              has_overflow: targets.length > 0,
+              candidate_count: merged.length,
+              targets_count: targets.length,
+              max_overflow_px: targets.length ? targets[0].overflow : 0,
+              max_scroll_height: targets.length ? targets[0].scrollHeight : 0
+            };
+          })()
+
+    - name: Bootstrap subtitle overlay before final screenshot
+      if: "${NAV_ENABLE_SUBTITLE_OVERLAY}"
+      if_2: "${nav_subtitle_js_exists}"
+      action: CDP.EvaluateJson
+      ignore_errors: true
+      register: nav_subtitle_bootstrap_final
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${nav_subtitle_js_code}"
+
+    - name: Set subtitle overlay for final screenshot
+      if: "${NAV_ENABLE_SUBTITLE_OVERLAY}"
+      if_2: "${nav_subtitle_js_exists}"
+      action: CDP.EvaluateJson
+      ignore_errors: true
+      register: nav_subtitle_final_set
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const api = window.__waibaSubtitleOverlay;
+            if (!api || typeof api.set !== "function") return { ok: false, reason: "subtitle_api_missing" };
+            const finalUrl = String(location.href || "");
+            return api.set({
+              visible: true,
+              theme: "${NAV_SUBTITLE_THEME}",
+              position: "${NAV_SUBTITLE_POSITION}",
+              playbook: "${NAV_SUBTITLE_PLAYBOOK_LABEL}",
+              step: "Final-capture",
+              title: "Final navigation screenshot",
+              subtitle: "Post-action UI state",
+              intent: "_Intent:_ verify final page context after click/search actions",
+              detail: "**URL:** `" + finalUrl + "`",
+              show_playbook: false,
+              show_timestamp: true
+            });
+          })()
+
+    - name: Capture final viewport
+      action: CDP.Send
+      register: nav_capture
+      params:
+        port: "${DEBUG_PORT}"
+        method: "Page.captureScreenshot"
+        params:
+          format: "png"
+          captureBeyondViewport: true
+
+    - name: Save final viewport
+      action: FS.WriteBase64
+      params:
+        path: "${OUTPUT_DIR}\\${NAV_CAPTURE_LABEL}_viewport.png"
+        overwrite: true
+        base64: "${nav_capture.result.data}"
+
+    - name: Scroll to bottom for overflow-aware final evidence
+      if: "${NAV_CAPTURE_FULLPAGE_ON_OVERFLOW}"
+      if_2: "${nav_final_capture_prepare.has_overflow}"
+      action: CDP.EvaluateJson
+      ignore_errors: true
+      register: nav_bottom_scroll
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const visible = (el) => {
+              if (!el) return false;
+              const r = el.getBoundingClientRect();
+              const s = getComputedStyle(el);
+              return r.width > 0 && r.height > 0 && s.display !== "none" && s.visibility !== "hidden" && s.opacity !== "0";
+            };
+            const candidates = Array.from(document.querySelectorAll("*"))
+              .filter((e) => visible(e))
+              .filter((e) => (e.scrollHeight || 0) > (e.clientHeight || 0) + 24)
+              .sort((a, b) => ((b.scrollHeight - b.clientHeight) - (a.scrollHeight - a.clientHeight)));
+            const targets = candidates.slice(0, 12);
+            for (const el of targets) el.scrollTop = Math.max(0, (el.scrollHeight || 0) - (el.clientHeight || 0));
+            window.scrollTo(0, Math.max(
+              document.documentElement.scrollHeight || 0,
+              document.body.scrollHeight || 0
+            ));
+            return {
+              ok: true,
+              targets: targets.length,
+              url: String(location.href || "")
+            };
+          })()
+
+    - name: Wait after bottom scroll for overflow-aware final evidence
+      if: "${NAV_CAPTURE_FULLPAGE_ON_OVERFLOW}"
+      if_2: "${nav_final_capture_prepare.has_overflow}"
+      action: CDP.Wait
+      params:
+        ms: 900
+
+    - name: Set subtitle overlay for final bottom screenshot
+      if: "${NAV_ENABLE_SUBTITLE_OVERLAY}"
+      if_2: "${NAV_CAPTURE_FULLPAGE_ON_OVERFLOW}"
+      action: CDP.EvaluateJson
+      ignore_errors: true
+      register: nav_subtitle_bottom_set
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const api = window.__waibaSubtitleOverlay;
+            if (!api || typeof api.set !== "function") return { ok: false, reason: "subtitle_api_missing" };
+            return api.set({
+              visible: true,
+              theme: "${NAV_SUBTITLE_THEME}",
+              position: "${NAV_SUBTITLE_POSITION}",
+              playbook: "${NAV_SUBTITLE_PLAYBOOK_LABEL}",
+              step: "Final-capture-bottom",
+              title: "Bottom overflow evidence",
+              subtitle: "Extended viewport capture",
+              intent: "_Intent:_ confirm lower sections after auto-scroll",
+              detail: "**URL:** `" + String(location.href || "") + "`",
+              show_playbook: false,
+              show_timestamp: true
+            });
+          })()
+
+    - name: Capture final viewport bottom
+      if: "${NAV_CAPTURE_FULLPAGE_ON_OVERFLOW}"
+      if_2: "${nav_final_capture_prepare.has_overflow}"
+      action: CDP.Send
+      register: nav_capture_bottom
+      params:
+        port: "${DEBUG_PORT}"
+        method: "Page.captureScreenshot"
+        params:
+          format: "png"
+          captureBeyondViewport: true
+
+    - name: Save final viewport bottom
+      if: "${NAV_CAPTURE_FULLPAGE_ON_OVERFLOW}"
+      if_2: "${nav_final_capture_prepare.has_overflow}"
+      action: FS.WriteBase64
+      params:
+        path: "${OUTPUT_DIR}\\${NAV_CAPTURE_LABEL}_viewport_bottom.png"
+        overwrite: true
+        base64: "${nav_capture_bottom.result.data}"
+
+    - name: Restore page styles after final capture
+      if: "${NAV_CAPTURE_FULLPAGE_ON_OVERFLOW}"
+      action: CDP.EvaluateJson
+      ignore_errors: true
+      register: nav_final_capture_restore
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const restore = Array.isArray(window.__waibaCaptureRestore) ? window.__waibaCaptureRestore : [];
+            for (let i = restore.length - 1; i >= 0; i -= 1) {
+              const rec = restore[i];
+              if (!rec || !rec.el) continue;
+              if (rec.style) rec.el.setAttribute("style", rec.style);
+              else rec.el.removeAttribute("style");
+              if (typeof rec.scrollTop === "number") rec.el.scrollTop = rec.scrollTop;
+              if (typeof rec.scrollLeft === "number") rec.el.scrollLeft = rec.scrollLeft;
+            }
+            delete window.__waibaCaptureRestore;
+            return { ok: true, restored: restore.length };
+          })()
+
+    - name: Read subtitle overlay state before cleanup
+      if: "${NAV_ENABLE_SUBTITLE_OVERLAY}"
+      action: CDP.EvaluateJson
+      ignore_errors: true
+      register: nav_subtitle_state
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const api = window.__waibaSubtitleOverlay;
+            if (!api || typeof api.state !== "function") return { ok: false, reason: "subtitle_api_missing" };
+            return { ok: true, state: api.state() };
+          })()
+
+    - name: Hide subtitle overlay before final DOM probe
+      if: "${NAV_ENABLE_SUBTITLE_OVERLAY}"
+      action: CDP.EvaluateJson
+      ignore_errors: true
+      register: nav_subtitle_hide
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const api = window.__waibaSubtitleOverlay;
+            if (!api || typeof api.hide !== "function") return { ok: false, reason: "subtitle_api_missing" };
+            return api.hide();
+          })()
+
+    - name: Capture final DOM probe
+      action: Helium.Probe
+      register: nav_probe
+      params:
+        port: "${DEBUG_PORT}"
+
+    - name: Save final DOM probe
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\${NAV_CAPTURE_LABEL}_probe.json"
+        overwrite: true
+        value: "${nav_probe}"
+
+    - name: Verify post hook file
+      action: FS.Exists
+      register: nav_post_hook_exists
+      params:
+        path: "${NAV_POST_HOOK_PS1}"
+
+    - name: Run post hook (PowerShell, optional)
+      if: "${NAV_ENABLE_POST_HOOK}"
+      if_2: "${nav_post_hook_exists}"
+      action: Shell.Run
+      register: nav_post_hook_result
+      params:
+        command: "powershell -NoProfile -ExecutionPolicy Bypass -File \"${NAV_POST_HOOK_PS1}\""
+        allow_fail: true
+        unsafe: true
+        timeout_ms: 120000
+
+    - name: Save supercontrol summary
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\${NAV_CAPTURE_LABEL}_summary.json"
+        overwrite: true
+        value:
+          nav_url: "${NAV_URL}"
+          nav_find_text: "${NAV_FIND_TEXT}"
+          nav_click_texts: "${NAV_CLICK_TEXTS}"
+          nav_fallback_url: "${NAV_FALLBACK_URL}"
+          nav_wait_expr: "${NAV_WAIT_EXPR}"
+          find_result: "${nav_find_result}"
+          clickany_on_miss: "${nav_clickany_on_miss}"
+          clickany_direct: "${nav_clickany_direct}"
+          probe: "${nav_probe}"
+          pre_hook: "${nav_pre_hook_result}"
+          post_hook: "${nav_post_hook_result}"
+          shell_result: "${nav_shell_result}"
+          js_patch_result: "${nav_js_patch_result}"
+          ocr_result: "${nav_pre_ocr}"
+          cdp_before_result: "${nav_cdp_before_result}"
+          cdp_after_result: "${nav_cdp_after_result}"
+          surface_probe: "${nav_surface_probe}"
+          subtitle_enabled: "${NAV_ENABLE_SUBTITLE_OVERLAY}"
+          subtitle_state: "${nav_subtitle_state}"
+          subtitle_pre_set: "${nav_subtitle_pre_set}"
+          subtitle_final_set: "${nav_subtitle_final_set}"
+          subtitle_bottom_set: "${nav_subtitle_bottom_set}"

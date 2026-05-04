@@ -1,0 +1,51 @@
+metadata:
+  category: "automation"
+  subcategory: "waiba-navigation"
+  workflow: "supercontrol"
+
+variables:
+  PROJECT_DIR: "${ROOT_PLAYBOOK_DIR}"
+  PLAYBOOKS_DIR: "${PROJECT_DIR}\\playbooks"
+  OUTPUT_DIR: "${PROJECT_DIR}\\output"
+  DEBUG_PORT: 9333
+  RUN_MINIMIZED: false
+  NAV_URL: ""
+  NAV_START_OPEN_URL: ""
+  NAV_FIND_TEXT: ""
+  NAV_CLICK_TEXTS: ""
+  NAV_FALLBACK_URL: ""
+  NAV_WAIT_EXPR: ""
+  NAV_WAIT_TIMEOUT_SECS: 45
+  NAV_RENDER_READY_TIMEOUT_SECS: 35
+  NAV_RENDER_READY_EXPR: ""
+  NAV_NON_EMPTY_MIN_BODY_CHARS: 120
+  NAV_ALLOW_EMPTY_CAPTURE: false
+  NAV_RECOVER_ON_EMPTY_CAPTURE: true
+  NAV_POST_ACTION_WAIT_MS: 1200
+  NAV_REUSE_EXISTING_TAB: true
+  NAV_ALLOW_NEW_TAB: false
+  NAV_TARGET_URL_CONTAINS: ".odoo.com|sat.gob.mx|http"
+  NAV_EXCLUDE_URL_CONTAINS: "devtools://|edge://|chrome://"
+  NAV_EXPECT_HOST_ENDSWITH: ""
+  NAV_ENABLE_PRE_HOOK: true
+  NAV_ENABLE_POST_HOOK: true
+  NAV_ENABLE_JS_PATCH: true
+  NAV_ENABLE_OCR: false
+  NAV_OCR_PROMPT: "Extract the visible navigation hints and actionable labels."
+  NAV_PRE_HOOK_PS1: "${PLAYBOOKS_DIR}\\assets\\hooks\\pre_hook.ps1"
+  NAV_POST_HOOK_PS1: "${PLAYBOOKS_DIR}\\assets\\hooks\\post_hook.ps1"
+  NAV_JS_PATCH: "${PLAYBOOKS_DIR}\\assets\\hooks\\dom_patch.js"
+  NAV_SHELL_COMMAND: ""
+  NAV_CAPTURE_LABEL: "supercontrol"
+  NAV_CDP_BEFORE_EXPR: ""
+  NAV_CDP_AFTER_EXPR: ""
+
+steps:
+  prod:
+    - name: Execute navigation supercontrol core
+      playbook: "${PLAYBOOKS_DIR}\\01_supercontrol\\playbook.yml"
+
+  debug:
+    - action: Note
+      params:
+        text: "waiba-navigation-supercontrol debug mode"

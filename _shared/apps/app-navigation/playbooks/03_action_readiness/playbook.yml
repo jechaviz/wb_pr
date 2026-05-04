@@ -1,0 +1,37 @@
+variables:
+  UI_ACTIONS_PATH: "${ACTIONS_DIR}\\readiness.yml"
+
+steps:
+  - name: Ensure actions directory exists
+    action: FS.EnsureDir
+    params:
+      path: "${ACTIONS_DIR}"
+
+  - name: Seed action readiness contract
+    action: FS.WriteText
+    params:
+      path: "${UI_ACTIONS_PATH}"
+      overwrite: false
+      text: |
+        app:
+          slug: ${UI_APP_SLUG}
+          display_name: "${UI_APP_DISPLAY_NAME}"
+        readiness:
+          first_impression_complete: false
+          dynamics_observed: false
+          safe_to_act: false
+        action_classes:
+          read_only: []
+          reversible: []
+          destructive_requires_confirmation: []
+        required_before_action:
+          - region identity
+          - expected effect
+          - state precondition
+          - recovery observation
+          - confidence score
+
+  - name: Action readiness seeded
+    action: Note
+    params:
+      text: "Seeded app action readiness contract; no app actions executed."

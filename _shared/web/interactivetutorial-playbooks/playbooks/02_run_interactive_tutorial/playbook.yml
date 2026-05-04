@@ -1,0 +1,19 @@
+steps:
+  - name: Run interactive tutorial session
+    action: InteractiveTutorial.RunSession
+    register: tutorial_session_result
+    params:
+      script_path: "${TUTORIAL_SCRIPT_PATH}"
+      state_path: "${TUTORIAL_STATE_PATH}"
+      step_delay_ms: "${TUTORIAL_STEP_DELAY_MS}"
+      autoplay: "${TUTORIAL_AUTOPLAY}"
+      open_url: "${TUTORIAL_OPEN_URL}"
+      auto_stop_on_end: "${TUTORIAL_AUTO_STOP_ON_END}"
+      max_runtime_ms: "${TUTORIAL_MAX_RUNTIME_MS}"
+
+  - name: Persist run summary
+    action: FS.WriteJson
+    params:
+      path: "${TUTORIAL_SESSION_OUTPUT_DIR}\\session_summary.json"
+      overwrite: true
+      value: "${tutorial_session_result}"

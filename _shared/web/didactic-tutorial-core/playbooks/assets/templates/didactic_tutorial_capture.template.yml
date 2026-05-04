@@ -1,0 +1,54 @@
+﻿# Reusable variables
+variables:
+  WAIBA_PLAYBOOK_LIB_DIR: "C:\\git\\wb_pr\\_shared"
+  DIDACTIC_ACTION_JS: "${WAIBA_PLAYBOOK_LIB_DIR}\\web\\didactic-tutorial-core\\playbooks\\assets\\hooks\\didactic_tutorial_action_api.js"
+
+# Example usage snippet
+steps:
+  - name: Load didactic tutorial action JS source
+    action: FS.ReadText
+    register: didactic_action_js_source
+    params:
+      path: "${DIDACTIC_ACTION_JS}"
+
+  - name: Click-first didactic navigation
+    action: CDP.EvaluateJson
+    register: didactic_nav_result
+    params:
+      port: "${DEBUG_PORT}"
+      expression: |
+        ${didactic_action_js_source}
+        ;(() => {
+          const api = window.__waibaTutorialCaptureAction;
+          if (!api || typeof api.run !== "function") return { ok: false, reason: "api_missing" };
+          return api.run({
+            mode: "navigate",
+            chain: "Sales|Orders",
+            didactic_category: "commercial",
+            didactic_allow_keywords: "sales|orders|quotation",
+            route_scope: "tutorial",
+            route_id: "sales_orders",
+            route_once: false
+          });
+        })()
+
+  - name: UI audit snapshot
+    action: CDP.EvaluateJson
+    register: didactic_ui_audit
+    params:
+      port: "${DEBUG_PORT}"
+      expression: |
+        ${didactic_action_js_source}
+        ;(() => {
+          const api = window.__waibaTutorialCaptureAction;
+          if (!api || typeof api.inspectAndValidate !== "function") return { ok: false, reason: "api_missing" };
+          return api.inspectAndValidate({
+            step: "Tutorial-Example",
+            didactic_category: "commercial",
+            didactic_allow_keywords: "sales|orders|quotation",
+            didactic_defer_keywords: "settings|studio",
+            recorrido_scope: "main_header",
+            recorrido_key: "main_header",
+            recorrido_once: true
+          });
+        })()

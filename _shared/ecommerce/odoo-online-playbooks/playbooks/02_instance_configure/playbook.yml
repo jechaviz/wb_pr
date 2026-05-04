@@ -1,0 +1,133 @@
+steps:
+  - name: Delete previous eCommerce checkpoint when forcing reset
+    if: "${FORCE_RESET_CHECKPOINTS}"
+    action: FS.Delete
+    params:
+      path: "${OUTPUT_DIR}\\odoo_ecommerce_install_checkpoint.json"
+
+  - name: Delete previous operations core checkpoint when forcing reset
+    if: "${FORCE_RESET_CHECKPOINTS}"
+    action: FS.Delete
+    params:
+      path: "${OUTPUT_DIR}\\odoo_operations_core_checkpoint.json"
+
+  - name: Delete previous branding checkpoint when forcing reset
+    if: "${FORCE_RESET_CHECKPOINTS}"
+    action: FS.Delete
+    params:
+      path: "${OUTPUT_DIR}\\odoo_branding_checkpoint.json"
+
+  - name: Delete previous dropshipping checkpoint when forcing reset
+    if: "${FORCE_RESET_CHECKPOINTS}"
+    action: FS.Delete
+    params:
+      path: "${OUTPUT_DIR}\\odoo_dropshipping_ops_checkpoint.json"
+
+  - name: Delete previous wholesaler scaffold checkpoint when forcing reset
+    if: "${FORCE_RESET_CHECKPOINTS}"
+    action: FS.Delete
+    params:
+      path: "${OUTPUT_DIR}\\wholesaler_integration_scaffold_checkpoint.json"
+
+  - name: Check eCommerce checkpoint
+    action: FS.Exists
+    register: has_ecommerce_checkpoint
+    params:
+      path: "${OUTPUT_DIR}\\odoo_ecommerce_install_checkpoint.json"
+
+  - name: Install eCommerce module (interactive)
+    if_not: "${has_ecommerce_checkpoint}"
+    once: true
+    once_key: "odoo.apps.install_ecommerce"
+    playbook: "${PROJECT_DIR}\\playbooks\\02_task\\02_odoo\\03_apps_install_ecommerce\\playbook.yml"
+
+  - name: Check operations core checkpoint
+    action: FS.Exists
+    register: has_ops_core_checkpoint
+    params:
+      path: "${OUTPUT_DIR}\\odoo_operations_core_checkpoint.json"
+
+  - name: Install core operations modules (interactive)
+    if_not: "${has_ops_core_checkpoint}"
+    once: true
+    once_key: "odoo.apps.install_operations_core"
+    playbook: "${PROJECT_DIR}\\playbooks\\02_task\\02_odoo\\04_apps_install_operations_core\\playbook.yml"
+
+  - name: Check branding checkpoint
+    action: FS.Exists
+    register: has_branding_checkpoint
+    params:
+      path: "${OUTPUT_DIR}\\odoo_branding_checkpoint.json"
+
+  - name: Apply basic branding (interactive)
+    if_not: "${has_branding_checkpoint}"
+    once: true
+    once_key: "odoo.config.branding"
+    playbook: "${PROJECT_DIR}\\playbooks\\02_task\\02_odoo\\05_config_branding\\playbook.yml"
+
+  - name: Check dropshipping checkpoint
+    action: FS.Exists
+    register: has_dropship_checkpoint
+    params:
+      path: "${OUTPUT_DIR}\\odoo_dropshipping_ops_checkpoint.json"
+
+  - name: Configure dropshipping operations (interactive)
+    if_not: "${has_dropship_checkpoint}"
+    once: true
+    once_key: "odoo.config.dropshipping_ops"
+    playbook: "${PROJECT_DIR}\\playbooks\\02_task\\02_odoo\\06_config_dropshipping_ops\\playbook.yml"
+
+  - name: Check wholesaler scaffold checkpoint
+    action: FS.Exists
+    register: has_wholesaler_scaffold
+    params:
+      path: "${OUTPUT_DIR}\\wholesaler_integration_scaffold_checkpoint.json"
+
+  - name: Scaffold wholesaler integration assets
+    if_not: "${has_wholesaler_scaffold}"
+    once: true
+    once_key: "odoo.integration.wholesalers_scaffold"
+    playbook: "${PROJECT_DIR}\\playbooks\\02_task\\03_integration\\01_wholesalers_scaffold\\playbook.yml"
+
+  - name: Check legacy migration checkpoint
+    action: FS.Exists
+    register: has_legacy_migration_checkpoint
+    params:
+      path: "${OUTPUT_DIR}\\odoo_legacy_migration_checkpoint.json"
+
+  - name: Seed legacy Electroprice catalog into Odoo
+    if_not: "${has_legacy_migration_checkpoint}"
+    once: true
+    once_key: "odoo.migration.seed_legacy_catalog"
+    playbook: "${PROJECT_DIR}\\playbooks\\02_task\\02_odoo\\07_seed_legacy_catalog\\playbook.yml"
+
+  - name: Check Odoo solution bundle checkpoint
+    action: FS.Exists
+    register: has_odoo_solution_bundle_checkpoint
+    params:
+      path: "${OUTPUT_DIR}\\odoo_solution_bundle_checkpoint.json"
+
+  - name: Apply Odoo solution bundle (config + server actions + frontend)
+    if_not: "${has_odoo_solution_bundle_checkpoint}"
+    once: true
+    once_key: "odoo.solution_bundle.apply"
+    playbook: "${PROJECT_DIR}\\playbooks\\02_task\\02_odoo\\08_solution_bundle\\playbook.yml"
+
+  - name: Check marketplace MVP checkpoint
+    action: FS.Exists
+    register: has_marketplace_mvp_checkpoint
+    params:
+      path: "${OUTPUT_DIR}\\odoo_marketplace_mvp_checkpoint.json"
+
+  - name: Apply marketplace MVP layer (global suppliers + channels + shipping + pricing)
+    if_not: "${has_marketplace_mvp_checkpoint}"
+    once: true
+    once_key: "odoo.marketplace_mvp.apply"
+    playbook: "${PROJECT_DIR}\\playbooks\\02_task\\02_odoo\\09_marketplace_mvp\\playbook.yml"
+
+  - name: Track framework growth: Electroprice dropshipping baseline
+    action: Framework.TrackGrowth
+    params:
+      project_dir: "${PROJECT_DIR}"
+      category: "ecommerce"
+      note: "Electroprice: repo sync + Odoo trial provisioning + auth activation + operations modules + dropshipping config + wholesaler scaffold + legacy catalog migration seed."

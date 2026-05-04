@@ -1,0 +1,64 @@
+﻿steps:
+  - name: Ensure SOM output directory
+    action: FS.EnsureDir
+    params:
+      path: "${OUTPUT_DIR}\\set_of_marks"
+
+  - name: Load SOM injector JS
+    action: FS.ReadText
+    register: js_inject_set_of_marks
+    params:
+      path: "${SKILL_SITE_CLONER_ASSETS_DIR}\\inject_set_of_marks.js"
+
+  - name: Open/attach preview tab in single-tab mode
+    action: Helium.StartEdge
+    params:
+      port: "${DEBUG_PORT}"
+      open_url: "${PREVIEW_URL}"
+      reuse_existing_tab: true
+      allow_new_tab: false
+      target_type: page
+      target_url_contains: "127.0.0.1:${PREVIEW_PORT}"
+      exclude_url_contains: "devtools://|edge://|chrome://"
+      minimize_window: "${RUN_MINIMIZED}"
+
+  - name: Capture SOM evidence per section
+    loop: "${CLONE_SECTIONS}"
+    steps:
+      - name: Navigate preview section ${loop.item.slug}
+        action: CDP.Navigate
+        confirm_progress: false
+        params:
+          port: "${DEBUG_PORT}"
+          url: "${PREVIEW_URL}?som=1#/${loop.item.slug}"
+          wait_ms: 2600
+
+      - name: Inject Set-of-Marks ${loop.item.slug}
+        action: CDP.EvaluateJson
+        register: som_map
+        params:
+          port: "${DEBUG_PORT}"
+          expression: "${js_inject_set_of_marks}"
+
+      - name: Persist SOM map ${loop.item.slug}
+        action: FS.WriteJson
+        params:
+          path: "${OUTPUT_DIR}\\set_of_marks\\${loop.item.slug}.json"
+          overwrite: true
+          value: "${som_map}"
+
+      - name: Capture SOM screenshot ${loop.item.slug}
+        action: DemoCreator.CaptureScreenshot
+        params:
+          port: "${DEBUG_PORT}"
+          target_type: page
+          target_url_contains: "127.0.0.1:${PREVIEW_PORT}"
+          output_path: "${OUTPUT_DIR}\\set_of_marks\\${loop.item.slug}.png"
+          format: "png"
+
+  - name: Build SOM index and customization template
+    action: Shell.Run
+    params:
+      unsafe: true
+      command: |
+        powershell -NoProfile -Command "$dir='${OUTPUT_DIR}\\set_of_marks'; $jsonFiles=Get-ChildItem -Path $dir -Filter '*.json' -File | Where-Object { $_.Name -ne 'index.json' } | Sort-Object Name; $pages=@(); foreach($f in $jsonFiles){ $slug=[System.IO.Path]::GetFileNameWithoutExtension($f.Name); $obj=Get-Content -Raw $f.FullName | ConvertFrom-Json; $count=0; try{ $count=[int]$obj.count } catch { $count=0 }; $pages += [pscustomobject]@{ slug=$slug; marks=$count } }; $idx=@{ ok=$true; generated_at=(Get-Date -Format 'yyyy-MM-dd HH:mm:ss'); pages=$pages }; $idx | ConvertTo-Json -Depth 8 | Set-Content -Path (Join-Path $dir 'index.json') -Encoding UTF8; $yaml=\"version: 1`ncustomizations:`n\"; foreach($p in $pages){ $yaml += \"  - page: $($p.slug)`n\"; $yaml += \"    ids: []`n\"; $yaml += \"    notes: ''`n\" }; Set-Content -Path (Join-Path $dir 'customization_request.template.yml') -Value $yaml -Encoding UTF8"

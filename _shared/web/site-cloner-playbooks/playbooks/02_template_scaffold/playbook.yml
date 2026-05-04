@@ -1,0 +1,481 @@
+﻿steps:
+  - name: Ensure template directories
+    steps:
+      - action: FS.EnsureDir
+        params:
+          path: "${TEMPLATE_DIR}"
+      - action: FS.EnsureDir
+        params:
+          path: "${TEMPLATE_DIR}\\src"
+      - action: FS.EnsureDir
+        params:
+          path: "${TEMPLATE_DIR}\\src\\pages"
+      - action: FS.EnsureDir
+        params:
+          path: "${TEMPLATE_DIR}\\src\\runtime"
+
+  - name: Write package.json (Tailwind CLI build)
+    action: FS.WriteText
+    params:
+      path: "${TEMPLATE_DIR}\\package.json"
+      overwrite: true
+      text: |
+        {
+          "name": "waiba-site-clone-template",
+          "private": true,
+          "type": "module",
+          "scripts": {
+            "css:build": "bunx @tailwindcss/cli -i ./src/app.css -o ./src/app.generated.css --minify",
+            "css:watch": "bunx @tailwindcss/cli -i ./src/app.css -o ./src/app.generated.css --watch"
+          },
+          "devDependencies": {
+            "@tailwindcss/cli": "^4.1.18",
+            "daisyui": "^5.5.18",
+            "tailwindcss": "^4.1.18"
+          }
+        }
+
+  - name: Write index.html (Tailwind 4 + DaisyUI 5 + Vue3 SFC)
+    action: FS.WriteText
+    params:
+      path: "${TEMPLATE_DIR}\\index.html"
+      overwrite: true
+      text: |
+        <!doctype html>
+        <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>${PROJECT_NAME} Template Clone</title>
+            <script src="https://cdn.jsdelivr.net/gh/exis9/squery@latest/squery.js"></script>
+            <link href="./src/app.generated.css" rel="stylesheet" />
+          </head>
+          <body class="waiba-shell">
+            <div id="app"></div>
+            <script type="module" src="./src/main.js"></script>
+          </body>
+        </html>
+
+  - name: Write app.css (Tailwind 4 + DaisyUI 5)
+    action: FS.WriteText
+    params:
+      path: "${TEMPLATE_DIR}\\src\\app.css"
+      overwrite: true
+      text: |
+        @import "tailwindcss";
+
+        @source "../index.html";
+        @source "./**/*.{js,vue}";
+
+        @plugin "daisyui" {
+          themes: light --default, business;
+        }
+
+        :root {
+          --waiba-accent: #4f46e5;
+          --waiba-soft: #e0e7ff;
+        }
+
+        .waiba-shell {
+          min-height: 100vh;
+          background-color: var(--color-base-100, #0f172a);
+          color: var(--color-base-content, #e5e7eb);
+          background-image: radial-gradient(circle at 10% 10%, rgba(79,70,229,.10), transparent 42%), radial-gradient(circle at 90% 0%, rgba(20,184,166,.12), transparent 30%);
+        }
+
+  - name: Write routes module header
+    action: FS.WriteText
+    params:
+      path: "${TEMPLATE_DIR}\\src\\routes.js"
+      overwrite: true
+      text: |
+        export const routes = [
+
+  - name: Append route entries
+    loop: "${CLONE_SECTIONS}"
+    steps:
+      - name: Append route ${loop.item.slug}
+        action: FS.AppendText
+        params:
+          path: "${TEMPLATE_DIR}\\src\\routes.js"
+          text: |
+            { slug: "${loop.item.slug}", title: "${loop.item.title}", path: "${loop.item.path}" },
+
+      - name: Write section page ${loop.item.slug}
+        action: FS.WriteText
+        params:
+          path: "${TEMPLATE_DIR}\\src\\pages\\${loop.item.slug}.vue"
+          overwrite: true
+          text: |
+            <template>
+              <section class="space-y-8">
+                <div class="hero rounded-box bg-gradient-to-r from-primary/10 via-secondary/5 to-accent/10">
+                  <div class="hero-content py-10">
+                    <div>
+                      <div class="badge badge-primary badge-outline">${loop.item.slug}</div>
+                      <h1 class="mt-3 text-4xl font-bold tracking-tight">${loop.item.title}</h1>
+                      <p class="mt-2 max-w-2xl text-base-content/70">First-pass clone generated with DaisyUI 5 + Tailwind 4 + Vue3 SFC. Refine with Set-of-Marks if parity needs precision tuning.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid gap-4 md:grid-cols-3">
+                  <article class="card bg-base-200 shadow-sm" v-for="(item, idx) in highlights" :key="idx">
+                    <div class="card-body">
+                      <h3 class="card-title text-lg">{{ item.title }}</h3>
+                      <p class="text-sm text-base-content/70">{{ item.detail }}</p>
+                      <div class="card-actions justify-end">
+                        <button class="btn btn-sm btn-primary">Open</button>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+
+                <div class="grid gap-4 lg:grid-cols-2">
+                  <div class="card bg-base-100 border border-base-300 shadow-sm">
+                    <div class="card-body">
+                      <h3 class="card-title">Attributes</h3>
+                      <ul class="space-y-2 text-sm">
+                        <li class="flex justify-between" v-for="(a, i) in attributes" :key="i">
+                          <span class="text-base-content/70">{{ a.name }}</span>
+                          <strong>{{ a.value }}</strong>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="card bg-base-100 border border-base-300 shadow-sm">
+                    <div class="card-body">
+                      <h3 class="card-title">Opinions & Comparison</h3>
+                      <div class="space-y-3">
+                        <div class="rating rating-sm">
+                          <input type="radio" class="mask mask-star-2 bg-warning" checked />
+                          <input type="radio" class="mask mask-star-2 bg-warning" checked />
+                          <input type="radio" class="mask mask-star-2 bg-warning" checked />
+                          <input type="radio" class="mask mask-star-2 bg-warning" checked />
+                          <input type="radio" class="mask mask-star-2 bg-warning" />
+                        </div>
+                        <p class="text-sm text-base-content/70">Baseline marketing block. Replace with source-faithful copy/components after SOM feedback.</p>
+                        <button class="btn btn-outline btn-sm">Compare Related</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid gap-4 xl:grid-cols-3">
+                  <div class="card bg-base-100 border border-base-300 shadow-sm xl:col-span-2">
+                    <div class="card-body">
+                      <h3 class="card-title">Comparison Snapshot</h3>
+                      <div class="overflow-x-auto">
+                        <table class="table table-zebra table-sm">
+                          <thead>
+                            <tr>
+                              <th>Feature</th>
+                              <th>Electroprice</th>
+                              <th>Alt A</th>
+                              <th>Alt B</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(row, idx) in comparisonRows" :key="idx">
+                              <td>{{ row.feature }}</td>
+                              <td class="font-semibold text-success">{{ row.ours }}</td>
+                              <td>{{ row.a }}</td>
+                              <td>{{ row.b }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card bg-base-100 border border-base-300 shadow-sm">
+                    <div class="card-body">
+                      <h3 class="card-title">Shipping Timeline</h3>
+                      <ul class="timeline timeline-vertical timeline-compact">
+                        <li v-for="(step, idx) in shippingTimeline" :key="idx">
+                          <div class="timeline-start text-xs opacity-70">{{ step.when }}</div>
+                          <div class="timeline-middle">
+                            <span class="badge badge-xs badge-primary"></span>
+                          </div>
+                          <div class="timeline-end text-sm">{{ step.label }}</div>
+                          <hr />
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="space-y-4">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold">Related Products</h3>
+                    <button class="btn btn-sm btn-ghost">View all</button>
+                  </div>
+                  <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                    <article class="card bg-base-100 border border-base-300 shadow-sm" v-for="(p, idx) in relatedProducts" :key="idx">
+                      <figure class="h-36 bg-gradient-to-br from-base-200 to-base-300"></figure>
+                      <div class="card-body">
+                        <h4 class="line-clamp-2 text-sm font-semibold">{{ p.name }}</h4>
+                        <div class="flex items-center justify-between">
+                          <span class="text-sm text-base-content/70">{{ p.tag }}</span>
+                          <span class="font-semibold">{{ p.price }}</span>
+                        </div>
+                        <div class="card-actions justify-end">
+                          <button class="btn btn-xs btn-primary">Add</button>
+                        </div>
+                      </div>
+                    </article>
+                  </div>
+                </div>
+
+                <div class="collapse collapse-arrow border border-base-300 bg-base-100" v-for="(faq, idx) in faqs" :key="'faq-' + idx">
+                  <input type="checkbox" :checked="idx === 0" />
+                  <div class="collapse-title text-sm font-medium">{{ faq.q }}</div>
+                  <div class="collapse-content text-sm text-base-content/70">
+                    <p>{{ faq.a }}</p>
+                  </div>
+                </div>
+              </section>
+            </template>
+
+            <script>
+            export default {
+              name: "Page${loop.item.slug}",
+              props: {
+                route: {
+                  type: Object,
+                  default: function () {
+                    return { slug: "${loop.item.slug}", title: "${loop.item.title}" };
+                  }
+                }
+              },
+              data: function () {
+                return {
+                  highlights: [
+                    { title: "Primary block", detail: "CTA + summary" },
+                    { title: "Catalog block", detail: "Grid/list cards" },
+                    { title: "Trust block", detail: "Badges, social proof, shipping" }
+                  ],
+                  attributes: [
+                    { name: "Layout", value: "Responsive" },
+                    { name: "Theme", value: "DaisyUI" },
+                    { name: "Mode", value: "No Node" },
+                    { name: "Stack", value: "Vue3 SFC" }
+                  ],
+                  comparisonRows: [
+                    { feature: "Shipping SLA", ours: "2-4 days", a: "4-7 days", b: "3-6 days" },
+                    { feature: "Warranty", ours: "12 months", a: "6 months", b: "9 months" },
+                    { feature: "Support", ours: "24/7", a: "Business hours", b: "Business hours" }
+                  ],
+                  shippingTimeline: [
+                    { when: "D0", label: "Order received" },
+                    { when: "D1", label: "Supplier fulfillment" },
+                    { when: "D2", label: "Warehouse rebranding" },
+                    { when: "D3", label: "Dispatch + tracking" }
+                  ],
+                  relatedProducts: [
+                    { name: "Premium device bundle", tag: "Bundle", price: "$299" },
+                    { name: "Certified accessory kit", tag: "Accessory", price: "$49" },
+                    { name: "Business edition package", tag: "Business", price: "$399" },
+                    { name: "Rapid delivery edition", tag: "Express", price: "$329" }
+                  ],
+                  faqs: [
+                    { q: "How fast is shipping?", a: "Average delivery time is between 2 and 4 business days depending on destination." },
+                    { q: "Can I compare models?", a: "Yes, use the comparison block above and shortlist products before checkout." },
+                    { q: "Do you provide post-sale support?", a: "Yes, 24/7 support is available through chat and email channels." }
+                  ]
+                };
+              }
+            };
+            </script>
+
+  - name: Finalize routes module
+    action: FS.AppendText
+    params:
+      path: "${TEMPLATE_DIR}\\src\\routes.js"
+      text: |
+        ];
+
+        export const defaultRouteSlug = routes.length > 0 ? routes[0].slug : "main_page";
+
+        export function findRouteByHash(hash, fallback) {
+          const fb = fallback || defaultRouteSlug;
+          const raw = (hash || "").replace(/^#\/?/, "").trim();
+          if (!raw) return fb;
+          const clean = raw.split("?")[0];
+          const hit = routes.find(function (r) { return r.slug === clean; });
+          return hit ? hit.slug : fb;
+        }
+
+  - name: Write Set-of-Marks runtime
+    action: FS.WriteText
+    params:
+      path: "${TEMPLATE_DIR}\\src\\runtime\\setOfMarks.js"
+      overwrite: true
+      text: |
+        export function applySetOfMarks() {
+          const selectors = [
+            "a",
+            "button",
+            "input",
+            "select",
+            "textarea",
+            "summary",
+            "[role='button']",
+            "[role='link']",
+            "[onclick]",
+            "[tabindex]:not([tabindex='-1'])"
+          ];
+          const nodes = Array.from(document.querySelectorAll(selectors.join(","))).filter(function (el) {
+            const rect = el.getBoundingClientRect();
+            return rect.width > 2 && rect.height > 2;
+          });
+          document.querySelectorAll(".waiba-som-mark").forEach(function (n) { n.remove(); });
+          const data = [];
+          nodes.forEach(function (el, idx) {
+            const id = idx + 1;
+            el.setAttribute("data-waiba-mark-id", String(id));
+            const rect = el.getBoundingClientRect();
+            const mark = document.createElement("div");
+            mark.className = "waiba-som-mark";
+            mark.textContent = String(id);
+            mark.style.position = "fixed";
+            mark.style.left = Math.max(0, rect.left) + "px";
+            mark.style.top = Math.max(0, rect.top - 16) + "px";
+            mark.style.zIndex = "2147483647";
+            mark.style.pointerEvents = "none";
+            mark.style.background = "#111827";
+            mark.style.color = "#fff";
+            mark.style.fontSize = "10px";
+            mark.style.fontWeight = "700";
+            mark.style.padding = "1px 5px";
+            mark.style.borderRadius = "999px";
+            mark.style.boxShadow = "0 1px 2px rgba(0,0,0,.35)";
+            document.body.appendChild(mark);
+            data.push({ id: id, tag: (el.tagName || "").toLowerCase(), text: (el.innerText || el.value || "").trim().slice(0, 120) });
+          });
+          return { ok: true, count: data.length, marks: data };
+        }
+
+  - name: Write main Vue app
+    action: FS.WriteText
+    params:
+      path: "${TEMPLATE_DIR}\\src\\main.js"
+      overwrite: true
+      text: |
+        import * as Vue from "https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js";
+        import { loadModule } from "https://cdn.jsdelivr.net/npm/vue3-sfc-loader/dist/vue3-sfc-loader.esm.js";
+        import { routes, defaultRouteSlug, findRouteByHash } from "./routes.js";
+        import { applySetOfMarks } from "./runtime/setOfMarks.js";
+
+        const options = {
+          moduleCache: { vue: Vue },
+          async getFile(url) {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(res.status + " " + res.statusText + " " + url);
+            return {
+              getContentData: function () {
+                return res.text();
+              }
+            };
+          },
+          addStyle(textContent) {
+            const style = document.createElement("style");
+            style.textContent = textContent;
+            document.head.appendChild(style);
+          }
+        };
+
+        function resolveSlug() {
+          return findRouteByHash(window.location.hash, defaultRouteSlug);
+        }
+
+        const state = Vue.reactive({
+          routes: routes,
+          slug: resolveSlug(),
+          pageComponent: null,
+          loading: false,
+          error: "",
+          som: null
+        });
+
+        async function loadCurrentPage() {
+          state.loading = true;
+          state.error = "";
+          const modPath = "/src/pages/" + state.slug + ".vue";
+          try {
+            state.pageComponent = await loadModule(modPath, options);
+            if (new URLSearchParams(window.location.search).get("som") === "1") {
+              await new Promise(function (r) { setTimeout(r, 120); });
+              state.som = applySetOfMarks();
+            }
+          } catch (e) {
+            state.error = String(e);
+          } finally {
+            state.loading = false;
+          }
+        }
+
+        window.addEventListener("hashchange", function () {
+          state.slug = resolveSlug();
+          loadCurrentPage();
+        });
+
+        const App = {
+          setup() {
+            const activeRoute = Vue.computed(function () {
+              return state.routes.find(function (r) { return r.slug === state.slug; }) || state.routes[0] || { title: "Route" };
+            });
+
+            function goTo(slug) {
+              window.location.hash = "/" + slug;
+            }
+
+            return { state, activeRoute, goTo };
+          },
+          template: `
+            <div class="mx-auto max-w-7xl px-4 py-6 md:px-6">
+              <header class="navbar rounded-box bg-base-200/80 shadow-sm">
+                <div class="navbar-start">
+                  <div class="text-sm font-black tracking-wide">WAIBA CLONER</div>
+                </div>
+                <div class="navbar-center hidden lg:flex">
+                  <ul class="menu menu-horizontal gap-1 px-1">
+                    <li v-for="r in state.routes" :key="r.slug">
+                      <a :class="state.slug === r.slug ? 'active' : ''" @click.prevent="goTo(r.slug)">{{ r.title }}</a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="navbar-end">
+                  <span class="badge badge-primary badge-outline">{{ activeRoute.title }}</span>
+                </div>
+              </header>
+
+              <main class="mt-6">
+                <div v-if="state.loading" class="alert">
+                  <span>Loading section...</span>
+                </div>
+                <div v-else-if="state.error" class="alert alert-error">
+                  <span>{{ state.error }}</span>
+                </div>
+                <component v-else :is="state.pageComponent" :route="activeRoute"></component>
+              </main>
+            </div>
+          `
+        };
+
+        Vue.createApp(App).mount("#app");
+        loadCurrentPage();
+
+  - name: Install deps and build CSS bundle
+    action: Shell.Run
+    params:
+      command: "bun install && bun run css:build"
+      workdir: "${TEMPLATE_DIR}"
+      timeout_ms: 180000
+
+  - name: Write scaffold note
+    action: FS.WriteText
+    params:
+      path: "${OUTPUT_DIR}\\template_scaffold_checkpoint.json"
+      overwrite: true
+      text: |
+        {"ok":true,"template_dir":"${TEMPLATE_DIR}","sections":${MAX_UNITS}}

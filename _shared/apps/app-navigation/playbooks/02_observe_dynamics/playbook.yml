@@ -1,0 +1,36 @@
+variables:
+  UI_DYNAMICS_PATH: "${OBSERVATIONS_DIR}\\dynamics_log.md"
+
+steps:
+  - name: Ensure observations directory exists
+    action: FS.EnsureDir
+    params:
+      path: "${OBSERVATIONS_DIR}"
+
+  - name: Seed dynamics observation log
+    action: FS.WriteText
+    params:
+      path: "${UI_DYNAMICS_PATH}"
+      overwrite: false
+      text: |
+        # Dynamics Log
+
+        App: ${UI_APP_DISPLAY_NAME}
+
+        Record repeated observations here. Separate static chrome from dynamic workspace state.
+
+        ## Watch List
+
+        - active tabs and selected workspace
+        - side panels and mode switches
+        - chat/terminal/preview/editor regions
+        - source-control/search/problem indicators
+        - transient overlays, menus, command palettes, and notifications
+        - focus owner and keyboard target
+
+        ## Observations
+
+  - name: Dynamics observation seeded
+    action: Note
+    params:
+      text: "Seeded dynamic workspace observation log."
