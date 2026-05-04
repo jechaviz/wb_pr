@@ -100,6 +100,34 @@ steps:
       name: SAT_DO_SUBMIT
       value: false
 
+  - name: Default pre-submit confirmation gate
+    if_not: "${SAT_REQUIRE_PRE_SUBMIT_CONFIRM}"
+    action: Set
+    params:
+      name: SAT_REQUIRE_PRE_SUBMIT_CONFIRM
+      value: true
+
+  - name: Default zero-declaration expectation
+    if_not: "${SAT_EXPECT_ZERO_DECLARATION}"
+    action: Set
+    params:
+      name: SAT_EXPECT_ZERO_DECLARATION
+      value: true
+
+  - name: Default nonzero amount allowance
+    if_not: "${SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS}"
+    action: Set
+    params:
+      name: SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS
+      value: false
+
+  - name: Default safe body preview flag
+    if_not: "${SAT_SAFE_STATE_INCLUDE_BODY_PREVIEW}"
+    action: Set
+    params:
+      name: SAT_SAFE_STATE_INCLUDE_BODY_PREVIEW
+      value: false
+
   - name: Default select-all obligations flag
     if_not: "${SAT_SELECT_ALL_OBLIGATIONS}"
     action: Set
@@ -1042,6 +1070,11 @@ steps:
       path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\preview\\${SAT_TARGET_YEAR}_${SAT_TARGET_MONTH}.vista_previa.pdf"
       overwrite: true
       base64: "${sat_preview_pdf.result.data}"
+
+  - name: Run pre-submit checkpoint before Enviar declaracion
+    if: "${sat_form_gates.can_submit}"
+    playbook: "${SKILL_SAT_TAX_PLAYBOOK_DIR}\\07_pre_submit_checkpoint\\playbook.yml"
+    env: prod
 
   - name: Click Enviar declaracion
     if: "${sat_form_gates.can_submit}"

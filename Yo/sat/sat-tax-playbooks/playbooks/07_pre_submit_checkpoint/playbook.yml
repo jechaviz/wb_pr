@@ -1,0 +1,258 @@
+steps:
+  prod:
+    - name: Default DEBUG_PORT when missing
+      if_not: "${DEBUG_PORT}"
+      action: Set
+      params:
+        name: DEBUG_PORT
+        value: 9333
+
+    - name: Default OUTPUT_DIR when missing
+      if_not: "${OUTPUT_DIR}"
+      action: Set
+      params:
+        name: OUTPUT_DIR
+        value: "${PLAYBOOK_DIR}\\..\\output"
+
+    - name: Default SAT assets directory when missing
+      if_not: "${SKILL_SAT_TAX_ASSETS_DIR}"
+      action: Set
+      params:
+        name: SKILL_SAT_TAX_ASSETS_DIR
+        value: "${PLAYBOOK_DIR}\\..\\assets"
+
+    - name: Default target year for checkpoint when missing
+      if_not: "${SAT_TARGET_YEAR}"
+      action: Set
+      params:
+        name: SAT_TARGET_YEAR
+        value: "0000"
+
+    - name: Default target month for checkpoint when missing
+      if_not: "${SAT_TARGET_MONTH}"
+      action: Set
+      params:
+        name: SAT_TARGET_MONTH
+        value: "000"
+
+    - name: Default pre-submit confirmation gate when missing
+      if_not: "${SAT_REQUIRE_PRE_SUBMIT_CONFIRM}"
+      action: Set
+      params:
+        name: SAT_REQUIRE_PRE_SUBMIT_CONFIRM
+        value: true
+
+    - name: Default zero-declaration expectation when missing
+      if_not: "${SAT_EXPECT_ZERO_DECLARATION}"
+      action: Set
+      params:
+        name: SAT_EXPECT_ZERO_DECLARATION
+        value: true
+
+    - name: Default nonzero amount allowance when missing
+      if_not: "${SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS}"
+      action: Set
+      params:
+        name: SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS
+        value: false
+
+    - name: Default safe body preview flag when missing
+      if_not: "${SAT_SAFE_STATE_INCLUDE_BODY_PREVIEW}"
+      action: Set
+      params:
+        name: SAT_SAFE_STATE_INCLUDE_BODY_PREVIEW
+        value: false
+
+    - name: Default render-ready timeout when missing
+      if_not: "${SAT_RENDER_READY_TIMEOUT_SECS}"
+      action: Set
+      params:
+        name: SAT_RENDER_READY_TIMEOUT_SECS
+        value: 35
+
+    - name: Configure safe-state label for pre-submit capture
+      action: Set
+      params:
+        name: SAT_SAFE_STATE_LABEL
+        value: "pre_submit_${SAT_TARGET_YEAR}_${SAT_TARGET_MONTH}"
+
+    - name: Resolve pre-submit output directory
+      action: Set
+      params:
+        name: SAT_PRE_SUBMIT_OUTPUT_DIR
+        value: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\pre_submit\\${SAT_TARGET_MONTH}"
+
+    - name: Ensure pre-submit output directory
+      action: FS.EnsureDir
+      params:
+        path: "${SAT_PRE_SUBMIT_OUTPUT_DIR}"
+
+    - name: Bind explicitly to current SAT browser target
+      action: CDP.Connect
+      params:
+        port: "${DEBUG_PORT}"
+        force_reconnect: true
+        target_type: "page"
+        target_url_contains: "sat.gob.mx"
+
+    - name: Get current SAT URL before submit
+      action: CDP.GetUrl
+      register: sat_pre_submit_url
+      params:
+        port: "${DEBUG_PORT}"
+
+    - name: Wait for pre-submit surface to be render-ready
+      action: Helium.WaitUntil
+      ignore_errors: true
+      register: sat_pre_submit_render_wait
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: "${SAT_RENDER_READY_TIMEOUT_SECS}"
+        interval_ms: 600
+        expression: |
+          (() => {
+            const isVisible = (el) => {
+              if (!el) return false;
+              const st = window.getComputedStyle(el);
+              if (!st) return false;
+              if (st.display === "none" || st.visibility === "hidden" || st.opacity === "0") return false;
+              const r = el.getBoundingClientRect();
+              return r.width > 0 && r.height > 0;
+            };
+            const loadingSelectors = [
+              ".o_loading",
+              ".o_spinner",
+              ".spinner",
+              ".loading",
+              ".oe_loading",
+              ".skeleton",
+              ".shimmer",
+              ".progress-bar-animated",
+              "[aria-busy='true']",
+              ".modal-backdrop.show"
+            ];
+            const loadingVisible = loadingSelectors.some((sel) => Array.from(document.querySelectorAll(sel)).some(isVisible));
+            const body = document.body;
+            const hasVisibleBody = !!body && body.getBoundingClientRect().height > 0;
+            return (document.readyState === "complete" || document.readyState === "interactive") && hasVisibleBody && !loadingVisible;
+          })()
+
+    - name: Capture pre-submit screenshot evidence
+      action: CDP.Send
+      ignore_errors: true
+      register: sat_pre_submit_shot
+      params:
+        port: "${DEBUG_PORT}"
+        method: "Page.captureScreenshot"
+        params:
+          format: "png"
+          fromSurface: true
+
+    - name: Save pre-submit screenshot evidence
+      if: "${sat_pre_submit_shot.result.data}"
+      action: FS.WriteBase64
+      params:
+        path: "${SAT_PRE_SUBMIT_OUTPUT_DIR}\\screen.png"
+        overwrite: true
+        base64: "${sat_pre_submit_shot.result.data}"
+
+    - name: Load safe state probe JS
+      action: FS.ReadText
+      register: js_sat_safe_state_probe
+      params:
+        path: "${SKILL_SAT_TAX_ASSETS_DIR}\\sat_safe_state_probe.js"
+
+    - name: Capture pre-submit safe state
+      action: CDP.EvaluateJson
+      register: sat_pre_submit_state
+      params:
+        port: "${DEBUG_PORT}"
+        target_type: "page"
+        target_url_contains: "sat.gob.mx"
+        expression: "${js_sat_safe_state_probe}"
+
+    - name: Save pre-submit safe state
+      action: FS.WriteJson
+      params:
+        path: "${SAT_PRE_SUBMIT_OUTPUT_DIR}\\safe_state.json"
+        overwrite: true
+        value: "${sat_pre_submit_state}"
+
+    - name: Save pre-submit checkpoint JSON
+      action: FS.WriteJson
+      params:
+        path: "${SAT_PRE_SUBMIT_OUTPUT_DIR}\\checkpoint.json"
+        overwrite: true
+        value:
+          ok: "${sat_pre_submit_state.submit_checkpoint.ready}"
+          mode: "sat_pre_submit_checkpoint"
+          target:
+            year: "${SAT_TARGET_YEAR}"
+            month: "${SAT_TARGET_MONTH}"
+          url: "${sat_pre_submit_url}"
+          render_wait: "${sat_pre_submit_render_wait}"
+          screenshot_path: "${SAT_PRE_SUBMIT_OUTPUT_DIR}\\screen.png"
+          safe_state_path: "${SAT_PRE_SUBMIT_OUTPUT_DIR}\\safe_state.json"
+          submit_checkpoint: "${sat_pre_submit_state.submit_checkpoint}"
+          sat_dynamic_state: "${sat_pre_submit_state.sat_dynamic_state}"
+          blockers: "${sat_pre_submit_state.blockers}"
+          amount_summary: "${sat_pre_submit_state.amount_summary}"
+          missing_required: "${sat_pre_submit_state.missing_required}"
+          requires_submit_confirm: true
+          requires_pre_submit_confirm: "${SAT_REQUIRE_PRE_SUBMIT_CONFIRM}"
+
+    - name: Save pre-submit operator checklist
+      action: FS.WriteText
+      params:
+        path: "${SAT_PRE_SUBMIT_OUTPUT_DIR}\\operator_checklist.md"
+        overwrite: true
+        text: |
+          # SAT pre-submit checkpoint
+
+          Target: ${SAT_TARGET_YEAR}-${SAT_TARGET_MONTH}
+          URL observed: ${sat_pre_submit_url}
+
+          Evidence files:
+          - screen: ${SAT_PRE_SUBMIT_OUTPUT_DIR}\screen.png
+          - safe state: ${SAT_PRE_SUBMIT_OUTPUT_DIR}\safe_state.json
+          - checkpoint: ${SAT_PRE_SUBMIT_OUTPUT_DIR}\checkpoint.json
+
+          Required human review before submit:
+          - The SAT page is the expected Formulario surface for the target period.
+          - No CAPTCHA, login wall, validation blocker, or missing required field is visible.
+          - SAT dynamic state reports errores=false and complete navigation checks.
+          - On VistaPrevia, encoded SAT preview data reports errores=false.
+          - The preview PDF was generated earlier in the month flow when preview is enabled.
+          - Amount state matches the intended declaration. For zero declarations, nonzero amount fields block submit unless SAT_SUBMIT_ALLOW_NONZERO_AMOUNTS is true.
+          - SAT_SUBMIT_CONFIRM is set, and SAT_PRE_SUBMIT_CONFIRM is set when SAT_REQUIRE_PRE_SUBMIT_CONFIRM is true.
+
+          This checkpoint performs no click, navigation, dialog accept, submit, payment, or CAPTCHA action.
+
+    - name: Fail when submit checkpoint is not ready
+      if_not: "${sat_pre_submit_state.submit_checkpoint.ready}"
+      action: Fail
+      params:
+        message: "Pre-submit checkpoint is not ready. Review ${SAT_PRE_SUBMIT_OUTPUT_DIR}\\checkpoint.json before any SAT submit action."
+
+    - name: Require SAT_SUBMIT_CONFIRM before submit
+      if_not: "${SAT_SUBMIT_CONFIRM}"
+      action: Fail
+      params:
+        message: "SAT_SUBMIT_CONFIRM is required before submit. Evidence was saved under ${SAT_PRE_SUBMIT_OUTPUT_DIR}."
+
+    - name: Require SAT_PRE_SUBMIT_CONFIRM before submit
+      if: "${SAT_REQUIRE_PRE_SUBMIT_CONFIRM}"
+      if_not: "${SAT_PRE_SUBMIT_CONFIRM}"
+      action: Fail
+      params:
+        message: "SAT_PRE_SUBMIT_CONFIRM is required after reviewing the pre-submit evidence under ${SAT_PRE_SUBMIT_OUTPUT_DIR}."
+
+    - name: Note pre-submit checkpoint passed
+      action: Note
+      params:
+        text: "SAT pre-submit checkpoint passed for ${SAT_TARGET_YEAR}-${SAT_TARGET_MONTH}."
+
+  debug:
+    - action: Note
+      params:
+        text: "sat pre-submit checkpoint debug mode"
