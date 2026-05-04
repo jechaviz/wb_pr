@@ -1,0 +1,32 @@
+steps:
+  - name: Ensure project docs exist
+    action: Framework.EnsureProjectDocs
+    params:
+      project_dir: "${PROJECT_DIR}"
+      project_name: "${PROJECT_NAME}"
+      category: "automation"
+      subcategory: "framework-parity"
+      customer: "Yo"
+      course: "openclaw-benchmark"
+      lesson: "waiba-parity-program"
+      task_name: "${TASK_NAME}"
+      task_summary: "${TASK_SUMMARY}"
+      max_units: "${MAX_UNITS}"
+
+  - name: Ensure autonomy doctrine docs exist
+    action: Framework.EnsureAutonomyDoctrine
+    params:
+      project_dir: "${PROJECT_DIR}"
+      project_name: "${PROJECT_NAME}"
+      category: "automation"
+      subcategory: "framework-parity"
+      customer: "Yo"
+      task_name: "${TASK_NAME}"
+      task_summary: "${TASK_SUMMARY}"
+
+  - name: Track architecture upgrade
+    action: Framework.TrackGrowth
+    params:
+      project_dir: "${PROJECT_DIR}"
+      category: "automation"
+      note: "Upgraded to numbered WAIBA architecture with autonomy enforcement and legacy wrapper parity path."

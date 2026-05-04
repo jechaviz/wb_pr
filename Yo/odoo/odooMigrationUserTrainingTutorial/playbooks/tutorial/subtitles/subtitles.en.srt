@@ -1,0 +1,116 @@
+﻿1
+00:00:00,000 --> 00:00:08,000
+Welcome. This tutorial covers the daily RP Rental workflow now migrated from manual steps into Odoo.
+
+2
+00:00:08,000 --> 00:00:17,000
+Odoo is the source of truth for customers, equipment, availability, contracts, deliveries, returns, quality checks, and billing.
+
+3
+00:00:17,000 --> 00:00:26,000
+If it is not in Odoo, it did not happen. Keep every step updated as you work.
+
+4
+00:00:26,000 --> 00:00:35,000
+Start from the main Apps menu. Use the global search bar to quickly find Customers, Rentals, and Products.
+
+5
+00:00:35,000 --> 00:00:44,000
+Your role controls what you can do. If a button is missing, request access instead of working around the process.
+
+6
+00:00:44,000 --> 00:00:54,000
+Before creating a quote, confirm the customer exists and the billing and delivery contacts are correct.
+
+7
+00:00:54,000 --> 00:01:04,000
+Create new customers only when needed. Add phone, email, addresses, and set any payment terms required by the business.
+
+8
+00:01:04,000 --> 00:01:13,000
+Rental products represent what you sell. Rental assets represent the physical units that get delivered and returned.
+
+9
+00:01:13,000 --> 00:01:22,000
+Use the imported catalog and product codes to search quickly. Confirm the item is marked as rentable and available.
+
+10
+00:01:22,000 --> 00:01:32,000
+Always confirm availability for the requested dates before promising equipment to the customer.
+
+11
+00:01:32,000 --> 00:01:43,000
+Create a new quotation for the customer, then add the rental products and set the rental start and end dates.
+
+12
+00:01:43,000 --> 00:01:52,000
+Set the rental period before validating pricing. Dates drive availability and the correct rental price calculation.
+
+13
+00:01:52,000 --> 00:02:03,000
+Pricing follows the imported rate matrix. Confirm daily, weekly, and monthly cycles align with the agreed commercial terms.
+
+14
+00:02:03,000 --> 00:02:13,000
+When the customer approves, confirm the quotation. This becomes the rental contract and triggers the operational workflow.
+
+15
+00:02:13,000 --> 00:02:23,000
+Review the delivery order, ensure the correct warehouse and destination, and prepare assets for dispatch.
+
+16
+00:02:23,000 --> 00:02:33,000
+Validate the delivery in Odoo when the equipment leaves. Record any required evidence and confirm the on-site location.
+
+17
+00:02:33,000 --> 00:02:42,000
+If dates or quantities change, update the contract immediately. Do not track changes only in chat or email.
+
+18
+00:02:42,000 --> 00:02:51,000
+If an asset is replaced, record the exchange so traceability and billing remain correct.
+
+19
+00:02:51,000 --> 00:03:00,000
+For partial returns, process the return picking and adjust the contract lines so invoicing stays accurate.
+
+20
+00:03:00,000 --> 00:03:09,000
+When all equipment returns, validate the return picking. This is the handoff into quality control.
+
+21
+00:03:09,000 --> 00:03:20,000
+Run the Rental Return inspection. Capture condition notes and issues so maintenance and billing decisions are supported.
+
+22
+00:03:20,000 --> 00:03:31,000
+Before sending equipment out again, complete the Ready-To-Rent inspection. This prevents avoidable failures in the field.
+
+23
+00:03:31,000 --> 00:03:41,000
+Billing is driven by the contract and time. Generate invoices based on the agreed billing cadence.
+
+24
+00:03:41,000 --> 00:03:52,000
+If your process uses the 3-3-3 rule, apply it consistently: daily, weekly, and monthly billing logic must match the contract.
+
+25
+00:03:52,000 --> 00:04:03,000
+Create the invoice from the rental order, review line items and taxes, then send it to the customer from Odoo.
+
+26
+00:04:03,000 --> 00:04:12,000
+When payment is received, register it and reconcile. Keep Accounting accurate so reporting stays reliable.
+
+27
+00:04:12,000 --> 00:04:22,000
+Use reports to monitor open rentals, asset utilization, overdue returns, invoices due, and quality backlog.
+
+28
+00:04:22,000 --> 00:04:31,000
+Once the rental is fully returned, quality is completed, and invoicing is done, close the loop and archive evidence.
+
+29
+00:04:31,000 --> 00:04:39,000
+You are ready to run the daily workflow in Odoo using your real catalog, assets, and rates.
+

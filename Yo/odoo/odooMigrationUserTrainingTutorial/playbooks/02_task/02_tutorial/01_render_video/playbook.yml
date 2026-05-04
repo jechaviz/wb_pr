@@ -1,0 +1,3 @@
+steps:
+  - name: Render tutorial video from screen capture
+    playbook: "../../../tutorial/render_video/playbook.yml"

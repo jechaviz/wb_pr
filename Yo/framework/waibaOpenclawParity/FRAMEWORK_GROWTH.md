@@ -1,0 +1,48 @@
+﻿# Framework Growth Log
+
+Tracks extension points discovered during project execution:
+- new skills
+- playbook spec growth
+- category evolution (scraping/automation/testing/etc)
+
+- 2026-02-12 10:34:14 | category=automation | note=Parity program initialized with modular baseline/roadmap/implementation flow
+- 2026-02-12 10:35:20 | category=automation | note=Parity program initialized with modular baseline/roadmap/implementation flow
+- 2026-02-12 10:35:20 | category=automation | new_skill=Shell | note=Proposed runtime shell execution skill with policy guardrails
+- 2026-02-12 10:35:20 | category=automation | new_skill=Vision | note=Proposed first-class vision facade for OCR and detection
+- 2026-02-12 10:35:20 | category=automation | spec_extension=step.timeout_ms and cancellation semantics | note=Required for reliable parity with advanced runtimes
+- 2026-02-12 11:18:50 | category=automation | note=Parity program initialized with modular baseline/roadmap/implementation flow
+- 2026-02-12 11:18:50 | category=automation | new_skill=Shell | note=Delivered runtime shell execution skill with policy guardrails
+- 2026-02-12 11:18:50 | category=automation | new_skill=LLM | note=Delivered multimodal model router for text and vision providers
+- 2026-02-12 11:18:50 | category=automation | new_skill=Vision | note=Proposed first-class vision facade for OCR and detection
+- 2026-02-12 11:18:50 | category=automation | spec_extension=step.timeout_ms and cancellation semantics | note=Required for reliable parity with advanced runtimes
+- 2026-02-12 11:19:34 | category=automation | note=Parity program initialized with modular baseline/roadmap/implementation flow
+- 2026-02-12 11:19:34 | category=automation | new_skill=Shell | note=Delivered runtime shell execution skill with policy guardrails
+- 2026-02-12 11:19:34 | category=automation | new_skill=LLM | note=Delivered multimodal model router for text and vision providers
+- 2026-02-12 11:19:34 | category=automation | new_skill=Vision | note=Proposed first-class vision facade for OCR and detection
+- 2026-02-12 11:19:34 | category=automation | spec_extension=step.timeout_ms and cancellation semantics | note=Required for reliable parity with advanced runtimes
+- 2026-02-12 11:25:00 | category=automation | note=Parity program initialized with modular baseline/roadmap/implementation flow
+- 2026-02-12 11:25:00 | category=automation | new_skill=Shell | note=Delivered runtime shell execution skill with policy guardrails
+- 2026-02-12 11:25:00 | category=automation | new_skill=LLM | note=Delivered multimodal model router for text and vision providers
+- 2026-02-12 11:25:00 | category=automation | new_skill=Vision | note=Delivered first-class vision facade for describe/ocr/detect with LLM and YOLO hook
+- 2026-02-12 11:25:00 | category=automation | spec_extension=step.timeout_ms and cancellation semantics | note=Required for reliable parity with advanced runtimes
+- 2026-02-12 11:26:33 | category=automation | note=Parity program initialized with modular baseline/roadmap/implementation flow
+- 2026-02-12 11:26:33 | category=automation | new_skill=Shell | note=Delivered runtime shell execution skill with policy guardrails
+- 2026-02-12 11:26:33 | category=automation | new_skill=LLM | note=Delivered multimodal model router for text and vision providers
+- 2026-02-12 11:26:33 | category=automation | new_skill=Vision | note=Delivered first-class vision facade for describe/ocr/detect with LLM and YOLO hook
+- 2026-02-12 11:26:33 | category=automation | spec_extension=step.timeout_ms and cancellation semantics | note=Required for reliable parity with advanced runtimes
+- 2026-02-12 12:37:22 | category=automation | note=Parity program initialized with modular baseline/roadmap/implementation flow
+- 2026-02-12 12:37:22 | category=automation | new_skill=Shell | note=Delivered runtime shell execution skill with policy guardrails
+- 2026-02-12 12:37:22 | category=automation | new_skill=LLM | note=Delivered multimodal model router for text and vision providers
+- 2026-02-12 12:37:22 | category=automation | new_skill=Vision | note=Delivered first-class vision facade for describe/ocr/detect with LLM and YOLO hook
+- 2026-02-12 12:37:22 | category=automation | spec_extension=step.timeout_ms and cancellation semantics | note=Required for reliable parity with advanced runtimes
+- 2026-02-12 20:44:40 | category=automation | note=Parity program initialized with modular baseline/roadmap/implementation flow
+- 2026-02-12 20:44:40 | category=automation | new_skill=Shell | note=Delivered runtime shell execution skill with policy guardrails
+- 2026-02-12 20:44:40 | category=automation | new_skill=LLM | note=Delivered multimodal model router for text and vision providers
+- 2026-02-12 20:44:40 | category=automation | new_skill=Vision | note=Delivered first-class vision facade for describe/ocr/detect with LLM and YOLO hook
+- 2026-02-12 20:44:40 | category=automation | spec_extension=step.timeout_ms and cancellation semantics | note=Required for reliable parity with advanced runtimes
+- 2026-02-12 20:53:36 | category=automation | note=Parity program initialized with modular baseline/roadmap/implementation flow
+- 2026-02-12 20:53:36 | category=automation | new_skill=Shell | note=Delivered runtime shell execution skill with policy guardrails
+- 2026-02-12 20:53:36 | category=automation | new_skill=LLM | note=Delivered multimodal model router for text and vision providers
+- 2026-02-12 20:53:36 | category=automation | new_skill=Vision | note=Delivered first-class vision facade for describe/ocr/detect with LLM and YOLO hook
+- 2026-02-12 20:53:36 | category=automation | spec_extension=step.timeout_ms and cancellation semantics | note=Required for reliable parity with advanced runtimes
+- 2026-02-12 20:53:36 | category=automation | new_skill=Messaging.TelegramInbound | note=Delivered checkpoint-ready Telegram inbound parser and CLI poll workflow

@@ -1,0 +1,181 @@
+metadata:
+  category: "finance"
+  subcategory: "sat-declaration"
+  workflow: "probe-pending-temporales-rows"
+
+variables:
+  DEBUG_PORT: 9333
+  OUTPUT_DIR: "${PLAYBOOK_DIR}\\playbooks\\output"
+  SAT_PROFILE_URL: "https://pstcdypisr.clouda.sat.gob.mx/Declaracion/Temporales"
+  SKILL_NAV_SUPERCONTROL_PLAYBOOK: "${PLAYBOOK_DIR}\\..\\waiba-navigation-supercontrol\\playbooks\\01_supercontrol\\playbook.yml"
+  SAT_USE_NAV_SUPERCONTROL: true
+  SAT_NAV_ENABLE_OCR: false
+
+steps:
+  prod:
+    - name: Ensure diagnostics output directory
+      action: FS.EnsureDir
+      params:
+        path: "${OUTPUT_DIR}\\sat\\diagnostics"
+
+    - name: Configure supercontrol NAV_URL for SAT pending rows probe
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_URL
+        value: "${SAT_PROFILE_URL}"
+
+    - name: Configure supercontrol open URL for SAT pending rows probe
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_START_OPEN_URL
+        value: "${SAT_PROFILE_URL}"
+
+    - name: Configure supercontrol host expectation for SAT pending rows probe
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_EXPECT_HOST_ENDSWITH
+        value: "sat.gob.mx"
+
+    - name: Configure supercontrol target domain for SAT pending rows probe
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_TARGET_URL_CONTAINS
+        value: "sat.gob.mx|pstcdypisr.clouda.sat.gob.mx|http"
+
+    - name: Configure supercontrol tab policy for SAT pending rows probe
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_REUSE_EXISTING_TAB
+        value: true
+
+    - name: Configure supercontrol no-new-tab for SAT pending rows probe
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ALLOW_NEW_TAB
+        value: false
+
+    - name: Configure supercontrol hooks for SAT pending rows probe
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_PRE_HOOK
+        value: false
+
+    - name: Configure supercontrol post hook for SAT pending rows probe
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_POST_HOOK
+        value: false
+
+    - name: Configure supercontrol JS patch for SAT pending rows probe
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_JS_PATCH
+        value: false
+
+    - name: Configure supercontrol OCR toggle for SAT pending rows probe
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_OCR
+        value: "${SAT_NAV_ENABLE_OCR}"
+
+    - name: Configure supercontrol evidence label for SAT pending rows probe
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_CAPTURE_LABEL
+        value: "sat_probe_pending_rows"
+
+    - name: Attach to SAT browser session via navigation supercontrol
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      playbook: "${SKILL_NAV_SUPERCONTROL_PLAYBOOK}"
+
+    - name: Attach to SAT browser session (fallback native)
+      if_not: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Helium.StartEdge
+      params:
+        port: "${DEBUG_PORT}"
+        open_url: "${SAT_PROFILE_URL}"
+        reuse_existing_tab: true
+        allow_new_tab: false
+        target_type: page
+        target_url_contains: "pstcdypisr.clouda.sat.gob.mx"
+        exclude_url_contains: "devtools://|edge://|chrome://"
+        minimize_window: false
+
+    - name: Wait until SAT domain is ready
+      action: Helium.WaitUntilUrl
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: 25
+        host_endswith: "sat.gob.mx"
+
+    - name: Probe pending row candidates
+      action: CDP.EvaluateJson
+      register: sat_pending_probe
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const norm = (v) => (v == null ? "" : String(v)).replace(/\s+/g, " ").trim();
+            const vis = (e) => {
+              if (!e) return false;
+              const r = e.getBoundingClientRect();
+              const s = getComputedStyle(e);
+              return r.width > 0 && r.height > 0 && s.display !== "none" && s.visibility !== "hidden" && s.opacity !== "0";
+            };
+            const textHit = (t) => /normal\s*\/\s*(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)/i.test(t || "");
+            const all = Array.from(document.querySelectorAll("*"));
+            const hits = [];
+            for (const el of all) {
+              const t = norm(el.innerText || el.textContent || "");
+              if (!t || !textHit(t)) continue;
+              if (!vis(el)) continue;
+              const clickable = !!el.onclick || !!el.getAttribute("onclick") || ["a","button"].includes((el.tagName || "").toLowerCase()) || (el.getAttribute("role") || "").toLowerCase() === "button" || el.style.cursor === "pointer";
+              hits.push({
+                tag: (el.tagName || "").toLowerCase(),
+                id: el.id || "",
+                class: el.className || "",
+                role: el.getAttribute("role") || "",
+                clickable,
+                onclick: String(el.getAttribute("onclick") || ""),
+                text: t.slice(0, 400),
+                href: el.href || el.getAttribute("href") || "",
+                data_attrs: Array.from(el.attributes || []).filter((a) => String(a.name || "").startsWith("data-")).map((a) => ({ name: a.name, value: a.value })).slice(0, 20),
+                html: String((el.outerHTML || "").slice(0, 1400))
+              });
+              if (hits.length >= 120) break;
+            }
+            const anchors = Array.from(document.querySelectorAll("a,button,div,li,tr")).filter((el) => vis(el) && textHit(norm(el.innerText || el.textContent || ""))).map((el) => ({
+              tag: (el.tagName || "").toLowerCase(),
+              id: el.id || "",
+              class: el.className || "",
+              text: norm(el.innerText || el.textContent || "").slice(0, 300),
+              onclick: String(el.getAttribute("onclick") || ""),
+              href: el.href || el.getAttribute("href") || ""
+            })).slice(0, 120);
+            return {
+              ok: true,
+              url: location.href || "",
+              title: document.title || "",
+              body_preview: norm((document.body && document.body.innerText) || "").slice(0, 4000),
+              hits,
+              anchors
+            };
+          })()
+
+    - name: Save pending row probe
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\diagnostics\\sat_pending_rows_probe.json"
+        overwrite: true
+        value: "${sat_pending_probe}"

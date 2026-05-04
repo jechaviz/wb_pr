@@ -1,0 +1,228 @@
+steps:
+  - name: Default WAIBA home when missing
+    if_not: "${WAIBA_HOME}"
+    action: Set
+    params:
+      name: WAIBA_HOME
+      value: "C:\\Users\\jecha\\.waiba"
+
+  - name: Default SAT skill root when missing
+    if_not: "${SKILL_SAT_TAX_ROOT}"
+    action: Set
+    params:
+      name: SKILL_SAT_TAX_ROOT
+      value: "${PLAYBOOK_DIR}\\..\\.."
+
+  - name: Default SAT skill playbook directory when missing
+    if_not: "${SKILL_SAT_TAX_PLAYBOOK_DIR}"
+    action: Set
+    params:
+      name: SKILL_SAT_TAX_PLAYBOOK_DIR
+      value: "${SKILL_SAT_TAX_ROOT}\\playbooks"
+
+  - name: Default SAT skill assets directory when missing
+    if_not: "${SKILL_SAT_TAX_ASSETS_DIR}"
+    action: Set
+    params:
+      name: SKILL_SAT_TAX_ASSETS_DIR
+      value: "${SKILL_SAT_TAX_PLAYBOOK_DIR}\\assets"
+
+  - name: Default SAT login URL when missing
+    if_not: "${SAT_LOGIN_URL}"
+    action: Set
+    params:
+      name: SAT_LOGIN_URL
+      value: "https://pstcdypisr.clouda.sat.gob.mx/Declaracion/Temporales"
+
+  - name: Default SAT recovery URL when missing
+    if_not: "${SAT_RECOVERY_URL}"
+    action: Set
+    params:
+      name: SAT_RECOVERY_URL
+      value: "${SAT_LOGIN_URL}"
+
+  - name: Default SAT supercontrol toggle when missing
+    if_not: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: SAT_USE_NAV_SUPERCONTROL
+      value: true
+
+  - name: Default SAT supercontrol playbook path when missing
+    if_not: "${SKILL_NAV_SUPERCONTROL_PLAYBOOK}"
+    action: Set
+    params:
+      name: SKILL_NAV_SUPERCONTROL_PLAYBOOK
+      value: "${SKILL_SAT_TAX_ROOT}\\..\\waiba-navigation-supercontrol\\playbooks\\01_supercontrol\\playbook.yml"
+
+  - name: Default SAT supercontrol OCR toggle when missing
+    if_not: "${SAT_NAV_ENABLE_OCR}"
+    action: Set
+    params:
+      name: SAT_NAV_ENABLE_OCR
+      value: false
+
+  - name: Default SAT output directory when missing
+    if_not: "${OUTPUT_DIR}"
+    action: Set
+    params:
+      name: OUTPUT_DIR
+      value: "${PLAYBOOK_DIR}\\..\\output"
+
+  - name: Ensure SAT output directory
+    action: FS.EnsureDir
+    params:
+      path: "${OUTPUT_DIR}\\sat"
+
+  - name: Configure supercontrol NAV_URL for SAT iframe diagnostics
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_URL
+      value: "${SAT_RECOVERY_URL}"
+
+  - name: Configure supercontrol open URL for SAT iframe diagnostics
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_START_OPEN_URL
+      value: "${SAT_RECOVERY_URL}"
+
+  - name: Configure supercontrol host expectation for SAT iframe diagnostics
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_EXPECT_HOST_ENDSWITH
+      value: "sat.gob.mx"
+
+  - name: Configure supercontrol target domain for SAT iframe diagnostics
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_TARGET_URL_CONTAINS
+      value: "sat.gob.mx|pstcdypisr.clouda.sat.gob.mx|http"
+
+  - name: Configure supercontrol tab policy for SAT iframe diagnostics
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_REUSE_EXISTING_TAB
+      value: true
+
+  - name: Configure supercontrol no-new-tab for SAT iframe diagnostics
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_ALLOW_NEW_TAB
+      value: false
+
+  - name: Configure supercontrol hooks for SAT iframe diagnostics
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_ENABLE_PRE_HOOK
+      value: false
+
+  - name: Configure supercontrol post hook for SAT iframe diagnostics
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_ENABLE_POST_HOOK
+      value: false
+
+  - name: Configure supercontrol JS patch for SAT iframe diagnostics
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_ENABLE_JS_PATCH
+      value: false
+
+  - name: Configure supercontrol OCR toggle for SAT iframe diagnostics
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_ENABLE_OCR
+      value: "${SAT_NAV_ENABLE_OCR}"
+
+  - name: Configure supercontrol evidence label for SAT iframe diagnostics
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_CAPTURE_LABEL
+      value: "sat_03_iframe_recovery"
+
+  - name: Open SAT page via navigation supercontrol for iframe diagnostics
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    playbook: "${SKILL_NAV_SUPERCONTROL_PLAYBOOK}"
+
+  - name: Open SAT page for iframe diagnostics (fallback native)
+    if_not: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Helium.StartEdge
+    params:
+      port: "${DEBUG_PORT}"
+      open_url: "${SAT_RECOVERY_URL}"
+      reuse_existing_tab: true
+      allow_new_tab: false
+      target_type: page
+      target_url_contains: "pstcdypisr.clouda.sat.gob.mx"
+      exclude_url_contains: "devtools://|edge://|chrome://"
+      minimize_window: "${RUN_MINIMIZED}"
+
+  - name: Wait until SAT domain is ready
+    action: Helium.WaitUntilUrl
+    params:
+      port: "${DEBUG_PORT}"
+      timeout_secs: 30
+      host_endswith: "sat.gob.mx"
+
+  - name: Capture page probe for iframe recovery
+    action: Helium.Probe
+    register: sat_iframe_page_probe
+    params:
+      port: "${DEBUG_PORT}"
+
+  - name: Capture iframe diagnostics
+    action: Helium.DetectIframes
+    register: sat_iframe_diagnostics
+    params:
+      port: "${DEBUG_PORT}"
+      limit: 40
+
+  - name: Persist iframe page probe
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\03_iframe_page_probe.json"
+      overwrite: true
+      value: "${sat_iframe_page_probe}"
+
+  - name: Persist iframe diagnostics
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\03_iframe_recovery.json"
+      overwrite: true
+      value: "${sat_iframe_diagnostics}"
+
+  - name: Persist iframe recovery operator guide
+    action: FS.WriteText
+    params:
+      path: "${OUTPUT_DIR}\\sat\\03_iframe_recovery_guide.md"
+      overwrite: true
+      text: |
+        # SAT Iframe Recovery Guide
+
+        1) Review `03_iframe_recovery.json` and identify the top candidate frame by `score`.
+        2) If `same_origin` is false, use top-level navigation/clicks first.
+        3) If captcha appears inside cross-origin frame, keep checkpoint manual.
+        4) Re-run `02_sat_portal_session` after frame blockage is resolved.
+
+  - name: Note when no iframe is present
+    if_not: "${sat_iframe_diagnostics.has_iframes}"
+    action: Note
+    params:
+      text: "No iframe detected on current SAT page. Recovery can continue with direct top-level locators."
+
+  - name: Note when iframe candidates are available
+    if: "${sat_iframe_diagnostics.has_iframes}"
+    action: Note
+    params:
+      text: "Iframe diagnostics captured. Use candidate ranking in 03_iframe_recovery.json to continue SAT navigation."

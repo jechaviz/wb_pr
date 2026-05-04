@@ -1,0 +1,29 @@
+﻿steps:
+  - name: Load project JS entrypoint
+    action: FS.ReadText
+    register: js_main
+    params:
+      path: "${JS_DIR}\\main.js"
+
+  - name: Optional connect target tab
+    action: CDP.Connect
+    ignore_errors: true
+    params:
+      port: "${DEBUG_PORT}"
+      open_url: "${COURSE_URL}"
+
+  - name: Optional JS execution
+    action: CDP.EvaluateJson
+    register: js_result
+    ignore_errors: true
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_main}"
+
+  - name: Persist JS execution artifact
+    if: "${js_result}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\main.result.json"
+      value: "${js_result}"
+      overwrite: true

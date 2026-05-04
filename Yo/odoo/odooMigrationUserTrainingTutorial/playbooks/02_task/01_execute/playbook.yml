@@ -1,0 +1,6 @@
+steps:
+  - name: Visit Odoo instance
+    playbook: "../../odoo/connect/playbook.yml"
+
+  - name: Build tutorial package
+    playbook: "../../tutorial/build/playbook.yml"

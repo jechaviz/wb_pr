@@ -1,0 +1,40 @@
+﻿1
+00:00:00,000 --> 00:00:09,000
+Asignar activos de renta y disponibilidad inicial en Odoo.
+
+2
+00:00:09,000 --> 00:00:18,000
+Generar cotizacion con equipo, fechas y condiciones comerciales.
+
+3
+00:00:18,000 --> 00:00:27,000
+Convertir cotizacion aprobada en contrato de renta.
+
+4
+00:00:27,000 --> 00:00:35,000
+Gestionar contrato de intercambio cuando se reemplaza un activo.
+
+5
+00:00:35,000 --> 00:00:43,000
+Registrar devolucion parcial y ajustar facturacion.
+
+6
+00:00:43,000 --> 00:00:53,000
+Ejecutar checklist de devolucion y documentar condicion del activo.
+
+7
+00:00:53,000 --> 00:01:02,000
+Completar control Ready-To-Rent antes de nueva salida.
+
+8
+00:01:02,000 --> 00:01:11,000
+Facturar por ciclos diarios, semanales y mensuales con regla 3-3-3.
+
+9
+00:01:11,000 --> 00:01:19,000
+Registrar entrega, ubicacion y evidencia operativa.
+
+10
+00:01:19,000 --> 00:01:28,000
+Cerrar contrato, archivar evidencias y consultar reportes.
+

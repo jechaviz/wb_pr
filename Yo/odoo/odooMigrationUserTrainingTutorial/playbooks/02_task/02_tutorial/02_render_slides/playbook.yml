@@ -1,0 +1,3 @@
+steps:
+  - name: Render tutorial slideshow
+    playbook: "../../../tutorial/render_slides/playbook.yml"

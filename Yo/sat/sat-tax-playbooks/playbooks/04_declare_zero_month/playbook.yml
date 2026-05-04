@@ -1,0 +1,1212 @@
+steps:
+  - name: Default WAIBA home when missing
+    if_not: "${WAIBA_HOME}"
+    action: Set
+    params:
+      name: WAIBA_HOME
+      value: "C:\\Users\\jecha\\.waiba"
+
+  - name: Default SAT skill root when missing
+    if_not: "${SKILL_SAT_TAX_ROOT}"
+    action: Set
+    params:
+      name: SKILL_SAT_TAX_ROOT
+      value: "${PLAYBOOK_DIR}\\..\\.."
+
+  - name: Default SAT playbook directory when missing
+    if_not: "${SKILL_SAT_TAX_PLAYBOOK_DIR}"
+    action: Set
+    params:
+      name: SKILL_SAT_TAX_PLAYBOOK_DIR
+      value: "${SKILL_SAT_TAX_ROOT}\\playbooks"
+
+  - name: Default SAT assets directory when missing
+    if_not: "${SKILL_SAT_TAX_ASSETS_DIR}"
+    action: Set
+    params:
+      name: SKILL_SAT_TAX_ASSETS_DIR
+      value: "${SKILL_SAT_TAX_PLAYBOOK_DIR}\\assets"
+
+  - name: Default SAT output directory when missing
+    if_not: "${OUTPUT_DIR}"
+    action: Set
+    params:
+      name: OUTPUT_DIR
+      value: "${PLAYBOOK_DIR}\\..\\output"
+
+  - name: Default SAT login URL when missing
+    if_not: "${SAT_LOGIN_URL}"
+    action: Set
+    params:
+      name: SAT_LOGIN_URL
+      value: "https://pstcdypisr.clouda.sat.gob.mx/"
+
+  - name: Default SAT profile URL when missing
+    if_not: "${SAT_PROFILE_URL}"
+    action: Set
+    params:
+      name: SAT_PROFILE_URL
+      value: "https://pstcdypisr.clouda.sat.gob.mx/Declaracion/Temporales"
+
+  - name: Default SAT profile form URL when missing
+    if_not: "${SAT_PROFILE_FORM_URL}"
+    action: Set
+    params:
+      name: SAT_PROFILE_FORM_URL
+      value: "https://pstcdypisr.clouda.sat.gob.mx/Declaracion/PerfilDeclaracion"
+
+  - name: Default periodicidad when missing
+    if_not: "${SAT_PERIODICIDAD}"
+    action: Set
+    params:
+      name: SAT_PERIODICIDAD
+      value: "M"
+
+  - name: Default tipo declaracion when missing
+    if_not: "${SAT_TIPO_DECLARACION}"
+    action: Set
+    params:
+      name: SAT_TIPO_DECLARACION
+      value: "001"
+
+  - name: Default obligations list when missing
+    if_not: "${SAT_OBLIGATION_IDS}"
+    action: Set
+    params:
+      name: SAT_OBLIGATION_IDS
+      value:
+        - "0112"
+        - "0113"
+        - "0304"
+
+  - name: Default preview flag when missing
+    if_not: "${SAT_DO_PREVIEW}"
+    action: Set
+    params:
+      name: SAT_DO_PREVIEW
+      value: true
+
+  - name: Default submit flag when missing
+    if_not: "${SAT_DO_SUBMIT}"
+    action: Set
+    params:
+      name: SAT_DO_SUBMIT
+      value: false
+
+  - name: Default select-all obligations flag
+    if_not: "${SAT_SELECT_ALL_OBLIGATIONS}"
+    action: Set
+    params:
+      name: SAT_SELECT_ALL_OBLIGATIONS
+      value: "false"
+
+  - name: Default use-SAT-default obligations flag
+    if_not: "${SAT_USE_DEFAULT_CHECKED_OBLIGATIONS}"
+    action: Set
+    params:
+      name: SAT_USE_DEFAULT_CHECKED_OBLIGATIONS
+      value: "false"
+
+  - name: Default SAT supercontrol toggle when missing
+    if_not: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: SAT_USE_NAV_SUPERCONTROL
+      value: true
+
+  - name: Default SAT supercontrol playbook path when missing
+    if_not: "${SKILL_NAV_SUPERCONTROL_PLAYBOOK}"
+    action: Set
+    params:
+      name: SKILL_NAV_SUPERCONTROL_PLAYBOOK
+      value: "${SKILL_SAT_TAX_ROOT}\\..\\waiba-navigation-supercontrol\\playbooks\\01_supercontrol\\playbook.yml"
+
+  - name: Default SAT supercontrol OCR toggle when missing
+    if_not: "${SAT_NAV_ENABLE_OCR}"
+    action: Set
+    params:
+      name: SAT_NAV_ENABLE_OCR
+      value: false
+
+  - name: Validate year input
+    if_not: "${SAT_TARGET_YEAR}"
+    action: Fail
+    params:
+      message: "Missing SAT_TARGET_YEAR (e.g. 2025)."
+
+  - name: Validate month input (3-digit)
+    if_not: "${SAT_TARGET_MONTH}"
+    action: Fail
+    params:
+      message: "Missing SAT_TARGET_MONTH (e.g. 001)."
+
+  - name: Ensure SAT output directory
+    action: FS.EnsureDir
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}"
+
+  - name: Ensure SAT acuse directory
+    action: FS.EnsureDir
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\acuse"
+
+  - name: Ensure SAT preview directory
+    action: FS.EnsureDir
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\preview"
+
+  - name: Configure supercontrol NAV_URL for SAT declaration month
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_URL
+      value: "${SAT_PROFILE_URL}"
+
+  - name: Configure supercontrol open URL for SAT declaration month
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_START_OPEN_URL
+      value: "${SAT_PROFILE_URL}"
+
+  - name: Configure supercontrol host expectation for SAT declaration month
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_EXPECT_HOST_ENDSWITH
+      value: "sat.gob.mx"
+
+  - name: Configure supercontrol target domain for SAT declaration month
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_TARGET_URL_CONTAINS
+      value: "sat.gob.mx|pstcdypisr.clouda.sat.gob.mx|http"
+
+  - name: Configure supercontrol tab policy for SAT declaration month
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_REUSE_EXISTING_TAB
+      value: true
+
+  - name: Configure supercontrol no-new-tab for SAT declaration month
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_ALLOW_NEW_TAB
+      value: false
+
+  - name: Configure supercontrol hooks for SAT declaration month
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_ENABLE_PRE_HOOK
+      value: false
+
+  - name: Configure supercontrol post hook for SAT declaration month
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_ENABLE_POST_HOOK
+      value: false
+
+  - name: Configure supercontrol JS patch for SAT declaration month
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_ENABLE_JS_PATCH
+      value: false
+
+  - name: Configure supercontrol OCR toggle for SAT declaration month
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_ENABLE_OCR
+      value: "${SAT_NAV_ENABLE_OCR}"
+
+  - name: Configure supercontrol evidence label for SAT declaration month
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_CAPTURE_LABEL
+      value: "sat_04_declare_month_${SAT_TARGET_YEAR}_${SAT_TARGET_MONTH}"
+
+  - name: Ensure SAT browser session via navigation supercontrol
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    playbook: "${SKILL_NAV_SUPERCONTROL_PLAYBOOK}"
+
+  - name: Ensure SAT browser session is connected (fallback native)
+    if_not: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Helium.StartEdge
+    params:
+      port: "${DEBUG_PORT}"
+      open_url: "${SAT_PROFILE_URL}"
+      reuse_existing_tab: true
+      allow_new_tab: false
+      target_type: page
+      target_url_contains: "pstcdypisr.clouda.sat.gob.mx"
+      exclude_url_contains: "devtools://|edge://|chrome://"
+      minimize_window: "${RUN_MINIMIZED}"
+
+  - name: Wait until SAT domain is ready
+    action: Helium.WaitUntilUrl
+    params:
+      port: "${DEBUG_PORT}"
+      timeout_secs: 30
+      host_endswith: "sat.gob.mx"
+
+  - name: Try open declaration flow from SAT landing menu
+    action: Helium.ClickAny
+    ignore_errors: true
+    register: sat_click_presentar_menu
+    params:
+      port: "${DEBUG_PORT}"
+      text_candidates: "Presentar declaración|Presentar declaracion|Presentación declaración otras obligaciones|Presentacion declaracion otras obligaciones"
+      implicit_wait_ms: 2200
+      find_in_page_fallback: true
+
+  - name: Try direct navigation to SAT profile URL (fallback)
+    action: CDP.Navigate
+    ignore_errors: true
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${SAT_PROFILE_URL}"
+      wait_ms: 3500
+      wait_until: "interactive"
+
+  - name: Wait for profile page
+    action: Helium.WaitUntilUrl
+    ignore_errors: true
+    register: sat_wait_profile_route
+    params:
+      port: "${DEBUG_PORT}"
+      timeout_secs: 35
+      host_endswith: "sat.gob.mx"
+      url_regex: "PerfilDeclaracion|Temporales"
+
+  - name: Verify profile route
+    action: CDP.EvaluateJson
+    register: sat_profile_route
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "(() => ({ url: location.href || '', on_profile: /PerfilDeclaracion|Temporales/i.test(location.href || '') }))()"
+
+  - name: Fail when profile route is unresolved
+    if_not: "${sat_profile_route.on_profile}"
+    action: Fail
+    params:
+      message: "Unable to reach SAT profile route (Temporales/PerfilDeclaracion). Keep SAT session on Declaracion/Temporales and rerun."
+
+  - name: Click "Iniciar una nueva declaracion" when available
+    if: "${sat_profile_route.on_profile}"
+    ignore_errors: true
+    action: Helium.ClickAny
+    register: sat_click_new_form
+    params:
+      port: "${DEBUG_PORT}"
+      candidates:
+        - kind: "s"
+          selector: "#newForm"
+      text_candidates: "INICIAR UNA NUEVA DECLARACIÓN|INICIAR UNA NUEVA DECLARACION|Iniciar una nueva declaración|Iniciar una nueva declaracion"
+      implicit_wait_ms: 2200
+      find_in_page_fallback: true
+
+  - name: Open new declaration from Temporales (DOM fallback)
+    if: "${sat_profile_route.on_profile}"
+    ignore_errors: true
+    action: CDP.EvaluateJson
+    register: sat_new_form_dom
+    params:
+      port: "${DEBUG_PORT}"
+      expression: |
+        (() => {
+          const clickIf = (el) => {
+            if (!el) return false;
+            try { el.click(); return true; } catch (e) { return false; }
+          };
+          const pickAccept = () => {
+            const all = Array.from(document.querySelectorAll("button,input[type=button],input[type=submit],a"));
+            return all.find((e) => /aceptar/i.test(String((e.textContent || e.value || "")).trim()));
+          };
+          const before = location.href || "";
+          const newForm = document.querySelector("#newForm");
+          const clickedNewForm = clickIf(newForm);
+          const accept = pickAccept();
+          const clickedAccept = clickIf(accept);
+          return {
+            ok: true,
+            url_before: before,
+            url_after: location.href || "",
+            clicked_new_form: clickedNewForm,
+            clicked_accept: clickedAccept
+          };
+        })()
+
+  - name: Wait after opening declaration form
+    if: "${sat_profile_route.on_profile}"
+    action: CDP.Wait
+    params:
+      ms: 1200
+
+  - name: Wait for PerfilDeclaracion route after opening form
+    if: "${sat_profile_route.on_profile}"
+    ignore_errors: true
+    action: Helium.WaitUntilUrl
+    params:
+      port: "${DEBUG_PORT}"
+      timeout_secs: 12
+      url_regex: "PerfilDeclaracion"
+
+  - name: Verify declaration profile form route
+    if: "${sat_profile_route.on_profile}"
+    action: CDP.EvaluateJson
+    register: sat_profile_form_route
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "(() => ({ url: location.href || '', on_profile_form: /PerfilDeclaracion/i.test(location.href || '') }))()"
+
+  - name: Detect login wall during profile form open
+    if: "${sat_profile_route.on_profile}"
+    action: CDP.EvaluateJson
+    register: sat_profile_login_wall
+    params:
+      port: "${DEBUG_PORT}"
+      expression: |
+        (() => {
+          const u = String(location.href || "");
+          const t = String(document.title || "");
+          const b = String((document.body && document.body.innerText) || "").toLowerCase();
+          const onLogin =
+            /loginda\.siat\.sat\.gob\.mx|\/nidp\/wsfed\//i.test(u) ||
+            /sat autenticaci[oó]n|acceso por contrase[nñ]a|captcha|iniciar sesi[oó]n|password/i.test((t + " " + b).toLowerCase());
+          return { ok: true, on_login: onLogin, url: u, title: t };
+        })()
+
+  - name: Wait for manual login resolution when redirected to auth wall
+    if: "${sat_profile_login_wall.on_login}"
+    ignore_errors: true
+    action: Helium.WaitUntil
+    register: sat_profile_login_wait
+    params:
+      port: "${DEBUG_PORT}"
+      timeout_secs: 300
+      interval_ms: 900
+      expression: |
+        (() => {
+          const u = String(location.href || "");
+          const t = String(document.title || "");
+          const b = String((document.body && document.body.innerText) || "").toLowerCase();
+          const onLogin =
+            /loginda\.siat\.sat\.gob\.mx|\/nidp\/wsfed\//i.test(u) ||
+            /sat autenticaci[oó]n|acceso por contrase[nñ]a|captcha|iniciar sesi[oó]n|password/i.test((t + " " + b).toLowerCase());
+          if (onLogin) return false;
+          return /pstcdypisr\.clouda\.sat\.gob\.mx\/Declaracion\//i.test(u);
+        })()
+
+  - name: Navigate back to PerfilDeclaracion after manual login
+    if: "${sat_profile_login_wall.on_login}"
+    action: CDP.Navigate
+    ignore_errors: true
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${SAT_PROFILE_FORM_URL}"
+      wait_ms: 2800
+      wait_until: "interactive"
+
+  - name: Wait for PerfilDeclaracion after login recovery
+    if: "${sat_profile_login_wall.on_login}"
+    ignore_errors: true
+    action: Helium.WaitUntilUrl
+    params:
+      port: "${DEBUG_PORT}"
+      timeout_secs: 20
+      url_regex: "PerfilDeclaracion"
+
+  - name: Re-verify declaration profile form route after login recovery
+    if: "${sat_profile_login_wall.on_login}"
+    action: CDP.EvaluateJson
+    register: sat_profile_form_route
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "(() => ({ url: location.href || '', on_profile_form: /PerfilDeclaracion/i.test(location.href || '') }))()"
+
+  - name: Try direct navigation to PerfilDeclaracion when still on Temporales
+    if_not: "${sat_profile_form_route.on_profile_form}"
+    action: CDP.Navigate
+    ignore_errors: true
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${SAT_PROFILE_FORM_URL}"
+      wait_ms: 2600
+      wait_until: "interactive"
+
+  - name: Wait for PerfilDeclaracion after direct navigation
+    if_not: "${sat_profile_form_route.on_profile_form}"
+    ignore_errors: true
+    action: Helium.WaitUntilUrl
+    params:
+      port: "${DEBUG_PORT}"
+      timeout_secs: 12
+      url_regex: "PerfilDeclaracion"
+
+  - name: Select ejercicio
+    if: "${sat_profile_route.on_profile}"
+    ignore_errors: true
+    action: Helium.SelectOption
+    register: sat_sel_ejercicio
+    params:
+      port: "${DEBUG_PORT}"
+      option: "${SAT_TARGET_YEAR}"
+      into:
+        kind: "s"
+        selector: "#ejercicio"
+      implicit_wait_ms: 2600
+
+  - name: Select periodicidad
+    if: "${sat_profile_route.on_profile}"
+    ignore_errors: true
+    action: Helium.SelectOption
+    register: sat_sel_periodicidad
+    params:
+      port: "${DEBUG_PORT}"
+      option: "${SAT_PERIODICIDAD}"
+      into:
+        kind: "s"
+        selector: "#periodicidad"
+      implicit_wait_ms: 2600
+
+  - name: Set ejercicio and periodicidad via DOM fallback
+    if: "${sat_profile_route.on_profile}"
+    ignore_errors: true
+    action: CDP.EvaluateJson
+    register: sat_dom_set_base
+    params:
+      port: "${DEBUG_PORT}"
+      expression: |
+        (() => {
+          const norm = (v) => String(v == null ? "" : v).trim().toLowerCase();
+          const num = (v) => {
+            const t = String(v == null ? "" : v).trim();
+            if (!/^\d+$/.test(t)) return "";
+            const n = parseInt(t, 10);
+            return Number.isFinite(n) ? String(n) : "";
+          };
+          const selectedText = (el) => {
+            const i = el ? el.selectedIndex : -1;
+            return i >= 0 && el && el.options && el.options[i] ? String((el.options[i].textContent || "").trim()) : "";
+          };
+          const setByCandidates = (id, candidates) => {
+            const el = document.getElementById(id);
+            if (!el) return { exists: false, matched: false, value: "", selected_text: "" };
+            const opts = Array.from(el.options || []);
+            const cand = candidates.map(norm).filter(Boolean);
+            let chosen = null;
+            for (const o of opts) {
+              const ov = norm(o.value);
+              const ot = norm((o.textContent || "").replace(/\s+/g, " "));
+              const on = num(o.value);
+              if (cand.includes(ov) || cand.includes(ot)) {
+                chosen = o;
+                break;
+              }
+              for (const c of cand) {
+                const cn = num(c);
+                if ((cn && on && cn === on) || (c && (ot.includes(c) || ov.includes(c)))) {
+                  chosen = o;
+                  break;
+                }
+              }
+              if (chosen) break;
+            }
+            if (chosen) el.value = String(chosen.value || "");
+            try { el.dispatchEvent(new Event("change", { bubbles: true })); } catch (e1) {}
+            try { el.dispatchEvent(new Event("input", { bubbles: true })); } catch (e2) {}
+            return {
+              exists: true,
+              matched: !!chosen,
+              value: String(el.value || ""),
+              selected_text: selectedText(el)
+            };
+          };
+          const year = String("${SAT_TARGET_YEAR}" || "").trim();
+          const periodicidad = String("${SAT_PERIODICIDAD}" || "").trim();
+          const rYear = setByCandidates("ejercicio", [year]);
+          const rPeriodicidad = setByCandidates("periodicidad", [periodicidad, "mensual"]);
+          return {
+            ok: !!(rYear.matched && rPeriodicidad.matched),
+            url: location.href || "",
+            ejercicio: rYear,
+            periodicidad: rPeriodicidad
+          };
+        })()
+
+  - name: Wait for period options refresh after periodicidad
+    if: "${sat_profile_route.on_profile}"
+    action: CDP.Wait
+    params:
+      ms: 1700
+
+  - name: Select periodo
+    if: "${sat_profile_route.on_profile}"
+    ignore_errors: true
+    action: Helium.SelectOption
+    register: sat_sel_periodo
+    params:
+      port: "${DEBUG_PORT}"
+      option: "${SAT_TARGET_MONTH}"
+      into:
+        kind: "s"
+        selector: "#periodos"
+      implicit_wait_ms: 2600
+
+  - name: Set periodo via DOM fallback
+    if: "${sat_profile_route.on_profile}"
+    ignore_errors: true
+    action: CDP.EvaluateJson
+    register: sat_dom_set_period
+    params:
+      port: "${DEBUG_PORT}"
+      expression: |
+        (() => {
+          const norm = (v) => String(v == null ? "" : v).trim().toLowerCase();
+          const num = (v) => {
+            const t = String(v == null ? "" : v).trim();
+            if (!/^\d+$/.test(t)) return "";
+            const n = parseInt(t, 10);
+            return Number.isFinite(n) ? String(n) : "";
+          };
+          const selectedText = (el) => {
+            const i = el ? el.selectedIndex : -1;
+            return i >= 0 && el && el.options && el.options[i] ? String((el.options[i].textContent || "").trim()) : "";
+          };
+          const monthNames = {
+            "001": "enero",
+            "002": "febrero",
+            "003": "marzo",
+            "004": "abril",
+            "005": "mayo",
+            "006": "junio",
+            "007": "julio",
+            "008": "agosto",
+            "009": "septiembre",
+            "010": "octubre",
+            "011": "noviembre",
+            "012": "diciembre"
+          };
+          const el = document.getElementById("periodos");
+          if (!el) return { ok: false, exists: false, value: "", selected_text: "" };
+          const target = String("${SAT_TARGET_MONTH}" || "").padStart(3, "0");
+          const targetNum = num(target);
+          const monthName = monthNames[target] || "";
+          const opts = Array.from(el.options || []);
+          let chosen = null;
+          for (const o of opts) {
+            const ov = norm(o.value);
+            const ot = norm((o.textContent || "").replace(/\s+/g, " "));
+            const on = num(o.value);
+            if (ov === norm(target) || (targetNum && on === targetNum) || (monthName && ot.includes(monthName))) {
+              chosen = o;
+              break;
+            }
+          }
+          if (chosen) el.value = String(chosen.value || "");
+          try { el.dispatchEvent(new Event("change", { bubbles: true })); } catch (e1) {}
+          try { el.dispatchEvent(new Event("input", { bubbles: true })); } catch (e2) {}
+          return {
+            ok: !!chosen,
+            exists: true,
+            target,
+            value: String(el.value || ""),
+            selected_text: selectedText(el)
+          };
+        })()
+
+  - name: Wait for tipo declaracion options refresh
+    if: "${sat_profile_route.on_profile}"
+    action: CDP.Wait
+    params:
+      ms: 1700
+
+  - name: Select tipo declaracion
+    if: "${sat_profile_route.on_profile}"
+    ignore_errors: true
+    action: Helium.SelectOption
+    register: sat_sel_tipo
+    params:
+      port: "${DEBUG_PORT}"
+      option: "${SAT_TIPO_DECLARACION}"
+      into:
+        kind: "s"
+        selector: "#tipodeclaracion"
+      implicit_wait_ms: 2600
+
+  - name: Set tipo declaracion via DOM fallback
+    if: "${sat_profile_route.on_profile}"
+    ignore_errors: true
+    action: CDP.EvaluateJson
+    register: sat_dom_set_tipo
+    params:
+      port: "${DEBUG_PORT}"
+      expression: |
+        (() => {
+          const norm = (v) => String(v == null ? "" : v).trim().toLowerCase();
+          const selectedText = (el) => {
+            const i = el ? el.selectedIndex : -1;
+            return i >= 0 && el && el.options && el.options[i] ? String((el.options[i].textContent || "").trim()) : "";
+          };
+          const el = document.getElementById("tipodeclaracion");
+          if (!el) return { ok: false, exists: false, value: "", selected_text: "" };
+          const target = String("${SAT_TIPO_DECLARACION}" || "").trim();
+          const opts = Array.from(el.options || []);
+          let chosen = null;
+          for (const o of opts) {
+            const ov = norm(o.value);
+            const ot = norm((o.textContent || "").replace(/\s+/g, " "));
+            if (ov === norm(target) || ot.includes("normal")) {
+              chosen = o;
+              break;
+            }
+          }
+          if (chosen) el.value = String(chosen.value || "");
+          try { el.dispatchEvent(new Event("change", { bubbles: true })); } catch (e1) {}
+          try { el.dispatchEvent(new Event("input", { bubbles: true })); } catch (e2) {}
+          return {
+            ok: !!chosen,
+            exists: true,
+            target,
+            value: String(el.value || ""),
+            selected_text: selectedText(el)
+          };
+        })()
+
+  - name: Wait for profile fields settle
+    if: "${sat_profile_route.on_profile}"
+    action: CDP.Wait
+    params:
+      ms: 700
+
+  - name: Build profile set result
+    action: CDP.EvaluateJson
+    register: sat_profile_set
+    params:
+      port: "${DEBUG_PORT}"
+      expression: |
+        (() => {
+          const byId = (id) => document.getElementById(id);
+          const valueOf = (id) => {
+            const e = byId(id);
+            return e ? String(e.value || "") : "";
+          };
+          const normalizeDigits = (v) => {
+            const t = String(v == null ? "" : v).trim();
+            if (!/^\d+$/.test(t)) return "";
+            const n = parseInt(t, 10);
+            return Number.isFinite(n) ? String(n) : "";
+          };
+          const btn = byId("btnSiguiente");
+          const hasAll = !!byId("ejercicio") && !!byId("periodicidad") && !!byId("periodos") && !!byId("tipodeclaracion");
+          const expected = {
+            ejercicio: String("${SAT_TARGET_YEAR}" || "").trim(),
+            periodicidad: String("${SAT_PERIODICIDAD}" || "").trim(),
+            periodos: String("${SAT_TARGET_MONTH}" || "").padStart(3, "0"),
+            tipodeclaracion: String("${SAT_TIPO_DECLARACION}" || "").trim()
+          };
+          const current = {
+            ejercicio: valueOf("ejercicio"),
+            periodicidad: valueOf("periodicidad"),
+            periodos: valueOf("periodos"),
+            tipodeclaracion: valueOf("tipodeclaracion")
+          };
+          const matches = {
+            ejercicio: current.ejercicio === expected.ejercicio,
+            periodicidad: current.periodicidad === expected.periodicidad,
+            periodos: current.periodos === expected.periodos || (normalizeDigits(current.periodos) !== "" && normalizeDigits(current.periodos) === normalizeDigits(expected.periodos)),
+            tipodeclaracion: current.tipodeclaracion === expected.tipodeclaracion
+          };
+          const onProfileForm = /PerfilDeclaracion/i.test(location.href || "");
+          const matchAll = matches.ejercicio && matches.periodicidad && matches.periodos && matches.tipodeclaracion;
+          return {
+            ok: hasAll && onProfileForm && matchAll,
+            url: location.href || "",
+            on_profile_form: onProfileForm,
+            expected,
+            matches,
+            values: {
+              ejercicio: current.ejercicio,
+              periodicidad: current.periodicidad,
+              periodos: current.periodos,
+              tipodeclaracion: current.tipodeclaracion
+            },
+            btn_siguiente_exists: !!btn,
+            btn_siguiente_disabled: btn ? !!btn.disabled : null,
+            helium_attempts: {
+              ejercicio_ok: "${sat_sel_ejercicio.ok}",
+              periodicidad_ok: "${sat_sel_periodicidad.ok}",
+              periodo_ok: "${sat_sel_periodo.ok}",
+              tipo_ok: "${sat_sel_tipo.ok}"
+            },
+            dom_fallback: {
+              open_new_form_ok: "${sat_new_form_dom.ok}",
+              base_ok: "${sat_dom_set_base.ok}",
+              period_ok: "${sat_dom_set_period.ok}",
+              tipo_ok: "${sat_dom_set_tipo.ok}"
+            }
+          };
+        })()
+
+  - name: Persist profile set result
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.profile_set.json"
+      overwrite: true
+      value: "${sat_profile_set}"
+
+  - name: Note if profile set failed (skip month)
+    if_not: "${sat_profile_set.ok}"
+    action: Note
+    params:
+      text: "SAT profile set failed for ${SAT_TARGET_YEAR}-${SAT_TARGET_MONTH}. Skipping month. See ${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.profile_set.json"
+
+  - name: Capture URL before obligations-next
+    action: CDP.GetUrl
+    register: sat_url_before_next
+    params:
+      port: "${DEBUG_PORT}"
+
+  - name: Mark obligations by configured IDs
+    if: "${sat_profile_set.ok}"
+    if_not: "${SAT_USE_DEFAULT_CHECKED_OBLIGATIONS}"
+    loop: "${SAT_OBLIGATION_IDS}"
+    steps:
+      - name: Set obligation ${loop.item} checked
+        action: Helium.SetChecked
+        ignore_errors: true
+        params:
+          port: "${DEBUG_PORT}"
+          checked: true
+          into:
+            kind: "s"
+            selector: "input[id='${loop.item}']"
+          implicit_wait_ms: 1200
+
+  - name: Mark all obligations when select-all is enabled
+    if: "${sat_profile_set.ok}"
+    if_not: "${SAT_USE_DEFAULT_CHECKED_OBLIGATIONS}"
+    steps:
+      - name: Mark all obligations
+        if: "${SAT_SELECT_ALL_OBLIGATIONS}"
+        action: CDP.EvaluateJson
+        register: sat_oblig_select_all
+        params:
+          port: "${DEBUG_PORT}"
+          expression: |
+            (() => {
+              const boxes = Array.from(document.querySelectorAll("input[type=checkbox]"));
+              for (const e of boxes) {
+                e.checked = true;
+                try { e.dispatchEvent(new Event("change", { bubbles: true })); } catch (e2) {}
+              }
+              return { ok: true, marked_count: boxes.length };
+            })()
+
+  - name: Click Siguiente after obligations selection
+    if: "${sat_profile_set.ok}"
+    action: Helium.ClickAny
+    ignore_errors: true
+    register: sat_click_oblig_next
+    params:
+      port: "${DEBUG_PORT}"
+      candidates:
+        - kind: "s"
+          selector: "#btnSiguiente"
+      text_candidates: "Siguiente|Continuar"
+      implicit_wait_ms: 2400
+      find_in_page_fallback: true
+
+  - name: Build obligations selection result
+    if: "${sat_profile_set.ok}"
+    action: CDP.EvaluateJson
+    register: sat_oblig_next
+    params:
+      port: "${DEBUG_PORT}"
+      expression: |
+        (() => {
+          const all = Array.from(document.querySelectorAll("input[type=checkbox]"));
+          const marked = all.filter((e) => !!e.checked).map((e) => e.id || e.name || "");
+          return {
+            ok: true,
+            before_url: "${sat_url_before_next}",
+            current_url: location.href || "",
+            marked_count: marked.length,
+            marked_ids: marked.slice(0, 120),
+            total_checkboxes: all.length
+          };
+        })()
+
+  - name: Persist obligation selection result
+    if: "${sat_profile_set.ok}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.oblig_select.json"
+      overwrite: true
+      value: "${sat_oblig_next}"
+
+  - name: Click Siguiente again to advance from obligations (stage 2)
+    if: "${sat_oblig_next.marked_count}"
+    action: Helium.ClickAny
+    ignore_errors: true
+    register: sat_click_oblig_next_stage2
+    params:
+      port: "${DEBUG_PORT}"
+      candidates:
+        - kind: "s"
+          selector: "#btnSiguiente"
+      text_candidates: "Siguiente|Continuar"
+      implicit_wait_ms: 1800
+      find_in_page_fallback: true
+
+  - name: Force stage-2 Siguiente click via DOM fallback
+    if: "${sat_oblig_next.marked_count}"
+    action: CDP.EvaluateJson
+    ignore_errors: true
+    register: sat_click_oblig_next_stage2_dom
+    params:
+      port: "${DEBUG_PORT}"
+      expression: |
+        (() => {
+          const btn = document.getElementById("btnSiguiente");
+          const url = location.href || "";
+          if (!btn) return { ok: false, exists: false, url };
+          try { btn.click(); } catch (e) {}
+          return { ok: true, exists: true, url };
+        })()
+
+  - name: Wait after stage-2 Siguiente click
+    if: "${sat_oblig_next.marked_count}"
+    action: CDP.Wait
+    params:
+      ms: 900
+
+  - name: Note when no obligations were selected (skip month)
+    if: "${sat_profile_set.ok}"
+    if_not: "${sat_oblig_next.marked_count}"
+    action: Note
+    params:
+      text: "No obligations selected for ${SAT_TARGET_YEAR}-${SAT_TARGET_MONTH}. This may mean 'no obligaciones' or locator drift. Skipping month. See ${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.oblig_select.json"
+
+  - name: Wait for form navigation after Siguiente
+    if: "${sat_oblig_next.marked_count}"
+    action: Helium.WaitUntilUrl
+    ignore_errors: true
+    params:
+      port: "${DEBUG_PORT}"
+      timeout_secs: 45
+      url_regex: "Formulario"
+
+  - name: Verify we are on Formulario page
+    if: "${sat_oblig_next.marked_count}"
+    action: CDP.EvaluateJson
+    register: sat_form_nav_check
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "(() => ({ url: location.href || '', on_formulario: /Formulario/i.test(location.href || '') }))()"
+
+  - name: Compute gates for preview/submit (requires Formulario)
+    if: "${sat_oblig_next.marked_count}"
+    action: CDP.EvaluateJson
+    register: sat_form_gates
+    params:
+      port: "${DEBUG_PORT}"
+      expression: |
+        (() => {
+          const url = location.href || "";
+          const on = /Formulario/i.test(url);
+          const toBool = (v) => {
+            const s = String(v == null ? "" : v).toLowerCase().trim();
+            return s === "1" || s === "true" || s === "yes" || s === "y";
+          };
+          const doPreview = toBool("${SAT_DO_PREVIEW}");
+          const doSubmit = toBool("${SAT_DO_SUBMIT}");
+          return {
+            ok: true,
+            url,
+            on_formulario: on,
+            do_preview: doPreview,
+            do_submit: doSubmit,
+            can_preview: on && doPreview,
+            can_submit: on && doSubmit
+          };
+        })()
+
+  - name: Load SAT form probe JS
+    if: "${sat_form_nav_check.on_formulario}"
+    action: FS.ReadText
+    register: js_sat_form_probe
+    params:
+      path: "${SKILL_SAT_TAX_ASSETS_DIR}\\sat_form_probe.js"
+
+  - name: Probe SAT form state
+    if: "${sat_form_nav_check.on_formulario}"
+    action: CDP.EvaluateJson
+    register: sat_form_probe
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_sat_form_probe}"
+
+  - name: Persist form probe
+    if: "${sat_form_nav_check.on_formulario}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.form_probe.json"
+      overwrite: true
+      value: "${sat_form_probe}"
+
+  - name: Try mark "Sin operaciones" (best effort)
+    if: "${sat_form_nav_check.on_formulario}"
+    ignore_errors: true
+    action: Helium.ClickAny
+    register: sat_click_sin_operaciones
+    params:
+      port: "${DEBUG_PORT}"
+      text_candidates: "Sin operaciones|Sin Operaciones|Declaración sin operaciones|Declaracion sin operaciones|Sin actividad|Sin Actividad"
+      implicit_wait_ms: 1800
+      find_in_page_fallback: true
+
+  - name: Load SAT fill-zero amounts JS
+    if: "${sat_form_nav_check.on_formulario}"
+    action: FS.ReadText
+    register: js_sat_fill_zero_amounts
+    params:
+      path: "${SKILL_SAT_TAX_ASSETS_DIR}\\sat_fill_zero_amounts.js"
+
+  - name: Fill empty amount fields with 0 (best effort)
+    if: "${sat_form_nav_check.on_formulario}"
+    action: CDP.EvaluateJson
+    register: sat_zero_fill
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_sat_fill_zero_amounts}"
+
+  - name: Persist zero-fill result
+    if: "${sat_form_nav_check.on_formulario}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.zero_fill.json"
+      overwrite: true
+      value: "${sat_zero_fill}"
+
+  - name: Click Vista previa
+    if: "${sat_form_gates.can_preview}"
+    action: Helium.ClickAny
+    register: sat_click_preview
+    params:
+      port: "${DEBUG_PORT}"
+      text_candidates: "Vista previa|Vista Previa"
+      implicit_wait_ms: 2000
+      find_in_page_fallback: true
+
+  - name: Persist Vista previa click result
+    if: "${sat_form_gates.can_preview}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\preview\\${SAT_TARGET_YEAR}_${SAT_TARGET_MONTH}.preview_click.json"
+      overwrite: true
+      value: "${sat_click_preview}"
+
+  - name: Wait for preview render
+    if: "${sat_form_gates.can_preview}"
+    action: CDP.Wait
+    params:
+      ms: 2500
+
+  - name: Print preview to PDF (CDP)
+    if: "${sat_form_gates.can_preview}"
+    action: CDP.Send
+    register: sat_preview_pdf
+    params:
+      port: "${DEBUG_PORT}"
+      method: "Page.printToPDF"
+
+  - name: Save preview PDF to file
+    if: "${sat_form_gates.can_preview}"
+    action: FS.WriteBase64
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\preview\\${SAT_TARGET_YEAR}_${SAT_TARGET_MONTH}.vista_previa.pdf"
+      overwrite: true
+      base64: "${sat_preview_pdf.result.data}"
+
+  - name: Click Enviar declaracion
+    if: "${sat_form_gates.can_submit}"
+    action: Helium.ClickAny
+    register: sat_click_submit
+    params:
+      port: "${DEBUG_PORT}"
+      text_candidates: "Enviar declaración|Enviar declaracion|Enviar"
+      implicit_wait_ms: 2500
+      find_in_page_fallback: true
+
+  - name: Persist submit click result
+    if: "${sat_form_gates.can_submit}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.submit_click.json"
+      overwrite: true
+      value: "${sat_click_submit}"
+
+  - name: Attempt accept native JS dialog (best effort)
+    if: "${sat_form_gates.can_submit}"
+    ignore_errors: true
+    action: CDP.Send
+    params:
+      port: "${DEBUG_PORT}"
+      method: "Page.handleJavaScriptDialog"
+      params:
+        accept: true
+
+  - name: Click confirmation modal (Aceptar/Si) (best effort)
+    if: "${sat_form_gates.can_submit}"
+    action: Helium.ClickAny
+    register: sat_click_confirm
+    ignore_errors: true
+    params:
+      port: "${DEBUG_PORT}"
+      text_candidates: "Aceptar|Acepto|Sí|Si|Confirmar|Continuar"
+      implicit_wait_ms: 2000
+      find_in_page_fallback: true
+
+  - name: Persist confirmation click result
+    if: "${sat_form_gates.can_submit}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.confirm_click.json"
+      overwrite: true
+      value: "${sat_click_confirm}"
+
+  - name: Click explicit acuse confirmation link (best effort)
+    if: "${sat_form_gates.can_submit}"
+    action: CDP.EvaluateJson
+    register: sat_click_yes_acuse
+    params:
+      port: "${DEBUG_PORT}"
+      expression: |
+        (() => {
+          const link = document.querySelector("a[href*='acuse.pdf'],a[href*='pdf/acuse']");
+          if (!link) {
+            return { ok: true, clicked: false, reason: "link_not_found", url: location.href || "" };
+          }
+          try {
+            link.click();
+            return { ok: true, clicked: true, href: String(link.href || ""), text: String((link.innerText || link.textContent || "").trim()), url: location.href || "" };
+          } catch (e) {
+            return { ok: true, clicked: false, reason: "click_failed", error: String((e && e.message) || e || "click_failed"), href: String(link.href || ""), url: location.href || "" };
+          }
+        })()
+
+  - name: Persist explicit "Si" click result
+    if: "${sat_form_gates.can_submit}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.yes_click.json"
+      overwrite: true
+      value: "${sat_click_yes_acuse}"
+
+  - name: Capture acuse link candidate
+    if: "${sat_form_gates.can_submit}"
+    action: CDP.EvaluateJson
+    register: sat_acuse_link
+    params:
+      port: "${DEBUG_PORT}"
+      expression: |
+        (() => {
+          const links = Array.from(document.querySelectorAll("a[href*='acuse.pdf'],a[href*='pdf/acuse']"));
+          const href = links.length ? String(links[0].href || "") : "";
+          return {
+            ok: true,
+            href,
+            links_count: links.length,
+            current_url: location.href || ""
+          };
+        })()
+
+  - name: Open acuse link candidate when available
+    if: "${sat_acuse_link.href}"
+    action: CDP.Navigate
+    ignore_errors: true
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${sat_acuse_link.href}"
+      wait_ms: 3200
+      wait_until: "interactive"
+
+  - name: Wait for acuse/confirmation page (best effort)
+    if: "${sat_form_gates.can_submit}"
+    ignore_errors: true
+    action: Helium.WaitUntilUrl
+    params:
+      port: "${DEBUG_PORT}"
+      timeout_secs: 12
+      url_regex: "acuse|Acuse|confirm|Confirm|Recep|pdf/acuse|acuse\\.pdf"
+
+  - name: Verify acuse route
+    if: "${sat_form_gates.can_submit}"
+    action: CDP.EvaluateJson
+    register: sat_acuse_route
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "(() => { const u = location.href || ''; return { url: u, on_acuse: /acuse|recep|pdf\\/acuse/i.test(u) }; })()"
+
+  - name: Fail when acuse route is unresolved
+    if: "${sat_form_gates.can_submit}"
+    if_not: "${sat_acuse_route.on_acuse}"
+    action: Fail
+    params:
+      message: "Submit clicked but acuse page was not reached. Stop and review manually before trusting generated PDF."
+
+  - name: Print acuse to PDF (CDP)
+    if: "${sat_form_gates.can_submit}"
+    action: CDP.Send
+    register: sat_acuse_pdf
+    params:
+      port: "${DEBUG_PORT}"
+      method: "Page.printToPDF"
+
+  - name: Save acuse PDF to file
+    if: "${sat_form_gates.can_submit}"
+    action: FS.WriteBase64
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\acuse\\${SAT_TARGET_YEAR}_${SAT_TARGET_MONTH}.acuse.pdf"
+      overwrite: true
+      base64: "${sat_acuse_pdf.result.data}"
+
+  - name: Persist declare-month result
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.result.json"
+      overwrite: true
+      value:
+        ok: "${sat_profile_set.ok}"
+        target:
+          year: "${SAT_TARGET_YEAR}"
+          month: "${SAT_TARGET_MONTH}"
+          periodicidad: "${SAT_PERIODICIDAD}"
+          tipo_declaracion: "${SAT_TIPO_DECLARACION}"
+        profile_set: "${sat_profile_set}"
+        obligations_next: "${sat_oblig_next}"
+        on_formulario: "${sat_form_nav_check.on_formulario}"
+        gates: "${sat_form_gates}"
+        form_probe: "${sat_form_probe}"
+        sin_operaciones_click: "${sat_click_sin_operaciones}"
+        zero_fill: "${sat_zero_fill}"
+        preview:
+          enabled: "${SAT_DO_PREVIEW}"
+          click: "${sat_click_preview}"
+          pdf_path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\preview\\${SAT_TARGET_YEAR}_${SAT_TARGET_MONTH}.vista_previa.pdf"
+        submit:
+          enabled: "${SAT_DO_SUBMIT}"
+          click: "${sat_click_submit}"
+          confirm: "${sat_click_confirm}"
+          yes_click: "${sat_click_yes_acuse}"
+          acuse_link: "${sat_acuse_link}"
+          acuse_route: "${sat_acuse_route}"
+          acuse_pdf_path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\acuse\\${SAT_TARGET_YEAR}_${SAT_TARGET_MONTH}.acuse.pdf"

@@ -1,0 +1,20 @@
+metadata:
+  category: "finance"
+  subcategory: "sat-declaration"
+  workflow: "declare-zero-pending-2025-011-to-2025-012-submit"
+
+steps:
+  prod:
+    - name: Run SAT submit for Nov-Dec 2025 with explicit operator confirmation
+      playbook: "${PLAYBOOK_DIR}\\playbook.yml"
+      env: "prod_submit"
+      with:
+        SAT_SUBMIT_CONFIRM: "operator-confirmed-2026-02-17-pending-2025-011-012"
+        SAT_LOGIN_TIMEOUT_SECS: 900
+        SAT_PROFILE_URL: "https://pstcdypisr.clouda.sat.gob.mx/Declaracion/Temporales"
+        SAT_FROM_YEAR: 2025
+        SAT_FROM_MONTH: 11
+        SAT_TO_YEAR: 2025
+        SAT_TO_MONTH: 12
+        SAT_SELECT_ALL_OBLIGATIONS: "true"
+        SAT_USE_DEFAULT_CHECKED_OBLIGATIONS: "true"

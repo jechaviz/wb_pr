@@ -1,0 +1,24 @@
+metadata:
+  category: "finance"
+  subcategory: "sat-declaration"
+  workflow: "sat-tax-project-entrypoint"
+
+variables:
+  PROJECT_NAME: "sat-tax-playbooks"
+  PROJECT_SKILL_PATH: "Yo.SAT.TaxPlaybooks"
+  PROJECT_DIR: "${ROOT_PLAYBOOK_DIR}"
+  PLAYBOOKS_DIR: "${PROJECT_DIR}\\playbooks"
+  OUTPUT_DIR: "${PLAYBOOKS_DIR}\\output"
+  JS_DIR: "${PLAYBOOKS_DIR}\\assets"
+  TASK_NAME: "Run SAT Mexico declaration workflows safely"
+  TASK_SUMMARY: "Prepare, preview, recover, and optionally submit SAT declaration flows with explicit operator checkpoints."
+
+steps:
+  prod:
+    - name: Run SAT project entrypoint
+      playbook: "./playbook.yml"
+
+  debug:
+    - action: Note
+      params:
+        text: "sat-tax-playbooks project debug mode"

@@ -1,0 +1,86 @@
+steps:
+  - name: Ensure odoo_rpp logs dir exists
+    action: FS.EnsureDir
+    params:
+      path: "${ODOO_RPP_DIR}\\logs"
+
+  - name: odoo_rpp dry-run (no Odoo writes)
+    action: Shell.Run
+    register: rpp_dry_run
+    params:
+      workdir: "${ODOO_RPP_DIR}"
+      command: "uv run -m src.main --dry-run > \"${ODOO_RPP_DIR}\\logs\\waiba_rpp_dry_run.stdout.txt\" 2> \"${ODOO_RPP_DIR}\\logs\\waiba_rpp_dry_run.stderr.txt\""
+      timeout_ms: 1800000
+      allow_fail: true
+
+  - name: Persist dry-run failure artifact
+    if: "${rpp_dry_run.exit_code}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\rpp_data_load.json"
+      value:
+        ok: 0
+        stage: "dry_run"
+        project: "odoo_rpp"
+        remote: "${ODOO_RPP_REMOTE}"
+        dry_run: "${rpp_dry_run}"
+        dry_run_stdout_path: "${ODOO_RPP_DIR}\\logs\\waiba_rpp_dry_run.stdout.txt"
+        dry_run_stderr_path: "${ODOO_RPP_DIR}\\logs\\waiba_rpp_dry_run.stderr.txt"
+      overwrite: true
+
+  - name: Abort if dry-run failed
+    if: "${rpp_dry_run.exit_code}"
+    action: Shell.Run
+    params:
+      command: "exit 1"
+
+  - name: odoo_rpp apply (writes to Odoo)
+    action: Shell.Run
+    register: rpp_apply
+    params:
+      workdir: "${ODOO_RPP_DIR}"
+      command: "uv run -m src.main > \"${ODOO_RPP_DIR}\\logs\\waiba_rpp_apply.stdout.txt\" 2> \"${ODOO_RPP_DIR}\\logs\\waiba_rpp_apply.stderr.txt\""
+      timeout_ms: 1800000
+      allow_fail: true
+
+  - name: Persist apply failure artifact
+    if: "${rpp_apply.exit_code}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\rpp_data_load.json"
+      value:
+        ok: 0
+        stage: "apply"
+        project: "odoo_rpp"
+        remote: "${ODOO_RPP_REMOTE}"
+        dry_run: "${rpp_dry_run}"
+        apply: "${rpp_apply}"
+        dry_run_stdout_path: "${ODOO_RPP_DIR}\\logs\\waiba_rpp_dry_run.stdout.txt"
+        dry_run_stderr_path: "${ODOO_RPP_DIR}\\logs\\waiba_rpp_dry_run.stderr.txt"
+        apply_stdout_path: "${ODOO_RPP_DIR}\\logs\\waiba_rpp_apply.stdout.txt"
+        apply_stderr_path: "${ODOO_RPP_DIR}\\logs\\waiba_rpp_apply.stderr.txt"
+      overwrite: true
+
+  - name: Abort if apply failed
+    if: "${rpp_apply.exit_code}"
+    action: Shell.Run
+    params:
+      command: "exit 1"
+
+  - name: Persist data load artifact
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\rpp_data_load.json"
+      value:
+        ok: 1
+        stage: "done"
+        project: "odoo_rpp"
+        remote: "${ODOO_RPP_REMOTE}"
+        dry_run: "${rpp_dry_run}"
+        apply: "${rpp_apply}"
+        dry_run_stdout_path: "${ODOO_RPP_DIR}\\logs\\waiba_rpp_dry_run.stdout.txt"
+        dry_run_stderr_path: "${ODOO_RPP_DIR}\\logs\\waiba_rpp_dry_run.stderr.txt"
+        apply_stdout_path: "${ODOO_RPP_DIR}\\logs\\waiba_rpp_apply.stdout.txt"
+        apply_stderr_path: "${ODOO_RPP_DIR}\\logs\\waiba_rpp_apply.stderr.txt"
+      overwrite: true
+

@@ -1,0 +1,162 @@
+steps:
+  - name: Initialize tutorial workspace
+    action: Tutorial.InitWorkspace
+    register: tutorial_workspace
+    params:
+      project_dir: "${PROJECT_DIR}"
+
+  - name: Ensure slide capture directories
+    action: FS.EnsureDir
+    register: slides_dir
+    params:
+      path: "${tutorial_workspace.base_dir}\\slides"
+
+  - name: Ensure TTS directories
+    action: FS.EnsureDir
+    register: tts_dir
+    params:
+      path: "${tutorial_workspace.base_dir}\\tts"
+
+  - name: Ensure segment directories
+    action: FS.EnsureDir
+    register: segments_dir
+    params:
+      path: "${tutorial_workspace.base_dir}\\segments"
+
+  - name: Resolve ffmpeg executable path
+    action: Shell.Run
+    register: ffmpeg_resolve
+    params:
+      command: "powershell -NoProfile -ExecutionPolicy Bypass -File \"${PLAYBOOKS_DIR}\\tutorial\\scripts\\resolve_ffmpeg.ps1\""
+      allow_fail: true
+      unsafe: true
+      timeout_ms: 60000
+
+  - name: Persist error if ffmpeg missing
+    if_not: "${ffmpeg_resolve.stdout}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\tutorial_slides_error.json"
+      overwrite: true
+      value:
+        ok: false
+        error: "ffmpeg not available."
+        ffmpeg_resolve: "${ffmpeg_resolve}"
+
+  - name: Abort if ffmpeg missing
+    if_not: "${ffmpeg_resolve.stdout}"
+    action: Shell.Run
+    params:
+      command: "exit 1"
+      unsafe: true
+
+  - name: Prepare concat list
+    action: FS.WriteText
+    register: concat_list_path
+    params:
+      path: "${segments_dir}\\concat.txt"
+      text: ""
+      encoding: "UTF-8-RAW"
+      overwrite: true
+
+  - name: Reset segments rendered flag
+    action: Set
+    params:
+      name: segments_rendered
+      value: false
+
+  - name: Ensure CDP is connected to Odoo
+    action: CDP.Connect
+    params:
+      port: "${DEBUG_PORT}"
+      open_url: "${ODOO_URL}"
+      target_type: "page"
+      target_url_contains: ".odoo.com"
+
+  - name: Navigate to Odoo (baseline)
+    action: CDP.Navigate
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${ODOO_URL}"
+      wait_ms: 5000
+
+  - name: Capture slides + TTS + render segments
+    loop: "${storyboard.cues}"
+    steps:
+      - name: Capture screenshot (PNG)
+        action: DemoCreator.CaptureScreenshot
+        register: slide_capture
+        params:
+          port: "${DEBUG_PORT}"
+          target_type: "page"
+          target_url_contains: ".odoo.com"
+          output_path: "${slides_dir}\\slide_${loop.index}.png"
+          format: "png"
+
+      - name: Generate narration WAV (Windows TTS)
+        action: DemoCreator.WindowsTtsToWav
+        register: narration_wav
+        params:
+          text: "${loop.item.text}"
+          output_path: "${tts_dir}\\narration_${loop.index}.wav"
+          voice: "${TUTORIAL_TTS_VOICE}"
+          rate: "${TUTORIAL_TTS_RATE}"
+          volume: "${TUTORIAL_TTS_VOLUME}"
+
+      - name: Render segment from image + narration
+        action: Shell.Run
+        register: segment_render
+        params:
+          command: "${ffmpeg_resolve.stdout} -hide_banner -loglevel warning -nostats -y -loop 1 -i \"${slide_capture.output_path}\" -i \"${narration_wav.output_path}\" -vf \"scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,format=yuv420p\" -c:v libx264 -tune stillimage -preset medium -crf 20 -pix_fmt yuv420p -c:a aac -b:a 192k -shortest \"${segments_dir}\\segment_${loop.index}.mp4\" 1> \"${segments_dir}\\ffmpeg.segment_${loop.index}.stdout.txt\" 2> \"${segments_dir}\\ffmpeg.segment_${loop.index}.stderr.txt\""
+          timeout_ms: 7200000
+          unsafe: true
+
+      - name: Append segment to concat list
+        action: FS.AppendText
+        params:
+          path: "${concat_list_path}"
+          text: "file '${segments_dir}\\segment_${loop.index}.mp4'\n"
+          encoding: "UTF-8-RAW"
+
+      - name: Mark at least one segment rendered
+        action: Set
+        params:
+          name: segments_rendered
+          value: true
+
+  - name: Persist error if no segments were rendered
+    if_not: "${segments_rendered}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\tutorial_slides_error.json"
+      overwrite: true
+      value:
+        ok: false
+        error: "No slides captured; nothing to render."
+
+  - name: Abort if no segments were rendered
+    if_not: "${segments_rendered}"
+    action: Shell.Run
+    params:
+      command: "exit 1"
+      unsafe: true
+
+  - name: Render final slideshow video
+    action: Shell.Run
+    register: slideshow_render
+    params:
+      command: "${ffmpeg_resolve.stdout} -hide_banner -loglevel warning -nostats -y -f concat -safe 0 -i \"${concat_list_path}\" -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart \"${tutorial_workspace.render_dir}\\${TUTORIAL_OUTPUT_BASENAME}.slides.mp4\" 1> \"${tutorial_workspace.render_dir}\\ffmpeg.slides.stdout.txt\" 2> \"${tutorial_workspace.render_dir}\\ffmpeg.slides.stderr.txt\""
+      timeout_ms: 7200000
+      unsafe: true
+
+  - name: Persist slideshow render results
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\tutorial_slides_results.json"
+      overwrite: true
+      value:
+        ok: true
+        ffmpeg_bin: "${ffmpeg_resolve.stdout}"
+        concat_list_path: "${concat_list_path}"
+        output_video: "${tutorial_workspace.render_dir}\\${TUTORIAL_OUTPUT_BASENAME}.slides.mp4"
+        slideshow_render: "${slideshow_render}"

@@ -1,0 +1,29 @@
+steps:
+  - name: Load Odoo page probe JS
+    action: FS.ReadText
+    register: js_main
+    params:
+      path: "${JS_DIR}\\main.js"
+
+  - name: Odoo platform connect
+    action: OdooEnterpriseOnline.Platform.Connect
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${ODOO_URL}/odoo"
+      wait_ms: 3000
+
+  - name: Read Odoo page metadata
+    action: OdooEnterpriseOnline.Platform.Snapshot
+    register: odoo_visit
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_main}"
+      ensure_connected: false
+      await_promise: true
+
+  - name: Persist Odoo visit artifact
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\odoo_visit.json"
+      value: "${odoo_visit}"
+      overwrite: true

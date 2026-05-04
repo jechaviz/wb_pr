@@ -1,0 +1,5 @@
+steps:
+  - action: Note
+    params:
+      text: "Child playbook ok (task=${PARALLEL_TASK.name}, idx=${PARALLEL_TASK.index})"
+

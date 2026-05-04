@@ -1,0 +1,10 @@
+﻿steps:
+  - name: Ensure output directory exists
+    action: FS.EnsureDir
+    params:
+      path: "${OUTPUT_DIR}"
+
+  - name: Start browser in debug mode
+    action: Browser.Start
+    params:
+      port: "${DEBUG_PORT}"

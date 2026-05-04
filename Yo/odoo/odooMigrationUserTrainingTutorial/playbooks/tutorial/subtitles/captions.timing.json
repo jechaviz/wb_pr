@@ -1,0 +1,323 @@
+﻿{
+  "cues":[
+    {
+      "end_ms":8000,
+      "id":"cue_1",
+      "start_ms":0,
+      "text":"Welcome. This tutorial covers the daily RP Rental workflow now migrated from manual steps into Odoo.",
+      "title":"Intro",
+      "translations":{
+        "en":"Welcome. This tutorial covers the daily RP Rental workflow now migrated from manual steps into Odoo.",
+        "es":"Welcome. This tutorial covers the daily RP Rental workflow now migrated from manual steps into Odoo."
+      }
+    },
+    {
+      "end_ms":17000,
+      "id":"cue_2",
+      "start_ms":8000,
+      "text":"Odoo is the source of truth for customers, equipment, availability, contracts, deliveries, returns, quality checks, and billing.",
+      "title":"What Changed",
+      "translations":{
+        "en":"Odoo is the source of truth for customers, equipment, availability, contracts, deliveries, returns, quality checks, and billing.",
+        "es":"Odoo is the source of truth for customers, equipment, availability, contracts, deliveries, returns, quality checks, and billing."
+      }
+    },
+    {
+      "end_ms":26000,
+      "id":"cue_3",
+      "start_ms":17000,
+      "text":"If it is not in Odoo, it did not happen. Keep every step updated as you work.",
+      "title":"Golden Rule",
+      "translations":{
+        "en":"If it is not in Odoo, it did not happen. Keep every step updated as you work.",
+        "es":"If it is not in Odoo, it did not happen. Keep every step updated as you work."
+      }
+    },
+    {
+      "end_ms":35000,
+      "id":"cue_4",
+      "start_ms":26000,
+      "text":"Start from the main Apps menu. Use the global search bar to quickly find Customers, Rentals, and Products.",
+      "title":"Navigation Basics",
+      "translations":{
+        "en":"Start from the main Apps menu. Use the global search bar to quickly find Customers, Rentals, and Products.",
+        "es":"Start from the main Apps menu. Use the global search bar to quickly find Customers, Rentals, and Products."
+      }
+    },
+    {
+      "end_ms":44000,
+      "id":"cue_5",
+      "start_ms":35000,
+      "text":"Your role controls what you can do. If a button is missing, request access instead of working around the process.",
+      "title":"Roles and Access",
+      "translations":{
+        "en":"Your role controls what you can do. If a button is missing, request access instead of working around the process.",
+        "es":"Your role controls what you can do. If a button is missing, request access instead of working around the process."
+      }
+    },
+    {
+      "end_ms":54000,
+      "id":"cue_6",
+      "start_ms":44000,
+      "text":"Before creating a quote, confirm the customer exists and the billing and delivery contacts are correct.",
+      "title":"Customers",
+      "translations":{
+        "en":"Before creating a quote, confirm the customer exists and the billing and delivery contacts are correct.",
+        "es":"Before creating a quote, confirm the customer exists and the billing and delivery contacts are correct."
+      }
+    },
+    {
+      "end_ms":64000,
+      "id":"cue_7",
+      "start_ms":54000,
+      "text":"Create new customers only when needed. Add phone, email, addresses, and set any payment terms required by the business.",
+      "title":"Create or Update a Customer",
+      "translations":{
+        "en":"Create new customers only when needed. Add phone, email, addresses, and set any payment terms required by the business.",
+        "es":"Create new customers only when needed. Add phone, email, addresses, and set any payment terms required by the business."
+      }
+    },
+    {
+      "end_ms":73000,
+      "id":"cue_8",
+      "start_ms":64000,
+      "text":"Rental products represent what you sell. Rental assets represent the physical units that get delivered and returned.",
+      "title":"Products and Assets",
+      "translations":{
+        "en":"Rental products represent what you sell. Rental assets represent the physical units that get delivered and returned.",
+        "es":"Rental products represent what you sell. Rental assets represent the physical units that get delivered and returned."
+      }
+    },
+    {
+      "end_ms":82000,
+      "id":"cue_9",
+      "start_ms":73000,
+      "text":"Use the imported catalog and product codes to search quickly. Confirm the item is marked as rentable and available.",
+      "title":"Finding Equipment Fast",
+      "translations":{
+        "en":"Use the imported catalog and product codes to search quickly. Confirm the item is marked as rentable and available.",
+        "es":"Use the imported catalog and product codes to search quickly. Confirm the item is marked as rentable and available."
+      }
+    },
+    {
+      "end_ms":92000,
+      "id":"cue_10",
+      "start_ms":82000,
+      "text":"Always confirm availability for the requested dates before promising equipment to the customer.",
+      "title":"Availability Check",
+      "translations":{
+        "en":"Always confirm availability for the requested dates before promising equipment to the customer.",
+        "es":"Always confirm availability for the requested dates before promising equipment to the customer."
+      }
+    },
+    {
+      "end_ms":103000,
+      "id":"cue_11",
+      "start_ms":92000,
+      "text":"Create a new quotation for the customer, then add the rental products and set the rental start and end dates.",
+      "title":"Create a Rental Quote",
+      "translations":{
+        "en":"Create a new quotation for the customer, then add the rental products and set the rental start and end dates.",
+        "es":"Create a new quotation for the customer, then add the rental products and set the rental start and end dates."
+      }
+    },
+    {
+      "end_ms":112000,
+      "id":"cue_12",
+      "start_ms":103000,
+      "text":"Set the rental period before validating pricing. Dates drive availability and the correct rental price calculation.",
+      "title":"Rental Dates First",
+      "translations":{
+        "en":"Set the rental period before validating pricing. Dates drive availability and the correct rental price calculation.",
+        "es":"Set the rental period before validating pricing. Dates drive availability and the correct rental price calculation."
+      }
+    },
+    {
+      "end_ms":123000,
+      "id":"cue_13",
+      "start_ms":112000,
+      "text":"Pricing follows the imported rate matrix. Confirm daily, weekly, and monthly cycles align with the agreed commercial terms.",
+      "title":"Pricing and Rate Logic",
+      "translations":{
+        "en":"Pricing follows the imported rate matrix. Confirm daily, weekly, and monthly cycles align with the agreed commercial terms.",
+        "es":"Pricing follows the imported rate matrix. Confirm daily, weekly, and monthly cycles align with the agreed commercial terms."
+      }
+    },
+    {
+      "end_ms":133000,
+      "id":"cue_14",
+      "start_ms":123000,
+      "text":"When the customer approves, confirm the quotation. This becomes the rental contract and triggers the operational workflow.",
+      "title":"Confirm the Contract",
+      "translations":{
+        "en":"When the customer approves, confirm the quotation. This becomes the rental contract and triggers the operational workflow.",
+        "es":"When the customer approves, confirm the quotation. This becomes the rental contract and triggers the operational workflow."
+      }
+    },
+    {
+      "end_ms":143000,
+      "id":"cue_15",
+      "start_ms":133000,
+      "text":"Review the delivery order, ensure the correct warehouse and destination, and prepare assets for dispatch.",
+      "title":"Delivery Preparation",
+      "translations":{
+        "en":"Review the delivery order, ensure the correct warehouse and destination, and prepare assets for dispatch.",
+        "es":"Review the delivery order, ensure the correct warehouse and destination, and prepare assets for dispatch."
+      }
+    },
+    {
+      "end_ms":153000,
+      "id":"cue_16",
+      "start_ms":143000,
+      "text":"Validate the delivery in Odoo when the equipment leaves. Record any required evidence and confirm the on-site location.",
+      "title":"Validate Delivery",
+      "translations":{
+        "en":"Validate the delivery in Odoo when the equipment leaves. Record any required evidence and confirm the on-site location.",
+        "es":"Validate the delivery in Odoo when the equipment leaves. Record any required evidence and confirm the on-site location."
+      }
+    },
+    {
+      "end_ms":162000,
+      "id":"cue_17",
+      "start_ms":153000,
+      "text":"If dates or quantities change, update the contract immediately. Do not track changes only in chat or email.",
+      "title":"Extensions and Changes",
+      "translations":{
+        "en":"If dates or quantities change, update the contract immediately. Do not track changes only in chat or email.",
+        "es":"If dates or quantities change, update the contract immediately. Do not track changes only in chat or email."
+      }
+    },
+    {
+      "end_ms":171000,
+      "id":"cue_18",
+      "start_ms":162000,
+      "text":"If an asset is replaced, record the exchange so traceability and billing remain correct.",
+      "title":"Exchange Contracts",
+      "translations":{
+        "en":"If an asset is replaced, record the exchange so traceability and billing remain correct.",
+        "es":"If an asset is replaced, record the exchange so traceability and billing remain correct."
+      }
+    },
+    {
+      "end_ms":180000,
+      "id":"cue_19",
+      "start_ms":171000,
+      "text":"For partial returns, process the return picking and adjust the contract lines so invoicing stays accurate.",
+      "title":"Partial Returns",
+      "translations":{
+        "en":"For partial returns, process the return picking and adjust the contract lines so invoicing stays accurate.",
+        "es":"For partial returns, process the return picking and adjust the contract lines so invoicing stays accurate."
+      }
+    },
+    {
+      "end_ms":189000,
+      "id":"cue_20",
+      "start_ms":180000,
+      "text":"When all equipment returns, validate the return picking. This is the handoff into quality control.",
+      "title":"Full Return",
+      "translations":{
+        "en":"When all equipment returns, validate the return picking. This is the handoff into quality control.",
+        "es":"When all equipment returns, validate the return picking. This is the handoff into quality control."
+      }
+    },
+    {
+      "end_ms":200000,
+      "id":"cue_21",
+      "start_ms":189000,
+      "text":"Run the Rental Return inspection. Capture condition notes and issues so maintenance and billing decisions are supported.",
+      "title":"Return Quality Check",
+      "translations":{
+        "en":"Run the Rental Return inspection. Capture condition notes and issues so maintenance and billing decisions are supported.",
+        "es":"Run the Rental Return inspection. Capture condition notes and issues so maintenance and billing decisions are supported."
+      }
+    },
+    {
+      "end_ms":211000,
+      "id":"cue_22",
+      "start_ms":200000,
+      "text":"Before sending equipment out again, complete the Ready-To-Rent inspection. This prevents avoidable failures in the field.",
+      "title":"Ready-To-Rent Check",
+      "translations":{
+        "en":"Before sending equipment out again, complete the Ready-To-Rent inspection. This prevents avoidable failures in the field.",
+        "es":"Before sending equipment out again, complete the Ready-To-Rent inspection. This prevents avoidable failures in the field."
+      }
+    },
+    {
+      "end_ms":221000,
+      "id":"cue_23",
+      "start_ms":211000,
+      "text":"Billing is driven by the contract and time. Generate invoices based on the agreed billing cadence.",
+      "title":"Billing Cycle Overview",
+      "translations":{
+        "en":"Billing is driven by the contract and time. Generate invoices based on the agreed billing cadence.",
+        "es":"Billing is driven by the contract and time. Generate invoices based on the agreed billing cadence."
+      }
+    },
+    {
+      "end_ms":232000,
+      "id":"cue_24",
+      "start_ms":221000,
+      "text":"If your process uses the 3-3-3 rule, apply it consistently: daily, weekly, and monthly billing logic must match the contract.",
+      "title":"3-3-3 Rule (If Applicable)",
+      "translations":{
+        "en":"If your process uses the 3-3-3 rule, apply it consistently: daily, weekly, and monthly billing logic must match the contract.",
+        "es":"If your process uses the 3-3-3 rule, apply it consistently: daily, weekly, and monthly billing logic must match the contract."
+      }
+    },
+    {
+      "end_ms":243000,
+      "id":"cue_25",
+      "start_ms":232000,
+      "text":"Create the invoice from the rental order, review line items and taxes, then send it to the customer from Odoo.",
+      "title":"Create and Send Invoices",
+      "translations":{
+        "en":"Create the invoice from the rental order, review line items and taxes, then send it to the customer from Odoo.",
+        "es":"Create the invoice from the rental order, review line items and taxes, then send it to the customer from Odoo."
+      }
+    },
+    {
+      "end_ms":252000,
+      "id":"cue_26",
+      "start_ms":243000,
+      "text":"When payment is received, register it and reconcile. Keep Accounting accurate so reporting stays reliable.",
+      "title":"Payments and Reconciliation",
+      "translations":{
+        "en":"When payment is received, register it and reconcile. Keep Accounting accurate so reporting stays reliable.",
+        "es":"When payment is received, register it and reconcile. Keep Accounting accurate so reporting stays reliable."
+      }
+    },
+    {
+      "end_ms":262000,
+      "id":"cue_27",
+      "start_ms":252000,
+      "text":"Use reports to monitor open rentals, asset utilization, overdue returns, invoices due, and quality backlog.",
+      "title":"Operational Reporting",
+      "translations":{
+        "en":"Use reports to monitor open rentals, asset utilization, overdue returns, invoices due, and quality backlog.",
+        "es":"Use reports to monitor open rentals, asset utilization, overdue returns, invoices due, and quality backlog."
+      }
+    },
+    {
+      "end_ms":271000,
+      "id":"cue_28",
+      "start_ms":262000,
+      "text":"Once the rental is fully returned, quality is completed, and invoicing is done, close the loop and archive evidence.",
+      "title":"Closeout",
+      "translations":{
+        "en":"Once the rental is fully returned, quality is completed, and invoicing is done, close the loop and archive evidence.",
+        "es":"Once the rental is fully returned, quality is completed, and invoicing is done, close the loop and archive evidence."
+      }
+    },
+    {
+      "end_ms":279000,
+      "id":"cue_29",
+      "start_ms":271000,
+      "text":"You are ready to run the daily workflow in Odoo using your real catalog, assets, and rates.",
+      "title":"End",
+      "translations":{
+        "en":"You are ready to run the daily workflow in Odoo using your real catalog, assets, and rates.",
+        "es":"You are ready to run the daily workflow in Odoo using your real catalog, assets, and rates."
+      }
+    }
+  ]
+}

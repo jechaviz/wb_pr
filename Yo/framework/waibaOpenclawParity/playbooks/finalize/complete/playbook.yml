@@ -1,0 +1,20 @@
+﻿steps:
+  - name: Mark parity checkpoint completed
+    action: Framework.MarkTaskCompleted
+    params:
+      project_dir: "${PROJECT_DIR}"
+      task_name: "${TASK_NAME}"
+      summary: "${TASK_SUMMARY}"
+      artifacts:
+        - "${ROOT_PLAYBOOK_PATH}"
+        - "${PROJECT_DIR}\\PRD.md"
+        - "${PROJECT_DIR}\\SDD.md"
+        - "${PROJECT_DIR}\\playbooks\\baseline"
+        - "${PROJECT_DIR}\\playbooks\\roadmap"
+        - "${PROJECT_DIR}\\playbooks\\implementation"
+        - "${OUTPUT_DIR}\\capability_inventory.md"
+        - "${OUTPUT_DIR}\\gap_matrix.md"
+        - "${OUTPUT_DIR}\\roadmap_90d.md"
+        - "${OUTPUT_DIR}\\implementation_backlog.md"
+        - "${OUTPUT_DIR}\\llm_router_validation.json"
+        - "${OUTPUT_DIR}\\messaging_inbound_validation.json"

@@ -1,0 +1,344 @@
+steps:
+  - name: Default WAIBA home when missing
+    if_not: "${WAIBA_HOME}"
+    action: Set
+    params:
+      name: WAIBA_HOME
+      value: "C:\\Users\\jecha\\.waiba"
+
+  - name: Default SAT skill root when missing
+    if_not: "${SKILL_SAT_TAX_ROOT}"
+    action: Set
+    params:
+      name: SKILL_SAT_TAX_ROOT
+      value: "${PLAYBOOK_DIR}\\..\\.."
+
+  - name: Default SAT skill playbook directory when missing
+    if_not: "${SKILL_SAT_TAX_PLAYBOOK_DIR}"
+    action: Set
+    params:
+      name: SKILL_SAT_TAX_PLAYBOOK_DIR
+      value: "${SKILL_SAT_TAX_ROOT}\\playbooks"
+
+  - name: Default SAT skill assets directory when missing
+    if_not: "${SKILL_SAT_TAX_ASSETS_DIR}"
+    action: Set
+    params:
+      name: SKILL_SAT_TAX_ASSETS_DIR
+      value: "${SKILL_SAT_TAX_PLAYBOOK_DIR}\\assets"
+
+  - name: Default SAT output directory when missing
+    if_not: "${OUTPUT_DIR}"
+    action: Set
+    params:
+      name: OUTPUT_DIR
+      value: "${PLAYBOOK_DIR}\\..\\output"
+
+  - name: Default SAT login URL when missing
+    if_not: "${SAT_LOGIN_URL}"
+    action: Set
+    params:
+      name: SAT_LOGIN_URL
+      value: "https://pstcdypisr.clouda.sat.gob.mx/Declaracion/Temporales"
+
+  - name: Default SAT login timeout when missing
+    if_not: "${SAT_LOGIN_TIMEOUT_SECS}"
+    action: Set
+    params:
+      name: SAT_LOGIN_TIMEOUT_SECS
+      value: "180"
+
+  - name: Default SAT supercontrol toggle when missing
+    if_not: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: SAT_USE_NAV_SUPERCONTROL
+      value: true
+
+  - name: Default SAT supercontrol playbook path when missing
+    if_not: "${SKILL_NAV_SUPERCONTROL_PLAYBOOK}"
+    action: Set
+    params:
+      name: SKILL_NAV_SUPERCONTROL_PLAYBOOK
+      value: "${SKILL_SAT_TAX_ROOT}\\..\\waiba-navigation-supercontrol\\playbooks\\01_supercontrol\\playbook.yml"
+
+  - name: Default SAT supercontrol OCR toggle when missing
+    if_not: "${SAT_NAV_ENABLE_OCR}"
+    action: Set
+    params:
+      name: SAT_NAV_ENABLE_OCR
+      value: false
+
+  - name: Ensure SAT output directory
+    action: FS.EnsureDir
+    params:
+      path: "${OUTPUT_DIR}\\sat"
+
+  - name: Note when SAT_RFC is not set (manual login ok)
+    if_not: "${SAT_RFC}"
+    action: Note
+    params:
+      text: "SAT_RFC not set. Continue with manual login in browser tab."
+
+  - name: Note when SAT_PASSWORD is not set (manual login ok)
+    if_not: "${SAT_PASSWORD}"
+    action: Note
+    params:
+      text: "SAT_PASSWORD not set. Continue with manual login in browser tab."
+
+  - name: Configure supercontrol NAV_URL for SAT login
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_URL
+      value: "${SAT_LOGIN_URL}"
+
+  - name: Configure supercontrol open URL for SAT login
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_START_OPEN_URL
+      value: "${SAT_LOGIN_URL}"
+
+  - name: Configure supercontrol host expectation for SAT login
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_EXPECT_HOST_ENDSWITH
+      value: "sat.gob.mx"
+
+  - name: Configure supercontrol target domain for SAT login
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_TARGET_URL_CONTAINS
+      value: "sat.gob.mx|pstcdypisr.clouda.sat.gob.mx|http"
+
+  - name: Configure supercontrol tab policy for SAT login
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_REUSE_EXISTING_TAB
+      value: true
+
+  - name: Configure supercontrol no-new-tab for SAT login
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_ALLOW_NEW_TAB
+      value: false
+
+  - name: Configure supercontrol hooks for SAT login
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_ENABLE_PRE_HOOK
+      value: false
+
+  - name: Configure supercontrol post hook for SAT login
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_ENABLE_POST_HOOK
+      value: false
+
+  - name: Configure supercontrol JS patch for SAT login
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_ENABLE_JS_PATCH
+      value: false
+
+  - name: Configure supercontrol OCR toggle for SAT login
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_ENABLE_OCR
+      value: "${SAT_NAV_ENABLE_OCR}"
+
+  - name: Configure supercontrol evidence label for SAT login
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Set
+    params:
+      name: NAV_CAPTURE_LABEL
+      value: "sat_02_portal_session"
+
+  - name: Open SAT portal via navigation supercontrol
+    if: "${SAT_USE_NAV_SUPERCONTROL}"
+    playbook: "${SKILL_NAV_SUPERCONTROL_PLAYBOOK}"
+
+  - name: Open SAT portal (single tab reuse, fallback native)
+    if_not: "${SAT_USE_NAV_SUPERCONTROL}"
+    action: Helium.StartEdge
+    params:
+      port: "${DEBUG_PORT}"
+      open_url: "${SAT_LOGIN_URL}"
+      reuse_existing_tab: true
+      allow_new_tab: false
+      target_type: page
+      target_url_contains: "pstcdypisr.clouda.sat.gob.mx"
+      exclude_url_contains: "devtools://|edge://|chrome://"
+      minimize_window: "${RUN_MINIMIZED}"
+
+  - name: Wait until SAT domain is ready
+    action: Helium.WaitUntilUrl
+    params:
+      port: "${DEBUG_PORT}"
+      timeout_secs: 45
+      host_endswith: "sat.gob.mx"
+
+  - name: Capture landing page probe
+    action: Helium.Probe
+    register: sat_landing_probe
+    params:
+      port: "${DEBUG_PORT}"
+
+  - name: Persist landing page probe
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\02_landing_probe.json"
+      overwrite: true
+      value: "${sat_landing_probe}"
+
+  - name: Capture landing iframe map
+    action: Helium.DetectIframes
+    register: sat_landing_iframes
+    params:
+      port: "${DEBUG_PORT}"
+      limit: 40
+
+  - name: Persist landing iframe map
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\02_landing_iframes.json"
+      overwrite: true
+      value: "${sat_landing_iframes}"
+
+  - name: Attempt RFC autofill via selector heuristics
+    if: "${SAT_RFC}"
+    action: Helium.Write
+    ignore_errors: true
+    params:
+      port: "${DEBUG_PORT}"
+      text: "${SAT_RFC}"
+      into:
+        kind: "s"
+        selector: "input[name*='rfc' i],input[id*='rfc' i],input[name*='user' i],input[id*='user' i],input[type='text']"
+
+  - name: Attempt password autofill via selector heuristics
+    if: "${SAT_PASSWORD}"
+    action: Helium.Write
+    ignore_errors: true
+    params:
+      port: "${DEBUG_PORT}"
+      text: "${SAT_PASSWORD}"
+      into:
+        kind: "s"
+        selector: "input[type='password'],input[name*='pass' i],input[id*='pass' i]"
+
+  - name: Capture post-fill probe
+    action: Helium.Probe
+    register: sat_post_fill_probe
+    params:
+      port: "${DEBUG_PORT}"
+
+  - name: Persist post-fill probe
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\02_post_fill_probe.json"
+      overwrite: true
+      value: "${sat_post_fill_probe}"
+
+  - name: Persist manual captcha checkpoint instructions
+    action: FS.WriteText
+    params:
+      path: "${OUTPUT_DIR}\\sat\\02_manual_captcha_checkpoint.txt"
+      overwrite: true
+      text: |
+        Resolve captcha manually in the SAT browser tab.
+        Then click the SAT submit/login button.
+        Keep this playbook running while captcha/login is completed.
+        The next step waits for SAT to leave login state.
+
+  - name: Wait for manual login completion (captcha checkpoint)
+    action: Helium.WaitUntil
+    ignore_errors: true
+    register: sat_post_captcha_wait
+    params:
+      port: "${DEBUG_PORT}"
+      timeout_secs: "${SAT_LOGIN_TIMEOUT_SECS}"
+      interval_ms: 800
+      expression: |
+        (() => {
+          const text = (document.body?.innerText || "").toLowerCase();
+          const url = location.href || "";
+          const loginHints = ["iniciar sesion", "contrasena", "captcha", "acceso por contrasena", "password", "ciec"];
+          const authHints = ["cerrar sesion", "declaracion", "perfil declaracion", "buzon tributario", "mi portal", "mis facturas"];
+          const hasLoginHint = loginHints.some((k) => text.includes(k));
+          const hasAuthHint = authHints.some((k) => text.includes(k));
+          const urlLooksLogin = /login|autentic|nidp|acceso/.test(url.toLowerCase());
+          const urlLooksAuth = /\/Declaracion\/Temporales|\/Declaracion\/PerfilDeclaracion|\/Declaracion\/Formulario/i.test(url);
+          return urlLooksAuth || hasAuthHint || (!urlLooksLogin && !hasLoginHint);
+        })()
+
+  - name: Capture post-captcha probe
+    action: Helium.Probe
+    register: sat_post_captcha_probe
+    params:
+      port: "${DEBUG_PORT}"
+
+  - name: Persist post-captcha probe
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\02_post_captcha_probe.json"
+      overwrite: true
+      value: "${sat_post_captcha_probe}"
+
+  - name: Evaluate SAT authentication heuristics
+    action: CDP.EvaluateJson
+    register: sat_auth_heuristics
+    params:
+      port: "${DEBUG_PORT}"
+      expression: |
+        (() => {
+          const text = (document.body?.innerText || "").toLowerCase();
+          const url = location.href || "";
+          const loginHints = ["iniciar sesion", "contrasena", "captcha", "acceso por contrasena", "password"];
+          const authHints = ["cerrar sesion", "declaracion", "perfil declaracion", "buzon tributario", "mi portal", "mis facturas"];
+          const hasLoginHint = loginHints.some((k) => text.includes(k));
+          const hasAuthHint = authHints.some((k) => text.includes(k));
+          const urlLooksLogin = /login|autentic|nidp|acceso/.test(url.toLowerCase());
+          const urlLooksAuth = /\/Declaracion\/Temporales|\/Declaracion\/PerfilDeclaracion|\/Declaracion\/Formulario/i.test(url);
+          const ok = urlLooksAuth || hasAuthHint || (!urlLooksLogin && !hasLoginHint);
+          return {
+            ok,
+            url,
+            url_looks_auth: urlLooksAuth,
+            has_login_hint: hasLoginHint,
+            has_auth_hint: hasAuthHint,
+            url_looks_login: urlLooksLogin
+          };
+        })();
+
+  - name: Persist SAT authentication heuristics
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\02_auth_heuristics.json"
+      overwrite: true
+      value: "${sat_auth_heuristics}"
+
+  - name: Fail when SAT login checkpoint is unresolved
+    if_not: "${sat_auth_heuristics.ok}"
+    action: Fail
+    params:
+      message: "SAT session still looks like login/captcha state. Complete captcha/login manually and rerun 02_sat_portal_session."
+
+  - name: Persist SAT portal session checkpoint
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\02_sat_portal_session_checkpoint.json"
+      overwrite: true
+      value:
+        ok: true
+        url: "${sat_auth_heuristics.url}"
+        auth_hint: "${sat_auth_heuristics.has_auth_hint}"

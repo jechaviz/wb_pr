@@ -1,0 +1,662 @@
+[
+  {
+    "id": "38225542",
+    "module": "General",
+    "title": "qué manera podemos crear un usuario o crear nuestra nuestra cuenta en Odoo oficial y a través de esto descargar"
+  },
+  {
+    "id": "38606014",
+    "module": "proyectos",
+    "title": "módulo de proyectos"
+  },
+  {
+    "id": "38606018",
+    "module": "General",
+    "title": "qué manera podemos nosotros configurar y personalizar cada proyecto antes de llevarlo a cabo"
+  },
+  {
+    "id": "38606022",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "38606024",
+    "module": "General",
+    "title": "qué manera se pueden gestionar de mejor manera las de mejor manera las tareas dentro de un proyecto"
+  },
+  {
+    "id": "38606026",
+    "module": "General",
+    "title": "qué manera nosotros podemos automatizar la creación de tareas"
+  },
+  {
+    "id": "38606030",
+    "module": "General",
+    "title": "lo siguiente"
+  },
+  {
+    "id": "38606032",
+    "module": "General",
+    "title": "tema de las dependencias de tareas"
+  },
+  {
+    "id": "38606034",
+    "module": "proyectos que se llama Tareas",
+    "title": "opción que nos que nos que nos ofrece el módulo de proyectos que se llama Tareas"
+  },
+  {
+    "id": "38606048",
+    "module": "General",
+    "title": "una pestañita que se llama Partes de horas"
+  },
+  {
+    "id": "38606066",
+    "module": "General",
+    "title": "un tema bastante interesante que es el tema de la facturación de las horas trabajadas relacionado a un proyecto y relacionado a las tareas del mismo"
+  },
+  {
+    "id": "38606076",
+    "module": "General",
+    "title": "configurando el proyecto como siempre"
+  },
+  {
+    "id": "38606080",
+    "module": "contabilidad que es activar las opciones del presupuesto",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "38606090",
+    "module": "proyectos y que además también es el último vídeo del curso en general",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "38629088",
+    "module": "proyectos en la configuración y vamos a activar la opción que se llama Calificación del cliente",
+    "title": "qué manera yo le puedo pedir a mis clientes que califiquen mi rendimiento o el servicio que estoy ofreciendo dentro de un proyecto"
+  },
+  {
+    "id": "38629744",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53335525",
+    "module": "General",
+    "title": "un poco sobre aspectos que tal vez uno no tiene mucho en cuenta al principio"
+  },
+  {
+    "id": "53335587",
+    "module": "contactos",
+    "title": "un poco sobre el módulo de contactos"
+  },
+  {
+    "id": "53335681",
+    "module": "General",
+    "title": "qué manera puedes tú crear tus diferentes usuarios y darles o quitarles diferentes permisos o privilegios que ellos van a poder utilizar de los respectivos módulos"
+  },
+  {
+    "id": "53335695",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53335711",
+    "module": "proyectos yo puedo crear un proyecto manualmente en el módulo de ventas",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53335717",
+    "module": "General",
+    "title": "las exportaciones"
+  },
+  {
+    "id": "53336017",
+    "module": "ventas",
+    "title": "lo que es"
+  },
+  {
+    "id": "53336185",
+    "module": "General",
+    "title": "entonces viendo uno de los módulos más importantes que nos ofrece el módulo"
+  },
+  {
+    "id": "53336203",
+    "module": "CRM",
+    "title": "dos herramientas o dos partes importantes del módulo de CRM"
+  },
+  {
+    "id": "53336221",
+    "module": "CRM y de qué manera me ayudan estas actividades a cerrar de mejor manera mis ventas o de gestionar de mejor manera mis mis eh",
+    "title": "lo que es la gestión y programación de actividades dentro del módulo de CRM y de qué manera me ayudan estas actividades a cerrar de mejor manera mis ventas o de gestionar de mejor manera mis mis eh"
+  },
+  {
+    "id": "53336231",
+    "module": "CRM",
+    "title": "un poco sobre lo que es la gestión de ganados y perdidos en nuestro en nuestro Kanban del módulo de CRM"
+  },
+  {
+    "id": "53336977",
+    "module": "CRM",
+    "title": "o a complementar lo que ya habíamos visto previamente sobre lo que son los equipos de venta en el módulo de CRM"
+  },
+  {
+    "id": "53336993",
+    "module": "CRM y cómo podemos pues ir manejándolos para sacar cierta información",
+    "title": "manera resumida lo que son los informes o reportes que nos ofrece el módulo de CRM y cómo podemos pues ir manejándolos para sacar cierta información"
+  },
+  {
+    "id": "53336999",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53337027",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53337045",
+    "module": "General",
+    "title": "ahora de qué manera o de qué otras maneras el sistema me permite generar leads de manera automática"
+  },
+  {
+    "id": "53337097",
+    "module": "ventas",
+    "title": "específicamente del módulo de ventas"
+  },
+  {
+    "id": "53337101",
+    "module": "ventas",
+    "title": "lo que son las cotizaciones y de cómo crearlas desde cero en el módulo de ventas"
+  },
+  {
+    "id": "53337155",
+    "module": "inventarios desde acá como desde el módulo de ventas",
+    "title": "lo que es la creación de productos de manera manual"
+  },
+  {
+    "id": "53337173",
+    "module": "ventas",
+    "title": "una configuración del módulo de ventas"
+  },
+  {
+    "id": "53337179",
+    "module": "ventas",
+    "title": "ahora de las plantillas de cotización del módulo de ventas"
+  },
+  {
+    "id": "53337189",
+    "module": "General",
+    "title": "lo que son los documentos adjuntos de los productos que podemos añadir a las cotizaciones hacia los clientes"
+  },
+  {
+    "id": "53337233",
+    "module": "ventas",
+    "title": "ahora de lo que son las categorías de productos"
+  },
+  {
+    "id": "53337249",
+    "module": "ventas vamos a poder encontrar en Configuración lo que es la política de facturación predeterminada",
+    "title": "un ejemplo práctico de lo que son las políticas de facturación en el lodo y cuál es la diferencia entre una política u otra"
+  },
+  {
+    "id": "53337269",
+    "module": "General",
+    "title": "lo que son las entregas"
+  },
+  {
+    "id": "53337279",
+    "module": "General",
+    "title": "los tiempos de entrega o lead time"
+  },
+  {
+    "id": "53337287",
+    "module": "ventas",
+    "title": "un poco de eso"
+  },
+  {
+    "id": "53337291",
+    "module": "General",
+    "title": "en este video de lo que son"
+  },
+  {
+    "id": "53337293",
+    "module": "ventas",
+    "title": "una de las funciones nuevas que trae el 18"
+  },
+  {
+    "id": "53337487",
+    "module": "compras",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53337511",
+    "module": "General",
+    "title": "un poco cómo funciona"
+  },
+  {
+    "id": "53337535",
+    "module": "General",
+    "title": "y vamos a complementar lo lo lo que tiene"
+  },
+  {
+    "id": "53337539",
+    "module": "compras",
+    "title": "un poco sobre lo que son las alertas o advertencias que podemos utilizar en en productos y contactos"
+  },
+  {
+    "id": "53337543",
+    "module": "compras",
+    "title": "un poco sobre lo que son los acuerdos de compra"
+  },
+  {
+    "id": "53337547",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53337553",
+    "module": "compras",
+    "title": "ahora sobre lo que es la política"
+  },
+  {
+    "id": "53337567",
+    "module": "General",
+    "title": "lo que es el intercambio electrónico de datos"
+  },
+  {
+    "id": "53337579",
+    "module": "inventarios en esta sección del curso",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53337641",
+    "module": "General",
+    "title": "Respecto a los tipos de operación, vamos a ver en este vídeo lo que es el tipo de operación de recepciones"
+  },
+  {
+    "id": "53337645",
+    "module": "General",
+    "title": "otro tipo de operación"
+  },
+  {
+    "id": "53337683",
+    "module": "General",
+    "title": "una situación bastante común en las empresas"
+  },
+  {
+    "id": "53337725",
+    "module": "General",
+    "title": "lo que son las bodegas y las ubicaciones"
+  },
+  {
+    "id": "53337729",
+    "module": "inventario Configuración y vamos a buscar por acá unidades de medida",
+    "title": "una opción bastante interesante que son las unidades de medida"
+  },
+  {
+    "id": "53337737",
+    "module": "General",
+    "title": "qué manera gestionar lo que son los ajustes de inventario manuales"
+  },
+  {
+    "id": "53337749",
+    "module": "General",
+    "title": "forma detallada sobre lo que son las importaciones masivas de ajustes de inventario"
+  },
+  {
+    "id": "53337757",
+    "module": "General",
+    "title": "principalmente dos temas"
+  },
+  {
+    "id": "53337763",
+    "module": "contabilidad",
+    "title": "todo lo relacionado con lo que son costes de destino y como los podemos aplicar a nuestras ingresos de inventario y salidas de inventario de nuestras compras y ventas"
+  },
+  {
+    "id": "53337765",
+    "module": "General",
+    "title": "y hablar sobre lo que son las transferencias internas entre ubicaciones o bodegas"
+  },
+  {
+    "id": "53337785",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53337789",
+    "module": "General",
+    "title": "lo que son las reglas de reabastecimiento automático de manera manual para lo que son estos productos"
+  },
+  {
+    "id": "53337797",
+    "module": "General",
+    "title": "lo que son las reglas de reordenamiento automáticas"
+  },
+  {
+    "id": "53337811",
+    "module": "General",
+    "title": "lo que son las estrategias de traslado en lo que es todo y básicamente qué es esto y para qué nos puede servir"
+  },
+  {
+    "id": "53337819",
+    "module": "General",
+    "title": "lo que son los plazos de seguridad que nos permite configurar Odoo al momento de gestionar nuestras compras y ventas para evitar retrasos"
+  },
+  {
+    "id": "53337827",
+    "module": "General",
+    "title": "lo que son los lotes y números de serie y cómo gestionarlos desde Odoo y de qué manera nos van a ayudar estos a a seguir la trazabilidad de nuestros productos dentro de lo que son nuestras bodegas y nuestro inventario"
+  },
+  {
+    "id": "53337831",
+    "module": "General",
+    "title": "ahora lo que son la gestión de lo que son números de serie únicos"
+  },
+  {
+    "id": "53337853",
+    "module": "General",
+    "title": "qué manera se puede trabajar en Odoo con lo que son productos perecibles o con una fecha de vencimiento en el tiempo"
+  },
+  {
+    "id": "53337859",
+    "module": "inventarios en donde vamos a estar viendo de manera un poco más detallada lo que son las rutas de inventario",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53337863",
+    "module": "inventarios",
+    "title": "las reglas push y pull que pueden tener como"
+  },
+  {
+    "id": "53337869",
+    "module": "inventarios",
+    "title": "lo que son las reglas de almacenamiento o también conocidas como Faraway Rules en inglés en lo que es el Odu en el módulo de inventarios"
+  },
+  {
+    "id": "53337873",
+    "module": "General",
+    "title": "lo que son los métodos de pickeo o de picking dentro de Odu"
+  },
+  {
+    "id": "53337877",
+    "module": "inventario Configuración",
+    "title": "segunda opción a que se refiere?"
+  },
+  {
+    "id": "53337881",
+    "module": "General",
+    "title": "una de las rutas posibles que nos brinda Odu"
+  },
+  {
+    "id": "53337885",
+    "module": "General",
+    "title": "ahora lo que son las recepciones en tres pasos"
+  },
+  {
+    "id": "53337891",
+    "module": "inventarios",
+    "title": "en un bueno"
+  },
+  {
+    "id": "53337897",
+    "module": "inventarios",
+    "title": "lo que son los métodos de reserva que utiliza Odu al momento de nosotros confirmar una orden de entrega o al momento de nosotros crear operaciones de salida de inventario"
+  },
+  {
+    "id": "53337905",
+    "module": "General",
+    "title": "ahora el segundo método que nos ofrece Odoo"
+  },
+  {
+    "id": "53337909",
+    "module": "General",
+    "title": "ahora lo que son las estrategias de removimiento de inventario"
+  },
+  {
+    "id": "53337915",
+    "module": "General",
+    "title": "lo que son"
+  },
+  {
+    "id": "53338009",
+    "module": "General",
+    "title": "qué manera hacer los ajustes de inventario mediante una plantilla de importación"
+  },
+  {
+    "id": "53338523",
+    "module": "contabilidad desde cero porque tiene bastantes configuraciones",
+    "title": "un poquito sobre lo que vemos en esta primera vista"
+  },
+  {
+    "id": "53338605",
+    "module": "inventarios",
+    "title": "lo que es el plan de cuentas"
+  },
+  {
+    "id": "53338621",
+    "module": "General",
+    "title": "particularmente vamos a ver en este vídeo un poco cómo funcionan y obviamente cómo crear correctamente"
+  },
+  {
+    "id": "53338671",
+    "module": "General",
+    "title": "primero el estándar manual para que veamos qué efecto tiene el tener una configuración como esta"
+  },
+  {
+    "id": "53338685",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53338707",
+    "module": "General",
+    "title": "ahora lo que es el método de costeo Afco automatizado"
+  },
+  {
+    "id": "53338717",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53338743",
+    "module": "Odoo",
+    "title": "un poco más dedicado específicamente a esta operación"
+  },
+  {
+    "id": "53338749",
+    "module": "General",
+    "title": "en cómo se puede llevar a cabo esta operación"
+  },
+  {
+    "id": "53338767",
+    "module": "contabilidad y aquí vamos a poder encontrar tanto mi diario de ventas o mi diario de facturas de clientes como mi diario de facturas de proveedor o mi diario de compras",
+    "title": "un poco sobre los aspectos generales de las cuentas por pagar"
+  },
+  {
+    "id": "53338771",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53338779",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53338785",
+    "module": "General",
+    "title": "ahora la parte de lo que son las notas de crédito en este tipo de documentos"
+  },
+  {
+    "id": "53338787",
+    "module": "General",
+    "title": "que mi informe es en mi libro mayor"
+  },
+  {
+    "id": "53338791",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53338795",
+    "module": "General",
+    "title": "un poco sobre lo que son los niveles de seguimiento e informes que nos presenta Odoo para hacer este"
+  },
+  {
+    "id": "53338797",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53338801",
+    "module": "General",
+    "title": "y vamos a hablar un poco sobre lo que son las notas de débito"
+  },
+  {
+    "id": "53338805",
+    "module": "General",
+    "title": "un poco sobre lo que son el concepto de anticipos OK"
+  },
+  {
+    "id": "53338807",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53338809",
+    "module": "General",
+    "title": "ahora en esta siguiente sección sobre lo que son diarios de banco más en específico y las operaciones que éstas tienen"
+  },
+  {
+    "id": "53338811",
+    "module": "General",
+    "title": "un poco sobre cómo se crea un diario de banco y también un diario de de para una tarjeta de crédito correctamente"
+  },
+  {
+    "id": "53338821",
+    "module": "General",
+    "title": "ahora sobre lo que son el proceso de conciliación"
+  },
+  {
+    "id": "53338823",
+    "module": "General",
+    "title": "otra parte"
+  },
+  {
+    "id": "53338825",
+    "module": "General",
+    "title": "un poco ahora sobre lo que son las conciliaciones bancarias"
+  },
+  {
+    "id": "53338831",
+    "module": "General",
+    "title": "ahora sobre lo que son las conciliaciones"
+  },
+  {
+    "id": "53338833",
+    "module": "General",
+    "title": "ahora de las conciliaciones con un monto en contra"
+  },
+  {
+    "id": "53338835",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53338871",
+    "module": "General",
+    "title": "proceso de transferencias internas entre bancos"
+  },
+  {
+    "id": "53338875",
+    "module": "General",
+    "title": "lo que son los impuestos y cómo funcionan"
+  },
+  {
+    "id": "53338879",
+    "module": "General",
+    "title": "ahora"
+  },
+  {
+    "id": "53338881",
+    "module": "General",
+    "title": "términos de pago"
+  },
+  {
+    "id": "53338891",
+    "module": "General",
+    "title": "a hablar sobre el concepto de costos en destino"
+  },
+  {
+    "id": "53338895",
+    "module": "General",
+    "title": "un último caso relacionado a los costos en destino con un nuevo producto que es este modelo de tractor rz T"
+  },
+  {
+    "id": "53338899",
+    "module": "Manufactura o Fabricaciones o MRP",
+    "title": "ahora lo que es la contabilidad aplicada al módulo de Manufactura o Fabricaciones o MRP"
+  },
+  {
+    "id": "53338905",
+    "module": "General",
+    "title": "cómo aplicar costos en destino a órdenes de fabricación o a órdenes de manufactura"
+  },
+  {
+    "id": "53338909",
+    "module": "General",
+    "title": "en este video un poco sobre el concepto de pagos"
+  },
+  {
+    "id": "53338911",
+    "module": "General",
+    "title": "ahora sobre lo que es el diario de caja"
+  },
+  {
+    "id": "53338913",
+    "module": "contabilidad y una localización fiscal",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53338921",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53338923",
+    "module": "contabilidad de nodo",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53338925",
+    "module": "General",
+    "title": "Untertitled Lecture"
+  },
+  {
+    "id": "53338927",
+    "module": "conciliación a través del diario de banco",
+    "title": "un poco sobre lo que son los modelos de conciliación y cómo podemos aplicarlos en nuestra base o nuestro sistema de Odoo"
+  },
+  {
+    "id": "53338929",
+    "module": "General",
+    "title": "otro caso"
+  },
+  {
+    "id": "53338935",
+    "module": "contabilidad vamos a poder encontrar lo que son los pagos por lote",
+    "title": "en este video sobre lo que son los pagos por lotes o batch deposit en inglés y para"
+  },
+  {
+    "id": "53338937",
+    "module": "General",
+    "title": "una primera sección que va a estar relacionada a la creación de activos y en un segundo vídeo vamos a ver lo que son los modelos de activos que van de la mano"
+  },
+  {
+    "id": "53338939",
+    "module": "General",
+    "title": "qué más"
+  }
+]

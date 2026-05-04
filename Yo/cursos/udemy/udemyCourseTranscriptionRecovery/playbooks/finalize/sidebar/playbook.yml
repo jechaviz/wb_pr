@@ -1,0 +1,17 @@
+﻿steps:
+  - name: Save sidebar snapshot for debugging
+    action: CDP.Evaluate
+    register: sidebar_html
+    ignore_errors: true
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_dump_sidebar}"
+
+  - name: Persist sidebar snapshot
+    if: "${sidebar_html}"
+    action: FS.WriteText
+    ignore_errors: true
+    params:
+      path: "${SIDEBAR_DEBUG_FILE}"
+      text: "${sidebar_html}"
+      overwrite: true

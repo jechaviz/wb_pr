@@ -1,0 +1,14 @@
+﻿steps:
+  - name: Mark playbook task as completed
+    action: Framework.MarkTaskCompleted
+    params:
+      project_dir: "${PROJECT_DIR}"
+      task_name: "${TASK_NAME}"
+      summary: "${TASK_SUMMARY}"
+      artifacts:
+        - "${ROOT_PLAYBOOK_PATH}"
+        - "${PROJECT_DIR}\\playbooks"
+        - "${PROJECT_DIR}\\PRD.md"
+        - "${PROJECT_DIR}\\SDD.md"
+        - "${OUTPUT_DIR}"
+        - "${SIDEBAR_DEBUG_FILE}"

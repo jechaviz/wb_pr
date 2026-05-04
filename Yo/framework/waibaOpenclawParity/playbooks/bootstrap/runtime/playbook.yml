@@ -1,0 +1,10 @@
+﻿steps:
+  - name: Ensure playbooks output directory
+    action: FS.EnsureDir
+    params:
+      path: "${OUTPUT_DIR}"
+
+  - name: Ensure playbooks js directory
+    action: FS.EnsureDir
+    params:
+      path: "${JS_DIR}"

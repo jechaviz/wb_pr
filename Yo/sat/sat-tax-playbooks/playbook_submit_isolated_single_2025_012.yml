@@ -1,0 +1,64 @@
+metadata:
+  category: "finance"
+  subcategory: "sat-declaration"
+  workflow: "declare-zero-single-2025-012-submit-isolated"
+
+steps:
+  prod:
+    - action: Set
+      params:
+        name: SAT_DO_SUBMIT
+        value: true
+
+    - action: Set
+      params:
+        name: AUTO_RECOVERY_EXTERNAL_VISION
+        value: false
+
+    - action: Set
+      params:
+        name: AUTO_RECOVERY_VISION
+        value: false
+
+    - action: Set
+      params:
+        name: SAT_SUBMIT_CONFIRM
+        value: "operator-confirmed-2026-02-17-isolated-single-2025-012"
+
+    - action: Set
+      params:
+        name: DEBUG_PORT
+        value: 9333
+
+    - action: Set
+      params:
+        name: SAT_PROFILE_URL
+        value: "https://pstcdypisr.clouda.sat.gob.mx/Declaracion/Temporales"
+
+    - action: Set
+      params:
+        name: SAT_PROFILE_FORM_URL
+        value: "https://pstcdypisr.clouda.sat.gob.mx/Declaracion/PerfilDeclaracion"
+
+    - action: Set
+      params:
+        name: SAT_TARGET_YEAR
+        value: 2025
+
+    - action: Set
+      params:
+        name: SAT_TARGET_MONTH
+        value: "012"
+
+    - action: Set
+      params:
+        name: SAT_SELECT_ALL_OBLIGATIONS
+        value: "true"
+
+    - action: Set
+      params:
+        name: SAT_USE_DEFAULT_CHECKED_OBLIGATIONS
+        value: "true"
+
+    - name: Run SAT submit for Dec 2025 on isolated WAIBA/CDP port
+      playbook: "${PLAYBOOK_DIR}\\playbooks\\04_declare_zero_month\\playbook.yml"

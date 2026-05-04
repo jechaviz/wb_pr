@@ -1,0 +1,13 @@
+﻿steps:
+  - name: Load capability inventory template
+    action: FS.ReadText
+    register: capability_inventory_md
+    params:
+      path: "${PLAYBOOKS_DIR}\\assets\\capability_inventory.md"
+
+  - name: Persist capability inventory
+    action: FS.WriteText
+    params:
+      path: "${OUTPUT_DIR}\\capability_inventory.md"
+      text: "${capability_inventory_md}"
+      overwrite: true

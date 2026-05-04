@@ -1,0 +1,71 @@
+steps:
+  - name: Default OUTPUT_DIR when missing
+    if_not: "${OUTPUT_DIR}"
+    action: Set
+    params:
+      name: OUTPUT_DIR
+      value: "${PLAYBOOK_DIR}\\..\\output"
+
+  - name: Ensure SAT output directory
+    action: FS.EnsureDir
+    params:
+      path: "${OUTPUT_DIR}\\sat"
+
+  - name: Persist SAT research checklist
+    action: FS.WriteText
+    params:
+      path: "${OUTPUT_DIR}\\sat\\01_research_checklist.md"
+      overwrite: true
+      text: |
+        # SAT Tax Workflow Checklist
+
+        Required operator inputs:
+        - SAT_RFC
+        - SAT_PASSWORD (CIEC)
+        - SAT_LOGIN_URL (optional; defaults to 2025+ SAT portal)
+
+        Required run conditions:
+        - Use WAIBA playbooks only for online flow orchestration.
+        - Keep captcha handling as a manual checkpoint.
+        - Persist artifacts on every run for diagnostics and replay.
+
+        Recommended execution order:
+        1) Run 01_tax_research_plan
+        2) Run 02_sat_portal_session
+        3) Run 05_declare_zero_2025_onward
+        4) Run 03_iframe_recovery only when SAT UI navigation is blocked by frames
+
+        Artifact contract:
+        - 02_landing_probe.json
+        - 02_landing_iframes.json
+        - 02_post_fill_probe.json
+        - 02_post_captcha_probe.json
+        - declaration JSON per period under declarations/<year>/
+        - declarations/summary_2025_onward.json
+
+  - name: Persist SAT run contract
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\01_research_contract.json"
+      overwrite: true
+      value:
+        skill: "web.sat-tax-playbooks"
+        policy:
+          online_workflows_playbook_only: true
+          forbid_online_skill_implementation_in_ahk: true
+          forbid_ps1_orchestration: true
+          python_for_online_skills: false
+          captcha_mode: "manual_checkpoint"
+        required_inputs:
+          - "SAT_RFC"
+          - "SAT_PASSWORD"
+        optional_inputs:
+          - "SAT_LOGIN_URL"
+          - "SAT_LOGIN_TIMEOUT_SECS"
+          - "RUN_MINIMIZED"
+        outputs_dir: "${OUTPUT_DIR}\\sat"
+
+  - name: Note research planning ready
+    action: Note
+    params:
+      text: "SAT research plan initialized. Continue with 02_sat_portal_session/playbook.yml."

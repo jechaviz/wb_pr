@@ -1,0 +1,13 @@
+﻿steps:
+  - name: Load 90 day roadmap template
+    action: FS.ReadText
+    register: roadmap_90d_md
+    params:
+      path: "${PLAYBOOKS_DIR}\\assets\\roadmap_90d.md"
+
+  - name: Persist 90 day roadmap
+    action: FS.WriteText
+    params:
+      path: "${OUTPUT_DIR}\\roadmap_90d.md"
+      text: "${roadmap_90d_md}"
+      overwrite: true

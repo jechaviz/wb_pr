@@ -1,0 +1,12 @@
+steps:
+  - name: Load JS snippets
+    playbook: "../../01_bootstrap/03_js/playbook.yml"
+
+  - name: Connect and navigate browser
+    playbook: "../../browser/connect/playbook.yml"
+
+  - name: Recover full course transcripts
+    playbook: "../../recovery/course_loop/playbook.yml"
+
+  - name: Collect sidebar snapshot
+    playbook: "../../03_finalize/02_sidebar/playbook.yml"

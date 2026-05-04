@@ -1,0 +1,30 @@
+﻿steps:
+  - name: Load JS get current lecture info
+    action: FS.ReadText
+    register: js_get_current_lecture_info
+    params:
+      path: "${JS_DIR}\\get_current_lecture_info.js"
+
+  - name: Load JS extract transcript
+    action: FS.ReadText
+    register: js_extract_transcript
+    params:
+      path: "${JS_DIR}\\extract_transcript.js"
+
+  - name: Load JS click next lecture
+    action: FS.ReadText
+    register: js_click_next_lecture
+    params:
+      path: "${JS_DIR}\\click_next_lecture.js"
+
+  - name: Load JS unlock end of video
+    action: FS.ReadText
+    register: js_unlock_end_of_video
+    params:
+      path: "${JS_DIR}\\unlock_end_of_video.js"
+
+  - name: Load JS dump sidebar
+    action: FS.ReadText
+    register: js_dump_sidebar
+    params:
+      path: "${JS_DIR}\\dump_sidebar.js"

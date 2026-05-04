@@ -1,0 +1,62 @@
+[
+  {
+    "title": "Asset Allocation",
+    "duration_ms": 9000,
+    "es": "Asignar activos de renta y disponibilidad inicial en Odoo.",
+    "en": "Allocate rental assets and initial availability in Odoo."
+  },
+  {
+    "title": "Customer Quote",
+    "duration_ms": 9000,
+    "es": "Generar cotizacion con equipo, fechas y condiciones comerciales.",
+    "en": "Create a quote with equipment, rental dates, and commercial terms."
+  },
+  {
+    "title": "Rental Contract",
+    "duration_ms": 9000,
+    "es": "Convertir cotizacion aprobada en contrato de renta.",
+    "en": "Convert approved quote into a rental contract."
+  },
+  {
+    "title": "Exchange Contract",
+    "duration_ms": 8000,
+    "es": "Gestionar contrato de intercambio cuando se reemplaza un activo.",
+    "en": "Manage exchange contracts when a rental asset is replaced."
+  },
+  {
+    "title": "Partial Return",
+    "duration_ms": 8000,
+    "es": "Registrar devolucion parcial y ajustar facturacion.",
+    "en": "Process partial returns and adjust billing."
+  },
+  {
+    "title": "Rental Return QC",
+    "duration_ms": 10000,
+    "es": "Ejecutar checklist de devolucion y documentar condicion del activo.",
+    "en": "Run return checklist and document equipment condition."
+  },
+  {
+    "title": "Ready To Rent QC",
+    "duration_ms": 9000,
+    "es": "Completar control Ready-To-Rent antes de nueva salida.",
+    "en": "Complete Ready-To-Rent quality control before next delivery."
+  },
+  {
+    "title": "Billing Cycle",
+    "duration_ms": 9000,
+    "es": "Facturar por ciclos diarios, semanales y mensuales con regla 3-3-3.",
+    "en": "Invoice daily, weekly, and monthly cycles with the 3-3-3 rule."
+  },
+  {
+    "title": "Logistics and Delivery",
+    "duration_ms": 8000,
+    "es": "Registrar entrega, ubicacion y evidencia operativa.",
+    "en": "Track delivery, destination, and operational evidence."
+  },
+  {
+    "title": "Archive and Reporting",
+    "duration_ms": 9000,
+    "es": "Cerrar contrato, archivar evidencias y consultar reportes.",
+    "en": "Close contract, archive evidence, and review reports."
+  }
+]

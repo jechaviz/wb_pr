@@ -1,0 +1,195 @@
+metadata:
+  category: "finance"
+  subcategory: "sat-declaration"
+  workflow: "capture-acuse-viewer-screen"
+
+variables:
+  DEBUG_PORT: 9333
+  OUTPUT_DIR: "${PLAYBOOK_DIR}\\playbooks\\output"
+  SAT_PROFILE_URL: "https://pstcdypisr.clouda.sat.gob.mx/Declaracion/Temporales"
+  SAT_ACUSE_URL: "https://pstcdypisr.clouda.sat.gob.mx/Formulario/pdf/acuse.pdf"
+  SKILL_NAV_SUPERCONTROL_PLAYBOOK: "${PLAYBOOK_DIR}\\..\\waiba-navigation-supercontrol\\playbooks\\01_supercontrol\\playbook.yml"
+  SAT_USE_NAV_SUPERCONTROL: true
+  SAT_NAV_ENABLE_OCR: false
+  SAT_RENDER_READY_TIMEOUT_SECS: 35
+  SAT_RENDER_READY_EXPR: |
+    (() => {
+      const isVisible = (el) => {
+        if (!el) return false;
+        const st = window.getComputedStyle(el);
+        if (!st) return false;
+        if (st.display === "none" || st.visibility === "hidden" || st.opacity === "0") return false;
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0;
+      };
+      const loadingSelectors = [
+        ".o_loading",
+        ".o_spinner",
+        ".spinner",
+        ".loading",
+        ".oe_loading",
+        ".skeleton",
+        ".shimmer",
+        ".progress-bar-animated",
+        "[aria-busy='true']",
+        ".modal-backdrop.show"
+      ];
+      const loadingVisible = loadingSelectors.some((sel) => Array.from(document.querySelectorAll(sel)).some(isVisible));
+      const body = document.body;
+      const hasVisibleBody = !!body && body.getBoundingClientRect().height > 0;
+      return document.readyState === "complete" && hasVisibleBody && !loadingVisible;
+    })()
+
+steps:
+  prod:
+    - name: Ensure diagnostics output directory
+      action: FS.EnsureDir
+      params:
+        path: "${OUTPUT_DIR}\\sat\\diagnostics"
+
+    - name: Configure supercontrol NAV_URL for SAT acuse capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_URL
+        value: "${SAT_PROFILE_URL}"
+
+    - name: Configure supercontrol open URL for SAT acuse capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_START_OPEN_URL
+        value: "${SAT_PROFILE_URL}"
+
+    - name: Configure supercontrol host expectation for SAT acuse capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_EXPECT_HOST_ENDSWITH
+        value: "sat.gob.mx"
+
+    - name: Configure supercontrol target domain for SAT acuse capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_TARGET_URL_CONTAINS
+        value: "sat.gob.mx|pstcdypisr.clouda.sat.gob.mx|http"
+
+    - name: Configure supercontrol tab policy for SAT acuse capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_REUSE_EXISTING_TAB
+        value: true
+
+    - name: Configure supercontrol no-new-tab for SAT acuse capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ALLOW_NEW_TAB
+        value: false
+
+    - name: Configure supercontrol hooks for SAT acuse capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_PRE_HOOK
+        value: false
+
+    - name: Configure supercontrol post hook for SAT acuse capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_POST_HOOK
+        value: false
+
+    - name: Configure supercontrol JS patch for SAT acuse capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_JS_PATCH
+        value: false
+
+    - name: Configure supercontrol OCR toggle for SAT acuse capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_OCR
+        value: "${SAT_NAV_ENABLE_OCR}"
+
+    - name: Configure supercontrol evidence label for SAT acuse capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_CAPTURE_LABEL
+        value: "sat_capture_acuse_viewer"
+
+    - name: Attach to SAT browser session via navigation supercontrol
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      playbook: "${SKILL_NAV_SUPERCONTROL_PLAYBOOK}"
+
+    - name: Attach to SAT browser session (fallback native)
+      if_not: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Helium.StartEdge
+      params:
+        port: "${DEBUG_PORT}"
+        open_url: "${SAT_PROFILE_URL}"
+        reuse_existing_tab: true
+        allow_new_tab: false
+        target_type: page
+        target_url_contains: "pstcdypisr.clouda.sat.gob.mx"
+        exclude_url_contains: "devtools://|edge://|chrome://"
+        minimize_window: false
+
+    - name: Wait until SAT domain is ready
+      action: Helium.WaitUntilUrl
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: 25
+        host_endswith: "sat.gob.mx"
+
+    - name: Navigate to acuse PDF
+      action: CDP.Navigate
+      params:
+        port: "${DEBUG_PORT}"
+        url: "${SAT_ACUSE_URL}"
+        wait_ms: 2800
+        wait_until: "interactive"
+
+    - name: Wait render-ready before acuse evidence
+      action: Helium.WaitUntil
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: "${SAT_RENDER_READY_TIMEOUT_SECS}"
+        interval_ms: 600
+        expression: "${SAT_RENDER_READY_EXPR}"
+
+    - name: Capture viewer metrics
+      action: CDP.EvaluateJson
+      register: acuse_viewer_meta
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "(() => ({ url: location.href || '', title: document.title || '', inner_width: window.innerWidth || 0, inner_height: window.innerHeight || 0 }))()"
+
+    - name: Capture viewer screenshot
+      action: CDP.Send
+      register: acuse_viewer_shot
+      params:
+        port: "${DEBUG_PORT}"
+        method: "Page.captureScreenshot"
+        params:
+          format: "png"
+
+    - name: Save viewer screenshot
+      action: FS.WriteBase64
+      params:
+        path: "${OUTPUT_DIR}\\sat\\diagnostics\\sat_acuse_viewer.png"
+        overwrite: true
+        base64: "${acuse_viewer_shot.result.data}"
+
+    - name: Save viewer meta
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\diagnostics\\sat_acuse_viewer_meta.json"
+        overwrite: true
+        value: "${acuse_viewer_meta}"

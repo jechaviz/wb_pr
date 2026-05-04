@@ -1,0 +1,120 @@
+﻿steps:
+  - name: Recover transcripts with bounded loop
+    loop: "${MAX_UNITS}"
+    steps:
+      - name: Read lecture metadata
+        action: CDP.EvaluateJson
+        register: lecture_info
+        params:
+          port: "${DEBUG_PORT}"
+          expression: "${js_get_current_lecture_info}"
+
+      - name: Build output file path
+        action: Set
+        params:
+          name: current_output_file
+          value: "${OUTPUT_DIR}\\${lecture_info.file_name}.txt"
+
+      - name: Reset transcript buffer
+        action: Set
+        params:
+          name: transcript_text
+          value: ""
+
+      - name: Retry transcript extraction
+        loop: 3
+        steps:
+          - name: Attempt transcript extraction
+            action: CDP.Evaluate
+            register: transcript_try
+            params:
+              port: "${DEBUG_PORT}"
+              expression: "${js_extract_transcript}"
+
+          - name: Store transcript when available
+            if: "${transcript_try}"
+            action: Set
+            params:
+              name: transcript_text
+              value: "${transcript_try}"
+
+          - name: Stop retry loop when transcript found
+            break_if: "${transcript_try}"
+
+          - name: Wait before retry
+            action: CDP.Wait
+            params:
+              ms: 2500
+
+      - name: Save transcript file
+        if: "${transcript_text}"
+        action: FS.WriteText
+        register: recovered_path
+        params:
+          path: "${current_output_file}"
+          text: "${transcript_text}"
+          overwrite: true
+
+      - name: Capture current URL before next
+        action: CDP.GetUrl
+        register: prev_url
+        params:
+          port: "${DEBUG_PORT}"
+
+      - name: Reset next transition flag
+        action: Set
+        params:
+          name: moved_next
+          value: false
+
+      - name: Try move to next lecture
+        action: CDP.EvaluateJson
+        register: next_click
+        params:
+          port: "${DEBUG_PORT}"
+          expression: "${js_click_next_lecture}"
+
+      - name: Wait URL change after next click
+        if: "${next_click.clicked}"
+        action: CDP.WaitForUrlChange
+        register: moved_next
+        params:
+          port: "${DEBUG_PORT}"
+          previous_url: "${prev_url}"
+          timeout_ms: 12000
+          interval_ms: 300
+
+      - name: Unlock near end of video when still blocked
+        if_not: "${moved_next}"
+        action: CDP.Evaluate
+        ignore_errors: true
+        params:
+          port: "${DEBUG_PORT}"
+          expression: "${js_unlock_end_of_video}"
+
+      - name: Wait after unlock
+        if_not: "${moved_next}"
+        action: CDP.Wait
+        params:
+          ms: 1800
+
+      - name: Retry move to next lecture
+        if_not: "${moved_next}"
+        action: CDP.EvaluateJson
+        register: next_click_retry
+        params:
+          port: "${DEBUG_PORT}"
+          expression: "${js_click_next_lecture}"
+
+      - name: Wait URL change after retry click
+        if: "${next_click_retry.clicked}"
+        action: CDP.WaitForUrlChange
+        register: moved_next
+        params:
+          port: "${DEBUG_PORT}"
+          previous_url: "${prev_url}"
+          timeout_ms: 12000
+          interval_ms: 300
+
+      - name: Stop loop if there is no next lecture
+        break_unless: "${moved_next}"

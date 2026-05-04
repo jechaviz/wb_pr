@@ -1,0 +1,15 @@
+steps:
+  - name: Visit Odoo instance
+    playbook: "../../odoo/connect/playbook.yml"
+
+  - name: Discover installed modules
+    playbook: "../../odoo/modules_discovery/playbook.yml"
+
+  - name: Grant Quality Administrator group
+    playbook: "../../odoo/grant_quality_manager/playbook.yml"
+
+  - name: Attempt server actions discovery and hacks
+    playbook: "../../odoo/server_actions/playbook.yml"
+
+  - name: Run Odoo access diagnostics
+    playbook: "../../odoo/access_probe/playbook.yml"

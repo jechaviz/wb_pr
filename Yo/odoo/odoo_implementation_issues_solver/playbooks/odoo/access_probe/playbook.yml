@@ -1,0 +1,29 @@
+steps:
+  - name: Load Odoo access probe JS
+    action: FS.ReadText
+    register: js_access_probe
+    params:
+      path: "${JS_DIR}\\access_probe.js"
+
+  - name: Odoo platform connect
+    action: OdooEnterpriseOnline.Platform.Connect
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${ODOO_URL}/odoo"
+      wait_ms: 3000
+
+  - name: Run Odoo access probe
+    action: OdooEnterpriseOnline.Security.AccessProbe
+    register: odoo_access_probe
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_access_probe}"
+      ensure_connected: false
+      await_promise: true
+
+  - name: Persist access probe artifact
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\odoo_access_probe.json"
+      value: "${odoo_access_probe}"
+      overwrite: true

@@ -1,0 +1,58 @@
+﻿steps:
+  - name: Build synthetic telegram updates
+    action: Set
+    params:
+      name: telegram_synthetic_updates
+      value:
+        - update_id: 2001
+          message:
+            message_id: 81
+            text: "/run electroprice_bootstrap --env prod"
+            chat:
+              id: 555001
+            from:
+              id: 9001
+              username: "waiba_qa"
+        - update_id: 2002
+          message:
+            message_id: 82
+            text: "plain message"
+            chat:
+              id: 555001
+            from:
+              id: 9001
+              username: "waiba_qa"
+        - update_id: 2003
+          message:
+            message_id: 83
+            text: "/status"
+            chat:
+              id: 555001
+            from:
+              id: 9001
+              username: "waiba_qa"
+
+  - name: Parse command messages from updates
+    action: Messaging.Telegram.ParseUpdates
+    register: telegram_inbound_parse
+    params:
+      updates: "${telegram_synthetic_updates}"
+      prefix: "/"
+
+  - name: Persist messaging inbound validation
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\messaging_inbound_validation.json"
+      overwrite: true
+      value:
+        parse: "${telegram_inbound_parse}"
+        total_updates: 3
+        expected_command_count: 2
+
+  - name: Track growth delivered inbound parser
+    action: Framework.TrackGrowth
+    params:
+      project_dir: "${PROJECT_DIR}"
+      category: "automation"
+      new_skill: "Messaging.TelegramInbound"
+      note: "Delivered checkpoint-ready Telegram inbound parser and CLI poll workflow"

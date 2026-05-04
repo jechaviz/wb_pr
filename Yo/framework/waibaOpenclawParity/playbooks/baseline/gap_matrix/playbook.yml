@@ -1,0 +1,13 @@
+﻿steps:
+  - name: Load gap matrix template
+    action: FS.ReadText
+    register: gap_matrix_md
+    params:
+      path: "${PLAYBOOKS_DIR}\\assets\\gap_matrix.md"
+
+  - name: Persist gap matrix
+    action: FS.WriteText
+    params:
+      path: "${OUTPUT_DIR}\\gap_matrix.md"
+      text: "${gap_matrix_md}"
+      overwrite: true

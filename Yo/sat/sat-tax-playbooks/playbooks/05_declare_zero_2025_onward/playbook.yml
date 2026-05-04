@@ -1,0 +1,114 @@
+steps:
+  - name: Default WAIBA home when missing
+    if_not: "${WAIBA_HOME}"
+    action: Set
+    params:
+      name: WAIBA_HOME
+      value: "C:\\Users\\jecha\\.waiba"
+
+  - name: Default SAT skill root when missing
+    if_not: "${SKILL_SAT_TAX_ROOT}"
+    action: Set
+    params:
+      name: SKILL_SAT_TAX_ROOT
+      value: "${PLAYBOOK_DIR}\\..\\.."
+
+  - name: Default SAT playbook directory when missing
+    if_not: "${SKILL_SAT_TAX_PLAYBOOK_DIR}"
+    action: Set
+    params:
+      name: SKILL_SAT_TAX_PLAYBOOK_DIR
+      value: "${SKILL_SAT_TAX_ROOT}\\playbooks"
+
+  - name: Default SAT output directory when missing
+    if_not: "${OUTPUT_DIR}"
+    action: Set
+    params:
+      name: OUTPUT_DIR
+      value: "${PLAYBOOK_DIR}\\..\\output"
+
+  - name: Ensure SAT declarations directory
+    action: FS.EnsureDir
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations"
+
+  - name: Resolve current year/month for default end range
+    action: Shell.RunJson
+    register: sat_now
+    params:
+      unsafe: true
+      timeout_ms: 15000
+      command: "powershell -NoProfile -Command \"$d=(Get-Date).AddMonths(-1); @{ year=$d.Year; month=$d.Month; iso_utc=([DateTime]::UtcNow.ToString('o')) } | ConvertTo-Json -Compress\""
+
+  - name: Default SAT_TO_YEAR when missing
+    if_not: "${SAT_TO_YEAR}"
+    action: Set
+    params:
+      name: SAT_TO_YEAR
+      value: "${sat_now.json.year}"
+
+  - name: Default SAT_TO_MONTH when missing
+    if_not: "${SAT_TO_MONTH}"
+    action: Set
+    params:
+      name: SAT_TO_MONTH
+      value: "${sat_now.json.month}"
+
+  - name: Build SAT period list (YYYY + MMM)
+    action: Shell.RunJson
+    register: sat_periods
+    params:
+      unsafe: true
+      timeout_ms: 60000
+      command: "powershell -NoProfile -Command \"$fy=[int]${SAT_FROM_YEAR}; $fm=[int]${SAT_FROM_MONTH}; $ty=[int]${SAT_TO_YEAR}; $tm=[int]${SAT_TO_MONTH}; $from=Get-Date -Year $fy -Month $fm -Day 1; $to=Get-Date -Year $ty -Month $tm -Day 1; $out=@(); $d=$from; while($d -le $to){ $out += @{ year=($d.Year.ToString()); month=(('{0:d3}' -f $d.Month)) }; $d=$d.AddMonths(1) }; $out | ConvertTo-Json -Compress\""
+
+  - name: Persist period list
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\periods_2025_onward.json"
+      overwrite: true
+      value:
+        generated_at_utc: "${sat_now.json.iso_utc}"
+        from:
+          year: "${SAT_FROM_YEAR}"
+          month: "${SAT_FROM_MONTH}"
+        to:
+          year: "${SAT_TO_YEAR}"
+          month: "${SAT_TO_MONTH}"
+        periods: "${sat_periods.json}"
+        period_build_debug: "${sat_periods}"
+
+  - name: Loop periods and declare zero
+    loop: "${sat_periods.json}"
+    steps:
+      - name: Set SAT_TARGET_YEAR
+        action: Set
+        params:
+          name: SAT_TARGET_YEAR
+          value: "${loop.item.year}"
+
+      - name: Set SAT_TARGET_MONTH
+        action: Set
+        params:
+          name: SAT_TARGET_MONTH
+          value: "${loop.item.month}"
+
+      - name: Run declare zero for ${loop.item.year}-${loop.item.month}
+        playbook: "${SKILL_SAT_TAX_PLAYBOOK_DIR}\\04_declare_zero_month\\playbook.yml"
+
+  - name: Persist run summary
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\sat\\declarations\\summary_2025_onward.json"
+      overwrite: true
+      value:
+        ok: true
+        generated_at_utc: "${sat_now.json.iso_utc}"
+        from:
+          year: "${SAT_FROM_YEAR}"
+          month: "${SAT_FROM_MONTH}"
+        to:
+          year: "${SAT_TO_YEAR}"
+          month: "${SAT_TO_MONTH}"
+        periods_count: "${sat_periods.json.length}"
+        periods: "${sat_periods.json}"

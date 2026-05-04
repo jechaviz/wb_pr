@@ -1,0 +1,1998 @@
+﻿metadata:
+  category: "finance"
+  subcategory: "sat-declaration"
+  workflow: "resume-pending-single-2025-001-submit"
+
+variables:
+  DEBUG_PORT: 9333
+  RUN_MINIMIZED: false
+  OUTPUT_DIR: "${PLAYBOOK_DIR}\\playbooks\\output"
+  SAT_PROFILE_URL: "https://pstcdypisr.clouda.sat.gob.mx/Declaracion/Temporales"
+  SKILL_NAV_SUPERCONTROL_PLAYBOOK: "${PLAYBOOK_DIR}\\..\\waiba-navigation-supercontrol\\playbooks\\01_supercontrol\\playbook.yml"
+  SAT_USE_NAV_SUPERCONTROL: true
+  SAT_NAV_ENABLE_OCR: false
+  SAT_TARGET_YEAR: 2025
+  SAT_TARGET_MONTH: "002"
+  SAT_DO_PREVIEW: true
+  SAT_DO_SUBMIT: true
+  SAT_VISUAL_CHECKPOINTS: true
+  AUTO_RECOVER_UNCONFIRMED: false
+  AUTO_RECOVERY_VISION: false
+  AUTO_RECOVERY_EXTERNAL_VISION: false
+
+steps:
+  prod:
+    - name: Default WAIBA home when missing
+      if_not: "${WAIBA_HOME}"
+      action: Set
+      params:
+        name: WAIBA_HOME
+        value: "C:\\Users\\jecha\\.waiba"
+
+    - name: Default SAT skill root when missing
+      if_not: "${SKILL_SAT_TAX_ROOT}"
+      action: Set
+      params:
+        name: SKILL_SAT_TAX_ROOT
+        value: "${PLAYBOOK_DIR}"
+
+    - name: Default SAT playbook directory when missing
+      if_not: "${SKILL_SAT_TAX_PLAYBOOK_DIR}"
+      action: Set
+      params:
+        name: SKILL_SAT_TAX_PLAYBOOK_DIR
+        value: "${SKILL_SAT_TAX_ROOT}\\playbooks"
+
+    - name: Default SAT assets directory when missing
+      if_not: "${SKILL_SAT_TAX_ASSETS_DIR}"
+      action: Set
+      params:
+        name: SKILL_SAT_TAX_ASSETS_DIR
+        value: "${SKILL_SAT_TAX_PLAYBOOK_DIR}\\assets"
+
+    - name: Ensure SAT output directory
+      action: FS.EnsureDir
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}"
+
+    - name: Ensure SAT acuse directory
+      action: FS.EnsureDir
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\acuse"
+
+    - name: Ensure SAT preview directory
+      action: FS.EnsureDir
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\preview"
+
+    - name: Configure supercontrol NAV_URL for pending resume
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_URL
+        value: "${SAT_PROFILE_URL}"
+
+    - name: Configure supercontrol open URL for pending resume
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_START_OPEN_URL
+        value: "${SAT_PROFILE_URL}"
+
+    - name: Configure supercontrol host expectation for pending resume
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_EXPECT_HOST_ENDSWITH
+        value: "sat.gob.mx"
+
+    - name: Configure supercontrol target domain for pending resume
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_TARGET_URL_CONTAINS
+        value: "sat.gob.mx|pstcdypisr.clouda.sat.gob.mx|http"
+
+    - name: Configure supercontrol tab policy for pending resume
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_REUSE_EXISTING_TAB
+        value: true
+
+    - name: Configure supercontrol no-new-tab for pending resume
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ALLOW_NEW_TAB
+        value: false
+
+    - name: Configure supercontrol hooks for pending resume
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_PRE_HOOK
+        value: false
+
+    - name: Configure supercontrol post hook for pending resume
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_POST_HOOK
+        value: false
+
+    - name: Configure supercontrol JS patch for pending resume
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_JS_PATCH
+        value: false
+
+    - name: Configure supercontrol OCR toggle for pending resume
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_OCR
+        value: "${SAT_NAV_ENABLE_OCR}"
+
+    - name: Configure supercontrol evidence label for pending resume
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_CAPTURE_LABEL
+        value: "sat_resume_pending_${SAT_TARGET_YEAR}_${SAT_TARGET_MONTH}"
+
+    - name: Ensure SAT browser session via navigation supercontrol
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      playbook: "${SKILL_NAV_SUPERCONTROL_PLAYBOOK}"
+
+    - name: Ensure SAT browser session is connected (fallback native)
+      if_not: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Helium.StartEdge
+      params:
+        port: "${DEBUG_PORT}"
+        open_url: "${SAT_PROFILE_URL}"
+        reuse_existing_tab: true
+        allow_new_tab: false
+        target_type: page
+        target_url_contains: "pstcdypisr.clouda.sat.gob.mx"
+        exclude_url_contains: "devtools://|edge://|chrome://"
+        minimize_window: "${RUN_MINIMIZED}"
+
+    - name: Wait until SAT domain is ready
+      action: Helium.WaitUntilUrl
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: 30
+        host_endswith: "sat.gob.mx"
+
+    - name: Navigate to Temporales
+      action: CDP.Navigate
+      params:
+        port: "${DEBUG_PORT}"
+        url: "${SAT_PROFILE_URL}"
+        wait_ms: 2200
+        wait_until: "interactive"
+
+    - name: Set visual label (v01_temporales)
+      if: "${SAT_VISUAL_CHECKPOINTS}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "v01_temporales"
+
+    - name: Visual checkpoint v01_temporales
+      if: "${SAT_VISUAL_CHECKPOINTS}"
+      playbook: "${PLAYBOOK_DIR}\\playbook_visual_checkpoint.yml"
+
+    - name: Detect SAT login wall
+      action: CDP.EvaluateJson
+      register: sat_login_wall
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const url = String(location.href || "");
+            const title = String(document.title || "");
+            const body = String((document.body && document.body.innerText) || "").toLowerCase();
+            const onLogin =
+              /loginda\.siat\.sat\.gob\.mx|\/nidp\/wsfed\//i.test(url) ||
+              /sat autenticaci[oÃ³]n|acceso por contrase[nÃ±]a|captcha/i.test((title + " " + body).toLowerCase());
+            return { ok: true, on_login: onLogin, url, title };
+          })()
+
+    - name: Persist SAT login-wall probe
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.login_wall.json"
+        overwrite: true
+        value: "${sat_login_wall}"
+
+    - name: Wait for manual login/captcha resolution (initial checkpoint)
+      if: "${sat_login_wall.on_login}"
+      action: Helium.WaitUntil
+      ignore_errors: true
+      register: sat_wait_login_checkpoint
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: 300
+        interval_ms: 900
+        expression: |
+          (() => {
+            const u = String(location.href || "");
+            const t = String(document.title || "");
+            const b = String((document.body && document.body.innerText) || "").toLowerCase();
+            const onLogin =
+              /loginda\.siat\.sat\.gob\.mx|\/nidp\/wsfed\//i.test(u) ||
+              /sat autenticaci[oÃ³]n|acceso por contrase[nÃ±]a|captcha/i.test((t + " " + b).toLowerCase());
+            if (onLogin) return false;
+            return /pstcdypisr\.clouda\.sat\.gob\.mx\/Declaracion\//i.test(u);
+          })()
+
+    - name: Re-check SAT login wall after initial checkpoint
+      action: CDP.EvaluateJson
+      register: sat_login_wall_after_checkpoint
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const url = String(location.href || "");
+            const title = String(document.title || "");
+            const body = String((document.body && document.body.innerText) || "").toLowerCase();
+            const onLogin =
+              /loginda\.siat\.sat\.gob\.mx|\/nidp\/wsfed\//i.test(url) ||
+              /sat autenticaci[oÃ³]n|acceso por contrase[nÃ±]a|captcha/i.test((title + " " + body).toLowerCase());
+            return { ok: true, on_login: onLogin, url, title };
+          })()
+
+    - name: Fail if SAT session is still not authenticated
+      if: "${sat_login_wall_after_checkpoint.on_login}"
+      action: Fail
+      params:
+        message: "SAT session remains on login/authentication wall after manual checkpoint."
+
+    - name: Detect Temporales blocking error modal
+      action: CDP.EvaluateJson
+      register: sat_temporales_error
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const body = String((document.body && document.body.innerText) || "").toLowerCase();
+            const title = String(document.title || "");
+            const hasError =
+              body.includes("an error occurred while processing your request") ||
+              body.includes("error.") ||
+              body.includes("ocurrio un error") ||
+              body.includes("ocurriÃ³ un error");
+            return {
+              ok: true,
+              has_error: hasError,
+              url: String(location.href || ""),
+              title
+            };
+          })()
+
+    - name: Persist Temporales error probe
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.temporales_error.json"
+        overwrite: true
+        value: "${sat_temporales_error}"
+
+    - name: Dismiss Temporales error modal (best effort)
+      if: "${sat_temporales_error.has_error}"
+      ignore_errors: true
+      action: Helium.ClickAny
+      register: sat_temporales_error_dismiss
+      params:
+        port: "${DEBUG_PORT}"
+        text_candidates: "Aceptar|Cerrar|Close|OK|Ok"
+        implicit_wait_ms: 1600
+        find_in_page_fallback: true
+
+    - name: Wait after error modal dismiss
+      if: "${sat_temporales_error.has_error}"
+      action: CDP.Wait
+      params:
+        ms: 900
+
+    - name: Set visual label (v01b_temporales_recovered)
+      if: "${sat_temporales_error.has_error}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "v01b_temporales_recovered"
+
+    - name: Visual checkpoint v01b_temporales_recovered
+      if: "${sat_temporales_error.has_error}"
+      playbook: "${PLAYBOOK_DIR}\\playbook_visual_checkpoint.yml"
+
+    - name: Verify declaration context before pending lookup
+      action: CDP.EvaluateJson
+      register: sat_decl_context
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const u = String(location.href || "");
+            const onDecl = /pstcdypisr\.clouda\.sat\.gob\.mx\/Declaracion\//i.test(u);
+            return { ok: true, url: u, on_declaration_context: onDecl };
+          })()
+
+    - name: Recover declaration context when redirected away
+      if_not: "${sat_decl_context.on_declaration_context}"
+      action: CDP.Navigate
+      params:
+        port: "${DEBUG_PORT}"
+        url: "${SAT_PROFILE_URL}"
+        wait_ms: 2600
+        wait_until: "interactive"
+
+    - name: Verify SAT login wall after context recovery
+      action: CDP.EvaluateJson
+      register: sat_login_wall_after_recover
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const url = String(location.href || "");
+            const title = String(document.title || "");
+            const body = String((document.body && document.body.innerText) || "").toLowerCase();
+            const onLogin =
+              /loginda\.siat\.sat\.gob\.mx|\/nidp\/wsfed\//i.test(url) ||
+              /sat autenticaci[oÃ³]n|acceso por contrase[nÃ±]a|captcha/i.test((title + " " + body).toLowerCase());
+            return { ok: true, on_login: onLogin, url, title };
+          })()
+
+    - name: Persist login-wall-after-recovery probe
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.login_wall_after_recover.json"
+        overwrite: true
+        value: "${sat_login_wall_after_recover}"
+
+    - name: Wait for manual login/captcha resolution (recovery checkpoint)
+      if: "${sat_login_wall_after_recover.on_login}"
+      action: Helium.WaitUntil
+      ignore_errors: true
+      register: sat_wait_login_after_recover
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: 300
+        interval_ms: 900
+        expression: |
+          (() => {
+            const u = String(location.href || "");
+            const t = String(document.title || "");
+            const b = String((document.body && document.body.innerText) || "").toLowerCase();
+            const onLogin =
+              /loginda\.siat\.sat\.gob\.mx|\/nidp\/wsfed\//i.test(u) ||
+              /sat autenticaci[oÃ³]n|acceso por contrase[nÃ±]a|captcha/i.test((t + " " + b).toLowerCase());
+            if (onLogin) return false;
+            return /pstcdypisr\.clouda\.sat\.gob\.mx\/Declaracion\//i.test(u);
+          })()
+
+    - name: Re-check SAT login wall after recovery checkpoint
+      action: CDP.EvaluateJson
+      register: sat_login_wall_after_recover_checkpoint
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const url = String(location.href || "");
+            const title = String(document.title || "");
+            const body = String((document.body && document.body.innerText) || "").toLowerCase();
+            const onLogin =
+              /loginda\.siat\.sat\.gob\.mx|\/nidp\/wsfed\//i.test(url) ||
+              /sat autenticaci[oÃ³]n|acceso por contrase[nÃ±]a|captcha/i.test((title + " " + body).toLowerCase());
+            return { ok: true, on_login: onLogin, url, title };
+          })()
+
+    - name: Fail if SAT session is still not authenticated after recovery
+      if: "${sat_login_wall_after_recover_checkpoint.on_login}"
+      action: Fail
+      params:
+        message: "SAT session moved out of Declaracion context and remains on login/authentication wall."
+
+    - name: Open pending declaration row for target month
+      action: CDP.EvaluateJson
+      register: sat_open_pending_row
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const year = "2025";
+            const period = "001";
+            const selector = ".btnVerDeclaracion[data-ejercicio='" + year + "'][data-periodo='" + period + "']";
+            const el = document.querySelector(selector);
+            if (!el) {
+              const rows = Array.from(document.querySelectorAll(".btnVerDeclaracion"))
+                .map((r) => ({
+                  text: String((r.innerText || r.textContent || "").replace(/\s+/g, " ").trim()),
+                  year: String(r.getAttribute("data-ejercicio") || ""),
+                  period: String(r.getAttribute("data-periodo") || "")
+                }))
+                .slice(0, 30);
+              return { ok: true, found: false, selector, rows };
+            }
+            try {
+              el.click();
+              return {
+                ok: true,
+                found: true,
+                clicked: true,
+                selector,
+                text: String((el.innerText || el.textContent || "").replace(/\s+/g, " ").trim()),
+                attrs: {
+                  year: String(el.getAttribute("data-ejercicio") || ""),
+                  period: String(el.getAttribute("data-periodo") || ""),
+                  obligations: String(el.getAttribute("data-obligaciones") || "")
+                }
+              };
+            } catch (e) {
+              return { ok: true, found: true, clicked: false, selector, error: String((e && e.message) || e || "click_failed") };
+            }
+          })()
+
+    - name: Persist pending-row open result
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.pending_open.json"
+        overwrite: true
+        value: "${sat_open_pending_row}"
+
+    - name: Set visual label (v02_pending_row)
+      if: "${SAT_VISUAL_CHECKPOINTS}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "v02_pending_row"
+
+    - name: Visual checkpoint v02_pending_row
+      if: "${SAT_VISUAL_CHECKPOINTS}"
+      playbook: "${PLAYBOOK_DIR}\\playbook_visual_checkpoint.yml"
+
+    - name: Fail when pending row was not found
+      if_not: "${sat_open_pending_row.found}"
+      action: Fail
+      params:
+        message: "Pending declaration row for ${SAT_TARGET_YEAR}-${SAT_TARGET_MONTH} was not found in Temporales."
+
+    - name: Wait for Formulario route after pending click
+      ignore_errors: true
+      action: Helium.WaitUntilUrl
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: 40
+        url_regex: "Formulario"
+
+    - name: Verify we are on Formulario page
+      action: CDP.EvaluateJson
+      register: sat_form_nav_check
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "(() => ({ url: location.href || '', on_formulario: /Declaracion\\/Formulario|\\/Formulario\\/Formulario/i.test(location.href || '') }))()"
+
+    - name: Recover Formulario route from checkpoint URL
+      if_not: "${sat_form_nav_check.on_formulario}"
+      action: CDP.Navigate
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+        url: "${sat_visual_state.url}"
+        wait_ms: 2600
+        wait_until: "interactive"
+
+    - name: Wait for Formulario route after recovery
+      if_not: "${sat_form_nav_check.on_formulario}"
+      ignore_errors: true
+      action: Helium.WaitUntilUrl
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: 20
+        url_regex: "Formulario"
+
+    - name: Re-verify Formulario route after recovery
+      if_not: "${sat_form_nav_check.on_formulario}"
+      action: CDP.EvaluateJson
+      register: sat_form_nav_check
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "(() => ({ url: location.href || '', on_formulario: /Declaracion\\/Formulario|\\/Formulario\\/Formulario/i.test(location.href || '') }))()"
+
+    - name: Set visual label (v03_formulario_route)
+      if: "${SAT_VISUAL_CHECKPOINTS}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "v03_formulario_route"
+
+    - name: Visual checkpoint v03_formulario_route
+      if: "${SAT_VISUAL_CHECKPOINTS}"
+      playbook: "${PLAYBOOK_DIR}\\playbook_visual_checkpoint.yml"
+
+    - name: Fail if Formulario route was not reached
+      if_not: "${sat_form_nav_check.on_formulario}"
+      action: Fail
+      params:
+        message: "Pending row click did not reach Formulario route."
+
+    - name: Load SAT form probe JS
+      action: FS.ReadText
+      register: js_sat_form_probe
+      params:
+        path: "${SKILL_SAT_TAX_ASSETS_DIR}\\sat_form_probe.js"
+
+    - name: Probe SAT form state
+      action: CDP.EvaluateJson
+      register: sat_form_probe
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_form_probe}"
+
+    - name: Persist form probe
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.form_probe.json"
+        overwrite: true
+        value: "${sat_form_probe}"
+
+    - name: Set visual label (v04_form_probe)
+      if: "${SAT_VISUAL_CHECKPOINTS}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "v04_form_probe"
+
+    - name: Visual checkpoint v04_form_probe
+      if: "${SAT_VISUAL_CHECKPOINTS}"
+      playbook: "${PLAYBOOK_DIR}\\playbook_visual_checkpoint.yml"
+
+    - name: Try mark "Sin operaciones" (best effort)
+      ignore_errors: true
+      action: Helium.ClickAny
+      register: sat_click_sin_operaciones
+      params:
+        port: "${DEBUG_PORT}"
+        text_candidates: "Sin operaciones|Sin Operaciones|DeclaraciÃƒÂ³n sin operaciones|Declaracion sin operaciones|Sin actividad|Sin Actividad"
+        implicit_wait_ms: 1800
+        find_in_page_fallback: true
+
+    - name: Load SAT fill-zero amounts JS
+      action: FS.ReadText
+      register: js_sat_fill_zero_amounts
+      params:
+        path: "${SKILL_SAT_TAX_ASSETS_DIR}\\sat_fill_zero_amounts.js"
+
+    - name: Fill empty amount fields with 0 (best effort)
+      action: CDP.EvaluateJson
+      register: sat_zero_fill
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_fill_zero_amounts}"
+
+    - name: Persist zero-fill result
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.zero_fill.json"
+        overwrite: true
+        value: "${sat_zero_fill}"
+
+    - name: Set visual label (v05_zero_fill)
+      if: "${SAT_VISUAL_CHECKPOINTS}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "v05_zero_fill"
+
+    - name: Visual checkpoint v05_zero_fill
+      if: "${SAT_VISUAL_CHECKPOINTS}"
+      playbook: "${PLAYBOOK_DIR}\\playbook_visual_checkpoint.yml"
+
+    - name: Load SAT deep discovery JS
+      action: FS.ReadText
+      register: js_sat_deep_form_discovery
+      params:
+        path: "${SKILL_SAT_TAX_ASSETS_DIR}\\sat_deep_form_discovery.js"
+
+    - name: Set deep mode close_prellenado
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "close_prellenado"
+
+    - name: Close prellenado before concept sweep
+      ignore_errors: true
+      action: CDP.EvaluateJson
+      register: sat_close_prellenado_pre_sweep
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait after prellenado close before concept sweep
+      if: "${sat_close_prellenado_pre_sweep.clicked}"
+      action: CDP.Wait
+      params:
+        ms: 900
+
+    - name: Set deep mode detect_concepts (initial)
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "detect_concepts"
+
+    - name: Detect concept links before deep sweep
+      action: CDP.EvaluateJson
+      register: sat_concepts_catalog_initial
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Set deep mode open_admin
+      if_not: "${sat_concepts_catalog_initial.has_any_concepts}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "open_admin"
+
+    - name: Open administracion menu for deep sweep
+      if_not: "${sat_concepts_catalog_initial.has_any_concepts}"
+      ignore_errors: true
+      action: CDP.EvaluateJson
+      register: sat_open_admin_for_sweep
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait after opening administracion menu
+      if_not: "${sat_concepts_catalog_initial.has_any_concepts}"
+      action: CDP.Wait
+      params:
+        ms: 1100
+
+    - name: Set deep mode detect_concepts (final)
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "detect_concepts"
+
+    - name: Detect concept links for deep sweep
+      action: CDP.EvaluateJson
+      register: sat_concepts_catalog
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Persist deep concept catalog
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.deep_concepts_catalog.json"
+        overwrite: true
+        value:
+          initial: "${sat_concepts_catalog_initial}"
+          open_admin: "${sat_open_admin_for_sweep}"
+          final: "${sat_concepts_catalog}"
+
+    - name: Fail when concept menu is not visible
+      if_not: "${sat_concepts_catalog.has_any_concepts}"
+      action: Fail
+      params:
+        message: "Deep discovery could not find declaration concept links."
+
+    - name: Set deep target ISR salarios
+      if: "${sat_concepts_catalog.has_isr_salarios}"
+      action: Set
+      params:
+        name: SAT_DEEP_TARGET
+        value: "isr retenciones por salarios"
+
+    - name: Set deep mode open_admin (ISR salarios)
+      if: "${sat_concepts_catalog.has_isr_salarios}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "open_admin"
+
+    - name: Open administracion before ISR salarios
+      if: "${sat_concepts_catalog.has_isr_salarios}"
+      ignore_errors: true
+      action: CDP.EvaluateJson
+      register: sat_open_admin_before_isr_salarios
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait before opening ISR salarios
+      if: "${sat_concepts_catalog.has_isr_salarios}"
+      action: CDP.Wait
+      params:
+        ms: 700
+
+    - name: Set deep mode click_target (ISR salarios)
+      if: "${sat_concepts_catalog.has_isr_salarios}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "click_target"
+
+    - name: Open ISR salarios concept (deep)
+      if: "${sat_concepts_catalog.has_isr_salarios}"
+      action: CDP.EvaluateJson
+      register: sat_open_isr_salarios_deep
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait after opening ISR salarios concept
+      if: "${sat_open_isr_salarios_deep.clicked}"
+      action: CDP.Wait
+      params:
+        ms: 1100
+
+    - name: Set deep mode click_tab Determinacion (ISR salarios)
+      if: "${sat_open_isr_salarios_deep.clicked}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "click_tab"
+
+    - name: Set deep tab target Determinacion (ISR salarios)
+      if: "${sat_open_isr_salarios_deep.clicked}"
+      action: Set
+      params:
+        name: SAT_DEEP_TARGET
+        value: "determinacion"
+
+    - name: Open Determinacion tab ISR salarios
+      if: "${sat_open_isr_salarios_deep.clicked}"
+      ignore_errors: true
+      action: CDP.EvaluateJson
+      register: sat_tab_determinacion_isr_salarios
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait after Determinacion tab ISR salarios
+      if: "${sat_open_isr_salarios_deep.clicked}"
+      action: CDP.Wait
+      params:
+        ms: 600
+
+    - name: Zero-fill ISR salarios Determinacion
+      if: "${sat_open_isr_salarios_deep.clicked}"
+      action: CDP.EvaluateJson
+      register: sat_zero_fill_isr_salarios_determinacion
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_fill_zero_amounts}"
+
+    - name: Set deep tab target Pago (ISR salarios)
+      if: "${sat_open_isr_salarios_deep.clicked}"
+      action: Set
+      params:
+        name: SAT_DEEP_TARGET
+        value: "pago"
+
+    - name: Open Pago tab ISR salarios
+      if: "${sat_open_isr_salarios_deep.clicked}"
+      ignore_errors: true
+      action: CDP.EvaluateJson
+      register: sat_tab_pago_isr_salarios
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait after Pago tab ISR salarios
+      if: "${sat_open_isr_salarios_deep.clicked}"
+      action: CDP.Wait
+      params:
+        ms: 600
+
+    - name: Zero-fill ISR salarios Pago
+      if: "${sat_open_isr_salarios_deep.clicked}"
+      action: CDP.EvaluateJson
+      register: sat_zero_fill_isr_salarios_pago
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_fill_zero_amounts}"
+
+    - name: Set deep mode click_guardar_button (ISR salarios)
+      if: "${sat_open_isr_salarios_deep.clicked}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "click_guardar_button"
+
+    - name: Save ISR salarios concept via DOM button
+      if: "${sat_open_isr_salarios_deep.clicked}"
+      ignore_errors: true
+      action: CDP.EvaluateJson
+      register: sat_save_isr_salarios_dom
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Save ISR salarios concept
+      if: "${sat_open_isr_salarios_deep.clicked}"
+      if_not: "${sat_save_isr_salarios_dom.clicked}"
+      ignore_errors: true
+      action: Helium.ClickAny
+      register: sat_save_isr_salarios_deep
+      params:
+        port: "${DEBUG_PORT}"
+        text_candidates: "GUARDAR|Guardar"
+        implicit_wait_ms: 2200
+        find_in_page_fallback: true
+
+    - name: Wait after saving ISR salarios concept
+      if: "${sat_open_isr_salarios_deep.clicked}"
+      action: CDP.Wait
+      params:
+        ms: 900
+
+    - name: Persist deep ISR salarios sweep
+      if: "${sat_concepts_catalog.has_isr_salarios}"
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.deep_isr_salarios.json"
+        overwrite: true
+        value:
+          open_admin: "${sat_open_admin_before_isr_salarios}"
+          open: "${sat_open_isr_salarios_deep}"
+          tab_determinacion: "${sat_tab_determinacion_isr_salarios}"
+          fill_determinacion: "${sat_zero_fill_isr_salarios_determinacion}"
+          tab_pago: "${sat_tab_pago_isr_salarios}"
+          fill_pago: "${sat_zero_fill_isr_salarios_pago}"
+          save_dom: "${sat_save_isr_salarios_dom}"
+          save: "${sat_save_isr_salarios_deep}"
+
+    - name: Set visual label (v05a_isr_salarios_deep)
+      if: "${sat_concepts_catalog.has_isr_salarios}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "v05a_isr_salarios_deep"
+
+    - name: Visual checkpoint v05a_isr_salarios_deep
+      if: "${sat_concepts_catalog.has_isr_salarios}"
+      playbook: "${PLAYBOOK_DIR}\\playbook_visual_checkpoint.yml"
+
+    - name: Set deep target ISR asimilados
+      if: "${sat_concepts_catalog.has_isr_asimilados}"
+      action: Set
+      params:
+        name: SAT_DEEP_TARGET
+        value: "isr retenciones por asimilados a salarios"
+
+    - name: Set deep mode open_admin (ISR asimilados)
+      if: "${sat_concepts_catalog.has_isr_asimilados}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "open_admin"
+
+    - name: Open administracion before ISR asimilados
+      if: "${sat_concepts_catalog.has_isr_asimilados}"
+      ignore_errors: true
+      action: CDP.EvaluateJson
+      register: sat_open_admin_before_isr_asimilados
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait before opening ISR asimilados
+      if: "${sat_concepts_catalog.has_isr_asimilados}"
+      action: CDP.Wait
+      params:
+        ms: 700
+
+    - name: Set deep mode click_target (ISR asimilados)
+      if: "${sat_concepts_catalog.has_isr_asimilados}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "click_target"
+
+    - name: Open ISR asimilados concept (deep)
+      if: "${sat_concepts_catalog.has_isr_asimilados}"
+      action: CDP.EvaluateJson
+      register: sat_open_isr_asimilados_deep
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait after opening ISR asimilados concept
+      if: "${sat_open_isr_asimilados_deep.clicked}"
+      action: CDP.Wait
+      params:
+        ms: 1100
+
+    - name: Set deep mode click_tab Determinacion (ISR asimilados)
+      if: "${sat_open_isr_asimilados_deep.clicked}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "click_tab"
+
+    - name: Set deep tab target Determinacion (ISR asimilados)
+      if: "${sat_open_isr_asimilados_deep.clicked}"
+      action: Set
+      params:
+        name: SAT_DEEP_TARGET
+        value: "determinacion"
+
+    - name: Open Determinacion tab ISR asimilados
+      if: "${sat_open_isr_asimilados_deep.clicked}"
+      ignore_errors: true
+      action: CDP.EvaluateJson
+      register: sat_tab_determinacion_isr_asimilados
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait after Determinacion tab ISR asimilados
+      if: "${sat_open_isr_asimilados_deep.clicked}"
+      action: CDP.Wait
+      params:
+        ms: 600
+
+    - name: Zero-fill ISR asimilados Determinacion
+      if: "${sat_open_isr_asimilados_deep.clicked}"
+      action: CDP.EvaluateJson
+      register: sat_zero_fill_isr_asimilados_determinacion
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_fill_zero_amounts}"
+
+    - name: Set deep tab target Pago (ISR asimilados)
+      if: "${sat_open_isr_asimilados_deep.clicked}"
+      action: Set
+      params:
+        name: SAT_DEEP_TARGET
+        value: "pago"
+
+    - name: Open Pago tab ISR asimilados
+      if: "${sat_open_isr_asimilados_deep.clicked}"
+      ignore_errors: true
+      action: CDP.EvaluateJson
+      register: sat_tab_pago_isr_asimilados
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait after Pago tab ISR asimilados
+      if: "${sat_open_isr_asimilados_deep.clicked}"
+      action: CDP.Wait
+      params:
+        ms: 600
+
+    - name: Zero-fill ISR asimilados Pago
+      if: "${sat_open_isr_asimilados_deep.clicked}"
+      action: CDP.EvaluateJson
+      register: sat_zero_fill_isr_asimilados_pago
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_fill_zero_amounts}"
+
+    - name: Set deep mode click_guardar_button (ISR asimilados)
+      if: "${sat_open_isr_asimilados_deep.clicked}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "click_guardar_button"
+
+    - name: Save ISR asimilados concept via DOM button
+      if: "${sat_open_isr_asimilados_deep.clicked}"
+      ignore_errors: true
+      action: CDP.EvaluateJson
+      register: sat_save_isr_asimilados_dom
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Save ISR asimilados concept
+      if: "${sat_open_isr_asimilados_deep.clicked}"
+      if_not: "${sat_save_isr_asimilados_dom.clicked}"
+      ignore_errors: true
+      action: Helium.ClickAny
+      register: sat_save_isr_asimilados_deep
+      params:
+        port: "${DEBUG_PORT}"
+        text_candidates: "GUARDAR|Guardar"
+        implicit_wait_ms: 2200
+        find_in_page_fallback: true
+
+    - name: Wait after saving ISR asimilados concept
+      if: "${sat_open_isr_asimilados_deep.clicked}"
+      action: CDP.Wait
+      params:
+        ms: 900
+
+    - name: Persist deep ISR asimilados sweep
+      if: "${sat_concepts_catalog.has_isr_asimilados}"
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.deep_isr_asimilados.json"
+        overwrite: true
+        value:
+          open_admin: "${sat_open_admin_before_isr_asimilados}"
+          open: "${sat_open_isr_asimilados_deep}"
+          tab_determinacion: "${sat_tab_determinacion_isr_asimilados}"
+          fill_determinacion: "${sat_zero_fill_isr_asimilados_determinacion}"
+          tab_pago: "${sat_tab_pago_isr_asimilados}"
+          fill_pago: "${sat_zero_fill_isr_asimilados_pago}"
+          save_dom: "${sat_save_isr_asimilados_dom}"
+          save: "${sat_save_isr_asimilados_deep}"
+
+    - name: Set visual label (v05b_isr_asimilados_deep)
+      if: "${sat_concepts_catalog.has_isr_asimilados}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "v05b_isr_asimilados_deep"
+
+    - name: Visual checkpoint v05b_isr_asimilados_deep
+      if: "${sat_concepts_catalog.has_isr_asimilados}"
+      playbook: "${PLAYBOOK_DIR}\\playbook_visual_checkpoint.yml"
+
+    - name: Set deep target IVA retenciones
+      if: "${sat_concepts_catalog.has_iva_retenciones}"
+      action: Set
+      params:
+        name: SAT_DEEP_TARGET
+        value: "iva retenciones"
+
+    - name: Set deep mode open_admin (IVA retenciones)
+      if: "${sat_concepts_catalog.has_iva_retenciones}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "open_admin"
+
+    - name: Open administracion before IVA retenciones
+      if: "${sat_concepts_catalog.has_iva_retenciones}"
+      ignore_errors: true
+      action: CDP.EvaluateJson
+      register: sat_open_admin_before_iva_retenciones
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait before opening IVA retenciones
+      if: "${sat_concepts_catalog.has_iva_retenciones}"
+      action: CDP.Wait
+      params:
+        ms: 700
+
+    - name: Set deep mode click_target (IVA retenciones)
+      if: "${sat_concepts_catalog.has_iva_retenciones}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "click_target"
+
+    - name: Open IVA retenciones concept (deep)
+      if: "${sat_concepts_catalog.has_iva_retenciones}"
+      action: CDP.EvaluateJson
+      register: sat_open_iva_retenciones_deep
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait after opening IVA retenciones concept
+      if: "${sat_open_iva_retenciones_deep.clicked}"
+      action: CDP.Wait
+      params:
+        ms: 1100
+
+    - name: Set deep mode click_tab Determinacion (IVA retenciones)
+      if: "${sat_open_iva_retenciones_deep.clicked}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "click_tab"
+
+    - name: Set deep tab target Determinacion (IVA retenciones)
+      if: "${sat_open_iva_retenciones_deep.clicked}"
+      action: Set
+      params:
+        name: SAT_DEEP_TARGET
+        value: "determinacion"
+
+    - name: Open Determinacion tab IVA retenciones
+      if: "${sat_open_iva_retenciones_deep.clicked}"
+      ignore_errors: true
+      action: CDP.EvaluateJson
+      register: sat_tab_determinacion_iva_retenciones
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait after Determinacion tab IVA retenciones
+      if: "${sat_open_iva_retenciones_deep.clicked}"
+      action: CDP.Wait
+      params:
+        ms: 600
+
+    - name: Zero-fill IVA retenciones Determinacion
+      if: "${sat_open_iva_retenciones_deep.clicked}"
+      action: CDP.EvaluateJson
+      register: sat_zero_fill_iva_retenciones_determinacion
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_fill_zero_amounts}"
+
+    - name: Set deep tab target Pago (IVA retenciones)
+      if: "${sat_open_iva_retenciones_deep.clicked}"
+      action: Set
+      params:
+        name: SAT_DEEP_TARGET
+        value: "pago"
+
+    - name: Open Pago tab IVA retenciones
+      if: "${sat_open_iva_retenciones_deep.clicked}"
+      ignore_errors: true
+      action: CDP.EvaluateJson
+      register: sat_tab_pago_iva_retenciones
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait after Pago tab IVA retenciones
+      if: "${sat_open_iva_retenciones_deep.clicked}"
+      action: CDP.Wait
+      params:
+        ms: 600
+
+    - name: Zero-fill IVA retenciones Pago
+      if: "${sat_open_iva_retenciones_deep.clicked}"
+      action: CDP.EvaluateJson
+      register: sat_zero_fill_iva_retenciones_pago
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_fill_zero_amounts}"
+
+    - name: Set deep mode click_guardar_button (IVA retenciones)
+      if: "${sat_open_iva_retenciones_deep.clicked}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "click_guardar_button"
+
+    - name: Save IVA retenciones concept via DOM button
+      if: "${sat_open_iva_retenciones_deep.clicked}"
+      ignore_errors: true
+      action: CDP.EvaluateJson
+      register: sat_save_iva_retenciones_dom
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Save IVA retenciones concept
+      if: "${sat_open_iva_retenciones_deep.clicked}"
+      if_not: "${sat_save_iva_retenciones_dom.clicked}"
+      ignore_errors: true
+      action: Helium.ClickAny
+      register: sat_save_iva_retenciones_deep
+      params:
+        port: "${DEBUG_PORT}"
+        text_candidates: "GUARDAR|Guardar"
+        implicit_wait_ms: 2200
+        find_in_page_fallback: true
+
+    - name: Wait after saving IVA retenciones concept
+      if: "${sat_open_iva_retenciones_deep.clicked}"
+      action: CDP.Wait
+      params:
+        ms: 900
+
+    - name: Persist deep IVA retenciones sweep
+      if: "${sat_concepts_catalog.has_iva_retenciones}"
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.deep_iva_retenciones.json"
+        overwrite: true
+        value:
+          open_admin: "${sat_open_admin_before_iva_retenciones}"
+          open: "${sat_open_iva_retenciones_deep}"
+          tab_determinacion: "${sat_tab_determinacion_iva_retenciones}"
+          fill_determinacion: "${sat_zero_fill_iva_retenciones_determinacion}"
+          tab_pago: "${sat_tab_pago_iva_retenciones}"
+          fill_pago: "${sat_zero_fill_iva_retenciones_pago}"
+          save_dom: "${sat_save_iva_retenciones_dom}"
+          save: "${sat_save_iva_retenciones_deep}"
+
+    - name: Set visual label (v05c_iva_retenciones_deep)
+      if: "${sat_concepts_catalog.has_iva_retenciones}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "v05c_iva_retenciones_deep"
+
+    - name: Visual checkpoint v05c_iva_retenciones_deep
+      if: "${sat_concepts_catalog.has_iva_retenciones}"
+      playbook: "${PLAYBOOK_DIR}\\playbook_visual_checkpoint.yml"
+
+    - name: Set deep mode probe_validation
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "probe_validation"
+
+    - name: Probe validation blockers after deep concept sweep
+      action: CDP.EvaluateJson
+      register: sat_validation_after_deep_sweep
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Persist deep validation gate
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.deep_validation_gate.json"
+        overwrite: true
+        value: "${sat_validation_after_deep_sweep}"
+
+    - name: Fail when SAT still reports incomplete form after deep sweep
+      if: "${sat_validation_after_deep_sweep.has_validation_blocker}"
+      action: Fail
+      params:
+        message: "SAT still reports incomplete sections after deep sweep; submission is blocked."
+
+    - name: Set deep mode ensure_summary_view
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "ensure_summary_view"
+
+    - name: Return to summary surface (attempt 1)
+      action: CDP.EvaluateJson
+      register: sat_return_summary_surface_1
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait after summary surface attempt 1
+      if: "${sat_return_summary_surface_1.clicked}"
+      action: CDP.Wait
+      params:
+        ms: 1100
+
+    - name: Set deep mode probe_submit_surface (attempt 1)
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "probe_submit_surface"
+
+    - name: Probe summary surface controls (attempt 1)
+      action: CDP.EvaluateJson
+      register: sat_submit_surface_probe_1
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Set deep mode ensure_summary_view (attempt 2)
+      if_not: "${sat_submit_surface_probe_1.has_submit_button}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "ensure_summary_view"
+
+    - name: Return to summary surface (attempt 2)
+      if_not: "${sat_submit_surface_probe_1.has_submit_button}"
+      action: CDP.EvaluateJson
+      register: sat_return_summary_surface_2
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait after summary surface attempt 2
+      if_not: "${sat_submit_surface_probe_1.has_submit_button}"
+      action: CDP.Wait
+      params:
+        ms: 1200
+
+    - name: Set deep mode probe_submit_surface (final)
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "probe_submit_surface"
+
+    - name: Probe summary surface controls (final)
+      action: CDP.EvaluateJson
+      register: sat_submit_surface_probe
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Persist summary surface probe
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.submit_surface_probe.json"
+        overwrite: true
+        value:
+          attempt_1: "${sat_submit_surface_probe_1}"
+          attempt_2_action: "${sat_return_summary_surface_2}"
+          final: "${sat_submit_surface_probe}"
+
+    - name: Fail when submit button is not visible on summary surface
+      if_not: "${sat_submit_surface_probe.has_submit_button}"
+      action: Fail
+      params:
+        message: "Submit button is not visible after deep discovery summary recovery."
+
+    - name: Fail when preview button is not visible on summary surface
+      if_not: "${sat_submit_surface_probe.has_preview_button}"
+      action: Fail
+      params:
+        message: "Preview button is not visible after deep discovery summary recovery."
+
+    - name: Set deep mode click_preview_button
+      if: "${SAT_DO_PREVIEW}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "click_preview_button"
+
+    - name: Click Vista previa (deep)
+      if: "${SAT_DO_PREVIEW}"
+      action: CDP.EvaluateJson
+      register: sat_click_preview
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Fail when Vista previa click did not happen
+      if: "${SAT_DO_PREVIEW}"
+      if_not: "${sat_click_preview.clicked}"
+      action: Fail
+      params:
+        message: "Preview button was not clicked after deep discovery gating."
+
+    - name: Wait for preview render
+      if: "${SAT_DO_PREVIEW}"
+      action: CDP.Wait
+      params:
+        ms: 2500
+
+    - name: Print preview to PDF (CDP)
+      if: "${SAT_DO_PREVIEW}"
+      action: CDP.Send
+      register: sat_preview_pdf
+      params:
+        port: "${DEBUG_PORT}"
+        method: "Page.printToPDF"
+
+    - name: Save preview PDF to file
+      if: "${SAT_DO_PREVIEW}"
+      action: FS.WriteBase64
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\preview\\${SAT_TARGET_YEAR}_${SAT_TARGET_MONTH}.vista_previa.pdf"
+        overwrite: true
+        base64: "${sat_preview_pdf.result.data}"
+
+    - name: Set visual label (v06_preview_ready)
+      if: "${SAT_DO_PREVIEW}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "v06_preview_ready"
+
+    - name: Visual checkpoint v06_preview_ready
+      if: "${SAT_DO_PREVIEW}"
+      playbook: "${PLAYBOOK_DIR}\\playbook_visual_checkpoint.yml"
+
+    - name: Set deep mode click_submit_button
+      if: "${SAT_DO_SUBMIT}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "click_submit_button"
+
+    - name: Click Enviar declaracion (deep)
+      if: "${SAT_DO_SUBMIT}"
+      action: CDP.EvaluateJson
+      register: sat_click_submit
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Fail when Enviar declaracion click did not happen
+      if: "${SAT_DO_SUBMIT}"
+      if_not: "${sat_click_submit.clicked}"
+      action: Fail
+      params:
+        message: "Submit button was not clicked; still on form editing surface."
+
+    - name: Persist submit click result
+      if: "${SAT_DO_SUBMIT}"
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.submit_click.json"
+        overwrite: true
+        value: "${sat_click_submit}"
+
+    - name: Wait before inspecting submit modal
+      if: "${SAT_DO_SUBMIT}"
+      action: CDP.Wait
+      params:
+        ms: 1100
+
+    - name: Set deep mode probe_submit_modal
+      if: "${SAT_DO_SUBMIT}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "probe_submit_modal"
+
+    - name: Inspect submit modal state (prellenado/confirm)
+      if: "${SAT_DO_SUBMIT}"
+      action: CDP.EvaluateJson
+      register: sat_submit_modal_probe
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait for loading modal to settle
+      if: "${sat_submit_modal_probe.has_loading}"
+      if_not: "${sat_submit_modal_probe.has_confirm_button}"
+      action: CDP.Wait
+      params:
+        ms: 2200
+
+    - name: Re-inspect submit modal after loading settle
+      if: "${sat_submit_modal_probe.has_loading}"
+      if_not: "${sat_submit_modal_probe.has_confirm_button}"
+      action: CDP.EvaluateJson
+      register: sat_submit_modal_probe
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Persist submit modal state
+      if: "${SAT_DO_SUBMIT}"
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.submit_modal_probe.json"
+        overwrite: true
+        value: "${sat_submit_modal_probe}"
+
+    - name: Close prellenado modal via DOM click
+      if: "${sat_submit_modal_probe.has_prellenado}"
+      action: CDP.EvaluateJson
+      register: sat_close_prellenado_dom
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const norm = (v) => String(v == null ? "" : v).replace(/\s+/g, " ").trim();
+            const vis = (e) => {
+              if (!e) return false;
+              const r = e.getBoundingClientRect();
+              const s = getComputedStyle(e);
+              return r.width > 0 && r.height > 0 && s.display !== "none" && s.visibility !== "hidden" && s.opacity !== "0";
+            };
+            const dialogs = Array.from(document.querySelectorAll(".modal.show,.bootbox.modal,[role='dialog']")).filter((d) => vis(d));
+            const pre = dialogs.find((d) => /prellenado/i.test(norm(d.innerText || d.textContent || ""))) || dialogs[0];
+            if (!pre) return { ok: true, clicked: false, reason: "dialog_not_found" };
+            const btn = Array.from(pre.querySelectorAll("button,a,input[type=button],input[type=submit]"))
+              .find((b) => /cerrar/i.test(norm(b.innerText || b.textContent || b.value || "")));
+            if (!btn) return { ok: true, clicked: false, reason: "close_button_not_found" };
+            try {
+              btn.click();
+              return { ok: true, clicked: true, button_text: norm(btn.innerText || btn.textContent || btn.value || "") };
+            } catch (e) {
+              return { ok: true, clicked: false, reason: "click_failed", error: String((e && e.message) || e || "click_failed") };
+            }
+          })()
+
+    - name: Close prellenado modal via selector fallback
+      if: "${sat_submit_modal_probe.has_prellenado}"
+      if_not: "${sat_close_prellenado_dom.clicked}"
+      action: Helium.ClickAny
+      register: sat_close_prellenado_fallback
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+        candidates:
+          - kind: "s"
+            selector: ".modal.show .bootbox-accept"
+          - kind: "s"
+            selector: ".modal.show .btn-primary"
+        text_candidates: "CERRAR|Cerrar|Aceptar|OK|Ok"
+        implicit_wait_ms: 2200
+        find_in_page_fallback: false
+
+    - name: Wait after prellenado close
+      if: "${sat_submit_modal_probe.has_prellenado}"
+      action: CDP.Wait
+      params:
+        ms: 1100
+
+    - name: Visit concept ISR retenciones por salarios (validation recovery)
+      if: "${sat_submit_modal_probe.has_validation_error}"
+      ignore_errors: true
+      action: Helium.ClickAny
+      register: sat_visit_concept_isr_salarios
+      params:
+        port: "${DEBUG_PORT}"
+        text_candidates: "ISR retenciones por salarios"
+        implicit_wait_ms: 1800
+        find_in_page_fallback: true
+
+    - name: Wait after concept ISR salarios
+      if: "${sat_submit_modal_probe.has_validation_error}"
+      action: CDP.Wait
+      params:
+        ms: 700
+
+    - name: Visit concept ISR retenciones asimilados (validation recovery)
+      if: "${sat_submit_modal_probe.has_validation_error}"
+      ignore_errors: true
+      action: Helium.ClickAny
+      register: sat_visit_concept_isr_asimilados
+      params:
+        port: "${DEBUG_PORT}"
+        text_candidates: "ISR retenciones por asimilados a salarios"
+        implicit_wait_ms: 1800
+        find_in_page_fallback: true
+
+    - name: Wait after concept ISR asimilados
+      if: "${sat_submit_modal_probe.has_validation_error}"
+      action: CDP.Wait
+      params:
+        ms: 700
+
+    - name: Visit concept IVA retenciones (validation recovery)
+      if: "${sat_submit_modal_probe.has_validation_error}"
+      ignore_errors: true
+      action: Helium.ClickAny
+      register: sat_visit_concept_iva_retenciones
+      params:
+        port: "${DEBUG_PORT}"
+        text_candidates: "IVA retenciones"
+        implicit_wait_ms: 1800
+        find_in_page_fallback: true
+
+    - name: Wait after concept IVA retenciones
+      if: "${sat_submit_modal_probe.has_validation_error}"
+      action: CDP.Wait
+      params:
+        ms: 900
+
+    - name: Re-run zero-fill after concept visits
+      if: "${sat_submit_modal_probe.has_validation_error}"
+      action: CDP.EvaluateJson
+      register: sat_zero_fill_after_validation
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_fill_zero_amounts}"
+
+    - name: Persist validation-recovery actions
+      if: "${sat_submit_modal_probe.has_validation_error}"
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.validation_recovery.json"
+        overwrite: true
+        value:
+          probe: "${sat_submit_modal_probe}"
+          visit_isr_salarios: "${sat_visit_concept_isr_salarios}"
+          visit_isr_asimilados: "${sat_visit_concept_isr_asimilados}"
+          visit_iva_retenciones: "${sat_visit_concept_iva_retenciones}"
+          zero_fill_after_validation: "${sat_zero_fill_after_validation}"
+
+    - name: Set visual label (v06b_concepts_visited)
+      if: "${sat_submit_modal_probe.has_validation_error}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "v06b_concepts_visited"
+
+    - name: Visual checkpoint v06b_concepts_visited
+      if: "${sat_submit_modal_probe.has_validation_error}"
+      playbook: "${PLAYBOOK_DIR}\\playbook_visual_checkpoint.yml"
+
+    - name: Set deep mode click_submit_button (after prellenado)
+      if: "${sat_submit_modal_probe.has_prellenado}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "click_submit_button"
+
+    - name: Re-click Enviar declaracion after prellenado close
+      if: "${sat_submit_modal_probe.has_prellenado}"
+      action: CDP.EvaluateJson
+      register: sat_click_submit_after_prellenado
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Wait after submit re-click post-prellenado
+      if: "${sat_click_submit_after_prellenado.clicked}"
+      action: CDP.Wait
+      params:
+        ms: 1400
+
+    - name: Set deep mode probe_submit_modal (post-prellenado)
+      if: "${sat_click_submit_after_prellenado.clicked}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "probe_submit_modal"
+
+    - name: Re-inspect submit modal after prellenado handling
+      if: "${sat_click_submit_after_prellenado.clicked}"
+      action: CDP.EvaluateJson
+      register: sat_submit_modal_probe
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Set deep mode click_modal_confirm
+      if: "${SAT_DO_SUBMIT}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "click_modal_confirm"
+
+    - name: Click confirmation modal via strict DOM button match
+      if: "${SAT_DO_SUBMIT}"
+      action: CDP.EvaluateJson
+      register: sat_click_confirm_dom
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Click confirmation modal selector fallback
+      if: "${sat_submit_modal_probe.has_confirm_button}"
+      if_not: "${sat_click_confirm_dom.clicked}"
+      action: Helium.ClickAny
+      register: sat_click_confirm_fallback
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+        candidates:
+          - kind: "s"
+            selector: ".modal.show .bootbox-accept"
+          - kind: "s"
+            selector: ".modal.show .btn-primary"
+        text_candidates: "Aceptar|Si|SÃƒÂ­|Confirmar|Continuar"
+        implicit_wait_ms: 2200
+        find_in_page_fallback: false
+
+    - name: Persist confirmation click result
+      if: "${SAT_DO_SUBMIT}"
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.confirm_click.json"
+        overwrite: true
+        value:
+          modal_probe: "${sat_submit_modal_probe}"
+          close_prellenado_dom: "${sat_close_prellenado_dom}"
+          close_prellenado_fallback: "${sat_close_prellenado_fallback}"
+          submit_after_prellenado: "${sat_click_submit_after_prellenado}"
+          confirm_dom: "${sat_click_confirm_dom}"
+          confirm_fallback: "${sat_click_confirm_fallback}"
+
+    - name: Set deep mode probe_validation (post-submit)
+      if: "${SAT_DO_SUBMIT}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "probe_validation"
+
+    - name: Probe validation blockers after submit modal handling
+      if: "${SAT_DO_SUBMIT}"
+      action: CDP.EvaluateJson
+      register: sat_validation_after_submit
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Persist post-submit validation probe
+      if: "${SAT_DO_SUBMIT}"
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.post_submit_validation.json"
+        overwrite: true
+        value: "${sat_validation_after_submit}"
+
+    - name: Fail when validation blocker remains after submit handling
+      if: "${sat_validation_after_submit.has_validation_blocker}"
+      action: Fail
+      params:
+        message: "SAT still shows validation blockers after submit handling; acuse route is not valid yet."
+
+    - name: Set visual label (v07_submit_confirm)
+      if: "${SAT_DO_SUBMIT}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "v07_submit_confirm"
+
+    - name: Visual checkpoint v07_submit_confirm
+      if: "${SAT_DO_SUBMIT}"
+      playbook: "${PLAYBOOK_DIR}\\playbook_visual_checkpoint.yml"
+
+    - name: Wait after submit confirmation
+      if: "${SAT_DO_SUBMIT}"
+      action: CDP.Wait
+      params:
+        ms: 1300
+
+    - name: Probe route right after submit confirmation
+      if: "${SAT_DO_SUBMIT}"
+      action: CDP.EvaluateJson
+      register: sat_acuse_route_after_confirm
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const u = location.href || "";
+            const title = document.title || "";
+            const body = String((document.body && document.body.innerText) || "").toLowerCase();
+            const txt = (String(title || "") + " " + body).toLowerCase();
+            const has404 =
+              txt.includes("resource cannot be found") ||
+              txt.includes("server error in '/' application") ||
+              txt.includes("http 404") ||
+              txt.includes("no se encuentra");
+            return {
+              url: u,
+              title,
+              on_acuse: /acuse|recep|pdf\/acuse/i.test(u),
+              has_404: has404
+            };
+          })()
+
+    - name: Set deep mode click_visible_acuse_link
+      if: "${SAT_DO_SUBMIT}"
+      action: Set
+      params:
+        name: SAT_DEEP_MODE
+        value: "click_visible_acuse_link"
+
+    - name: Click explicit visible acuse confirmation link (best effort)
+      if: "${SAT_DO_SUBMIT}"
+      if_not: "${sat_acuse_route_after_confirm.on_acuse}"
+      action: CDP.EvaluateJson
+      register: sat_click_yes_acuse
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "${js_sat_deep_form_discovery}"
+
+    - name: Persist explicit "Si" click result
+      if: "${SAT_DO_SUBMIT}"
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.yes_click.json"
+        overwrite: true
+        value: "${sat_click_yes_acuse}"
+
+    - name: Capture acuse link candidate
+      if: "${SAT_DO_SUBMIT}"
+      if_not: "${sat_acuse_route_after_confirm.on_acuse}"
+      action: CDP.EvaluateJson
+      register: sat_acuse_link
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const vis = (e) => {
+              if (!e) return false;
+              const r = e.getBoundingClientRect();
+              const s = getComputedStyle(e);
+              return r.width > 0 && r.height > 0 && s.display !== "none" && s.visibility !== "hidden" && s.opacity !== "0";
+            };
+            const links = Array.from(document.querySelectorAll("a[href*='acuse.pdf'],a[href*='pdf/acuse']")).map((a) => ({
+              href: String(a.href || ""),
+              text: String((a.innerText || a.textContent || "").trim()),
+              visible: vis(a)
+            }));
+            const visible = links.filter((l) => l.visible);
+            const visibleHref = visible.length ? String(visible[0].href || "") : "";
+            return {
+              ok: true,
+              visible_href: visibleHref,
+              visible_links_count: visible.length,
+              links_count: links.length,
+              sample: visible.slice(0, 6),
+              current_url: location.href || ""
+            };
+          })()
+
+    - name: Open acuse link candidate when available
+      if: "${sat_acuse_link.visible_href}"
+      if_not: "${sat_acuse_route_after_confirm.on_acuse}"
+      action: CDP.Navigate
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+        url: "${sat_acuse_link.visible_href}"
+        wait_ms: 3200
+        wait_until: "interactive"
+
+    - name: Wait for acuse/confirmation page (best effort)
+      if: "${SAT_DO_SUBMIT}"
+      ignore_errors: true
+      action: Helium.WaitUntilUrl
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: 12
+        url_regex: "acuse|Acuse|confirm|Confirm|Recep|pdf/acuse|acuse\\.pdf"
+
+    - name: Verify acuse page quality
+      if: "${SAT_DO_SUBMIT}"
+      action: CDP.EvaluateJson
+      register: sat_acuse_route
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const u = location.href || "";
+            const title = document.title || "";
+            const body = String((document.body && document.body.innerText) || "").toLowerCase();
+            const txt = (String(title || "") + " " + body).toLowerCase();
+            const has404 =
+              txt.includes("resource cannot be found") ||
+              txt.includes("server error in '/' application") ||
+              txt.includes("http 404") ||
+              txt.includes("no se encuentra");
+            return {
+              url: u,
+              title,
+              on_acuse: /acuse|recep|pdf\/acuse/i.test(u),
+              has_404: has404
+            };
+          })()
+
+    - name: Set visual label (v08_acuse_route)
+      if: "${SAT_DO_SUBMIT}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "v08_acuse_route"
+
+    - name: Visual checkpoint v08_acuse_route
+      if: "${SAT_DO_SUBMIT}"
+      playbook: "${PLAYBOOK_DIR}\\playbook_visual_checkpoint.yml"
+
+    - name: Fail when acuse route is unresolved or invalid
+      if: "${SAT_DO_SUBMIT}"
+      if_not: "${sat_acuse_route.on_acuse}"
+      action: Fail
+      params:
+        message: "Submit clicked but acuse route was not reached."
+
+    - name: Fail when acuse page is 404
+      if: "${sat_acuse_route.has_404}"
+      action: Fail
+      params:
+        message: "Acuse link opened a 404/error page. Submission is not valid."
+
+    - name: Trigger download button/link on acuse page (best effort)
+      if: "${SAT_DO_SUBMIT}"
+      action: CDP.EvaluateJson
+      register: sat_click_download
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const pick = () => (
+              document.querySelector("a[download]") ||
+              document.querySelector("a[href*='acuse.pdf']") ||
+              document.querySelector("#download") ||
+              document.querySelector("#downloadButton") ||
+              Array.from(document.querySelectorAll("a,button")).find((el) => /descarg|download|guardar|bajar/i.test((el.innerText || el.textContent || "").trim()))
+            );
+            const el = pick();
+            if (!el) return { ok: true, clicked: false, reason: "download_control_not_found", url: location.href || "" };
+            try {
+              el.click();
+              return { ok: true, clicked: true, tag: String((el.tagName || "").toLowerCase()), id: String(el.id || ""), href: String(el.href || ""), text: String((el.innerText || el.textContent || "").trim()), url: location.href || "" };
+            } catch (e) {
+              return { ok: true, clicked: false, reason: "download_click_failed", error: String((e && e.message) || e || "download_click_failed"), url: location.href || "" };
+            }
+          })()
+
+    - name: Capture viewport point for PDF toolbar download
+      if: "${SAT_DO_SUBMIT}"
+      if_not: "${sat_click_download.clicked}"
+      action: CDP.EvaluateJson
+      register: sat_pdf_toolbar_point
+      params:
+        port: "${DEBUG_PORT}"
+        expression: "(() => ({ x: Math.max(20, (window.innerWidth || 1200) - 42), y: 52 }))()"
+
+    - name: Click PDF toolbar download icon (native fallback)
+      if: "${SAT_DO_SUBMIT}"
+      if_not: "${sat_click_download.clicked}"
+      ignore_errors: true
+      action: Helium.ClickNative
+      register: sat_click_download_native
+      params:
+        port: "${DEBUG_PORT}"
+        element:
+          kind: "point"
+          x: "${sat_pdf_toolbar_point.x}"
+          y: "${sat_pdf_toolbar_point.y}"
+
+    - name: Persist download click result
+      if: "${SAT_DO_SUBMIT}"
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.download_click.json"
+        overwrite: true
+        value:
+          dom_click: "${sat_click_download}"
+          native_click: "${sat_click_download_native}"
+          toolbar_point: "${sat_pdf_toolbar_point}"
+
+    - name: Set visual label (v09_download_clicked)
+      if: "${SAT_DO_SUBMIT}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "v09_download_clicked"
+
+    - name: Visual checkpoint v09_download_clicked
+      if: "${SAT_DO_SUBMIT}"
+      playbook: "${PLAYBOOK_DIR}\\playbook_visual_checkpoint.yml"
+
+    - name: Print acuse to PDF (CDP)
+      if: "${SAT_DO_SUBMIT}"
+      action: CDP.Send
+      register: sat_acuse_pdf
+      params:
+        port: "${DEBUG_PORT}"
+        method: "Page.printToPDF"
+
+    - name: Save acuse PDF to file
+      if: "${SAT_DO_SUBMIT}"
+      action: FS.WriteBase64
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\acuse\\${SAT_TARGET_YEAR}_${SAT_TARGET_MONTH}.acuse.pdf"
+        overwrite: true
+        base64: "${sat_acuse_pdf.result.data}"
+
+    - name: Set visual label (v10_success)
+      if: "${SAT_DO_SUBMIT}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "v10_success"
+
+    - name: Visual checkpoint v10_success
+      if: "${SAT_DO_SUBMIT}"
+      playbook: "${PLAYBOOK_DIR}\\playbook_visual_checkpoint.yml"
+
+    - name: Persist resume result
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\declarations\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}.resume_result.json"
+        overwrite: true
+        value:
+          ok: true
+          target:
+            year: "${SAT_TARGET_YEAR}"
+            month: "${SAT_TARGET_MONTH}"
+          pending_open: "${sat_open_pending_row}"
+          on_formulario: "${sat_form_nav_check.on_formulario}"
+          form_probe: "${sat_form_probe}"
+          zero_fill: "${sat_zero_fill}"
+          preview_click: "${sat_click_preview}"
+          submit_click: "${sat_click_submit}"
+          confirm_click:
+            dom: "${sat_click_confirm_dom}"
+            fallback: "${sat_click_confirm_fallback}"
+          yes_click: "${sat_click_yes_acuse}"
+          acuse_link: "${sat_acuse_link}"
+          acuse_route: "${sat_acuse_route}"
+          download_click:
+            dom: "${sat_click_download}"
+            native: "${sat_click_download_native}"
+

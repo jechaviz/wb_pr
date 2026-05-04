@@ -1,0 +1,45 @@
+﻿steps:
+  - name: Load implementation backlog template
+    action: FS.ReadText
+    register: implementation_backlog_md
+    params:
+      path: "${PLAYBOOKS_DIR}\\assets\\implementation_backlog.md"
+
+  - name: Persist implementation backlog
+    action: FS.WriteText
+    params:
+      path: "${OUTPUT_DIR}\\implementation_backlog.md"
+      text: "${implementation_backlog_md}"
+      overwrite: true
+
+  - name: Track growth delivered Shell skill
+    action: Framework.TrackGrowth
+    params:
+      project_dir: "${PROJECT_DIR}"
+      category: "automation"
+      new_skill: "Shell"
+      note: "Delivered runtime shell execution skill with policy guardrails"
+
+  - name: Track growth delivered LLM skill
+    action: Framework.TrackGrowth
+    params:
+      project_dir: "${PROJECT_DIR}"
+      category: "automation"
+      new_skill: "LLM"
+      note: "Delivered multimodal model router for text and vision providers"
+
+  - name: Track growth delivered Vision skill facade
+    action: Framework.TrackGrowth
+    params:
+      project_dir: "${PROJECT_DIR}"
+      category: "automation"
+      new_skill: "Vision"
+      note: "Delivered first-class vision facade for describe/ocr/detect with LLM and YOLO hook"
+
+  - name: Track growth proposal spec extension
+    action: Framework.TrackGrowth
+    params:
+      project_dir: "${PROJECT_DIR}"
+      category: "automation"
+      spec_extension: "step.timeout_ms and cancellation semantics"
+      note: "Required for reliable parity with advanced runtimes"

@@ -1,0 +1,257 @@
+metadata:
+  category: "finance"
+  subcategory: "sat-declaration"
+  workflow: "capture-live-sat-form-screen"
+
+variables:
+  DEBUG_PORT: 9333
+  OUTPUT_DIR: "${PLAYBOOK_DIR}\\playbooks\\output"
+  SAT_PROFILE_URL: "https://pstcdypisr.clouda.sat.gob.mx/Declaracion/Temporales"
+  SKILL_NAV_SUPERCONTROL_PLAYBOOK: "${PLAYBOOK_DIR}\\..\\waiba-navigation-supercontrol\\playbooks\\01_supercontrol\\playbook.yml"
+  SAT_USE_NAV_SUPERCONTROL: true
+  SAT_NAV_ENABLE_OCR: false
+  SAT_RENDER_READY_TIMEOUT_SECS: 35
+  SAT_RENDER_READY_EXPR: |
+    (() => {
+      const isVisible = (el) => {
+        if (!el) return false;
+        const st = window.getComputedStyle(el);
+        if (!st) return false;
+        if (st.display === "none" || st.visibility === "hidden" || st.opacity === "0") return false;
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0;
+      };
+      const loadingSelectors = [
+        ".o_loading",
+        ".o_spinner",
+        ".spinner",
+        ".loading",
+        ".oe_loading",
+        ".skeleton",
+        ".shimmer",
+        ".progress-bar-animated",
+        "[aria-busy='true']",
+        ".modal-backdrop.show"
+      ];
+      const loadingVisible = loadingSelectors.some((sel) => Array.from(document.querySelectorAll(sel)).some(isVisible));
+      const body = document.body;
+      const hasVisibleBody = !!body && body.getBoundingClientRect().height > 0;
+      return document.readyState === "complete" && hasVisibleBody && !loadingVisible;
+    })()
+
+steps:
+  prod:
+    - name: Ensure diagnostics output directory
+      action: FS.EnsureDir
+      params:
+        path: "${OUTPUT_DIR}\\sat\\diagnostics"
+
+    - name: Configure supercontrol NAV_URL for SAT live capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_URL
+        value: "${SAT_PROFILE_URL}"
+
+    - name: Configure supercontrol open URL for SAT live capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_START_OPEN_URL
+        value: "${SAT_PROFILE_URL}"
+
+    - name: Configure supercontrol host expectation for SAT live capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_EXPECT_HOST_ENDSWITH
+        value: "sat.gob.mx"
+
+    - name: Configure supercontrol target domain for SAT live capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_TARGET_URL_CONTAINS
+        value: "sat.gob.mx|pstcdypisr.clouda.sat.gob.mx|http"
+
+    - name: Configure supercontrol tab policy for SAT live capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_REUSE_EXISTING_TAB
+        value: true
+
+    - name: Configure supercontrol no-new-tab for SAT live capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ALLOW_NEW_TAB
+        value: false
+
+    - name: Configure supercontrol hooks for SAT live capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_PRE_HOOK
+        value: false
+
+    - name: Configure supercontrol post hook for SAT live capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_POST_HOOK
+        value: false
+
+    - name: Configure supercontrol JS patch for SAT live capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_JS_PATCH
+        value: false
+
+    - name: Configure supercontrol OCR toggle for SAT live capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_ENABLE_OCR
+        value: "${SAT_NAV_ENABLE_OCR}"
+
+    - name: Configure supercontrol evidence label for SAT live capture
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Set
+      params:
+        name: NAV_CAPTURE_LABEL
+        value: "sat_capture_live_session"
+
+    - name: Attach to SAT browser session via navigation supercontrol
+      if: "${SAT_USE_NAV_SUPERCONTROL}"
+      playbook: "${SKILL_NAV_SUPERCONTROL_PLAYBOOK}"
+
+    - name: Attach to SAT browser session (fallback native)
+      if_not: "${SAT_USE_NAV_SUPERCONTROL}"
+      action: Helium.StartEdge
+      params:
+        port: "${DEBUG_PORT}"
+        open_url: "${SAT_PROFILE_URL}"
+        reuse_existing_tab: true
+        allow_new_tab: false
+        target_type: page
+        target_url_contains: "pstcdypisr.clouda.sat.gob.mx"
+        exclude_url_contains: "devtools://|edge://|chrome://"
+        minimize_window: false
+
+    - name: Wait until SAT domain is ready
+      action: Helium.WaitUntilUrl
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: 25
+        host_endswith: "sat.gob.mx"
+
+    - name: Get current SAT URL
+      action: CDP.GetUrl
+      register: sat_live_url
+      params:
+        port: "${DEBUG_PORT}"
+
+    - name: Wait render-ready before SAT live evidence
+      action: Helium.WaitUntil
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: "${SAT_RENDER_READY_TIMEOUT_SECS}"
+        interval_ms: 600
+        expression: "${SAT_RENDER_READY_EXPR}"
+
+    - name: Capture viewport screenshot (PNG)
+      action: CDP.Send
+      register: sat_live_shot
+      params:
+        port: "${DEBUG_PORT}"
+        method: "Page.captureScreenshot"
+        params:
+          format: "png"
+
+    - name: Save viewport screenshot
+      action: FS.WriteBase64
+      params:
+        path: "${OUTPUT_DIR}\\sat\\diagnostics\\sat_live_viewport.png"
+        overwrite: true
+        base64: "${sat_live_shot.result.data}"
+
+    - name: Capture DOM diagnostics
+      action: CDP.EvaluateJson
+      register: sat_live_dom
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const norm = (v) => (v == null ? "" : String(v)).replace(/\s+/g, " ").trim();
+            const vis = (e) => {
+              if (!e) return false;
+              const r = e.getBoundingClientRect();
+              const s = getComputedStyle(e);
+              return r.width > 0 && r.height > 0 && s.display !== "none" && s.visibility !== "hidden" && s.opacity !== "0";
+            };
+            const buttons = Array.from(document.querySelectorAll("a,button,input[type=button],input[type=submit],[role=button]"))
+              .map((e) => ({
+                tag: (e.tagName || "").toLowerCase(),
+                id: e.id || "",
+                cls: e.className || "",
+                text: norm(e.innerText || e.value || e.getAttribute("aria-label") || ""),
+                href: e.href || e.getAttribute("href") || "",
+                visible: vis(e)
+              }))
+              .filter((x) => x.visible && (x.text || x.id))
+              .slice(0, 220);
+            const notices = Array.from(document.querySelectorAll("label,span,div,p,li,strong"))
+              .map((e) => ({
+                text: norm(e.innerText || e.textContent || ""),
+                cls: e.className || "",
+                id: e.id || "",
+                visible: vis(e)
+              }))
+              .filter((x) => x.visible && /(obligatori|required|requerid|captur|inval|error|pendiente|falt|debe|selecciona|completa)/i.test(x.text + " " + x.cls))
+              .slice(0, 220);
+            const fields = Array.from(document.querySelectorAll("input,select,textarea"))
+              .map((e) => ({
+                tag: (e.tagName || "").toLowerCase(),
+                type: e.type || "",
+                id: e.id || "",
+                name: e.name || "",
+                cls: e.className || "",
+                value: norm(e.value || ""),
+                required: !!e.required || /required|obligat/i.test((e.className || "") + " " + (e.getAttribute("aria-required") || "")),
+                visible: vis(e)
+              }))
+              .filter((x) => x.visible)
+              .slice(0, 260);
+            const emptyRequired = fields.filter((x) => x.required && !x.value).slice(0, 120);
+            const frames = Array.from(document.querySelectorAll("iframe"))
+              .map((f) => ({ id: f.id || "", name: f.name || "", src: f.src || "", visible: vis(f) }))
+              .slice(0, 80);
+            return {
+              ok: true,
+              url: location.href || "",
+              title: document.title || "",
+              body_preview: norm((document.body && document.body.innerText) || "").slice(0, 5000),
+              buttons,
+              notices,
+              empty_required: emptyRequired,
+              visible_fields: fields,
+              frames
+            };
+          })()
+
+    - name: Save DOM diagnostics
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\diagnostics\\sat_live_dom.json"
+        overwrite: true
+        value: "${sat_live_dom}"
+
+    - name: Save URL diagnostics
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\diagnostics\\sat_live_url.json"
+        overwrite: true
+        value:
+          url: "${sat_live_url}"

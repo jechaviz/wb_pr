@@ -1,0 +1,79 @@
+steps:
+  - name: Initialize tutorial workspace
+    action: Tutorial.InitWorkspace
+    register: tutorial_workspace
+    params:
+      project_dir: "${PROJECT_DIR}"
+
+  - name: Load daily workflow storyboard steps (JSON)
+    action: FS.ReadText
+    register: flow_steps_json
+    params:
+      path: "${TUTORIAL_FLOW_STEPS_PATH}"
+
+  - name: Build Odoo storyboard with timing (English)
+    action: Tutorial.BuildOdooStoryboard
+    register: storyboard
+    params:
+      flow_name: "RP Rental daily workflow (manual to Odoo migration)"
+      steps: "${flow_steps_json}"
+      output_path: "${tutorial_workspace.timeline_dir}\\storyboard.odoo.en.json"
+
+  - name: Generate English subtitles (switchable)
+    action: Tutorial.GenerateSubtitles
+    register: subtitle_bundle
+    params:
+      cues: "${storyboard.cues}"
+      output_dir: "${tutorial_workspace.subtitles_dir}"
+      mode: "switchable"
+      primary_language: "en"
+      languages:
+        - "en"
+
+  - name: Build stacked ASS (burn-in subtitles) in playbook
+    action: Shell.RunJson
+    register: stacked_ass_build
+    params:
+      command: 'node "${PLAYBOOKS_DIR}\\tutorial\\scripts\\build_stacked_ass.js" --storyboard "${storyboard.output_path}" --languages "en" --primary "en" --out "${tutorial_workspace.subtitles_dir}\\subtitles.stacked.ass"'
+      unsafe: true
+
+  - name: Generate mouse zoom keyframes (auto from cues)
+    action: Tutorial.GenerateMouseZoomKeyframes
+    register: zoom_bundle
+    params:
+      output_path: "${tutorial_workspace.zoom_dir}\\mouse_zoom.keyframes.json"
+      filter_hint_path: "${tutorial_workspace.zoom_dir}\\mouse_zoom.filter.txt"
+      cues: "${storyboard.cues}"
+      default_zoom: 1.22
+
+  - name: Build render plan with music and subtitle modes
+    action: Tutorial.BuildRenderPlan
+    register: render_plan
+    params:
+      input_video: "${TUTORIAL_INPUT_VIDEO}"
+      output_dir: "${tutorial_workspace.render_dir}"
+      output_basename: "${TUTORIAL_OUTPUT_BASENAME}"
+      subtitles:
+        switchable: "${subtitle_bundle.switchable}"
+        stacked_ass: "${stacked_ass_build.json.out_path}"
+        timing_path: "${subtitle_bundle.timing_path}"
+        output_dir: "${subtitle_bundle.output_dir}"
+      subtitle_languages:
+        - "en"
+      bgm_path: "${TUTORIAL_BGM}"
+      zoom_events_path: "${zoom_bundle.events_path}"
+      manifest_path: "${tutorial_workspace.render_dir}\\render.plan.json"
+      command_script_path: "${tutorial_workspace.render_dir}\\render.cmd"
+
+  - name: Persist tutorial package summary
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\tutorial_package_summary.json"
+      overwrite: true
+      value:
+        odoo_visit: "${odoo_visit}"
+        storyboard: "${storyboard}"
+        subtitles: "${subtitle_bundle}"
+        stacked_ass: "${stacked_ass_build}"
+        zoom: "${zoom_bundle}"
+        render_plan: "${render_plan}"

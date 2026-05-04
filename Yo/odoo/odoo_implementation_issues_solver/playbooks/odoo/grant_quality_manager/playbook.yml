@@ -1,0 +1,29 @@
+steps:
+  - name: Load grant-quality-manager JS
+    action: FS.ReadText
+    register: js_grant_quality_manager
+    params:
+      path: "${JS_DIR}\\grant_quality_manager.js"
+
+  - name: Odoo platform connect
+    action: OdooEnterpriseOnline.Platform.Connect
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${ODOO_URL}/odoo"
+      wait_ms: 3000
+
+  - name: Apply permission fix
+    action: OdooEnterpriseOnline.Security.GrantQualityManager
+    register: odoo_grant_quality_manager
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_grant_quality_manager}"
+      ensure_connected: false
+      await_promise: true
+
+  - name: Persist grant result artifact
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\odoo_grant_quality_manager.json"
+      value: "${odoo_grant_quality_manager}"
+      overwrite: true

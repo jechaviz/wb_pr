@@ -1,0 +1,196 @@
+steps:
+  - name: Initialize tutorial workspace
+    action: Tutorial.InitWorkspace
+    register: tutorial_workspace
+    params:
+      project_dir: "${PROJECT_DIR}"
+
+  - name: Verify input capture exists
+    action: FS.Exists
+    register: input_video_exists
+    params:
+      path: "${TUTORIAL_INPUT_VIDEO}"
+
+  - name: Persist error if input capture missing
+    if_not: "${input_video_exists}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\tutorial_render_error.json"
+      overwrite: true
+      value:
+        ok: false
+        error: "Missing tutorial input video capture."
+        expected_path: "${TUTORIAL_INPUT_VIDEO}"
+
+  - name: Abort render if input capture missing
+    if_not: "${input_video_exists}"
+    action: Shell.Run
+    params:
+      command: "exit 1"
+      unsafe: true
+
+  - name: Verify English subtitles exist (SRT)
+    action: FS.Exists
+    register: srt_exists
+    params:
+      path: "${tutorial_workspace.subtitles_dir}\\subtitles.en.srt"
+
+  - name: Persist error if subtitles missing
+    if_not: "${srt_exists}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\tutorial_render_error.json"
+      overwrite: true
+      value:
+        ok: false
+        error: "Missing subtitles (run tutorial/build first)."
+        expected_path: "${tutorial_workspace.subtitles_dir}\\subtitles.en.srt"
+
+  - name: Abort if subtitles missing
+    if_not: "${srt_exists}"
+    action: Shell.Run
+    params:
+      command: "exit 1"
+      unsafe: true
+
+  - name: Verify stacked subtitles exist (ASS)
+    action: FS.Exists
+    register: ass_exists
+    params:
+      path: "${tutorial_workspace.subtitles_dir}\\subtitles.stacked.ass"
+
+  - name: Persist error if stacked subtitles missing
+    if_not: "${ass_exists}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\tutorial_render_error.json"
+      overwrite: true
+      value:
+        ok: false
+        error: "Missing stacked subtitles (run tutorial/build first)."
+        expected_path: "${tutorial_workspace.subtitles_dir}\\subtitles.stacked.ass"
+
+  - name: Abort if stacked subtitles missing
+    if_not: "${ass_exists}"
+    action: Shell.Run
+    params:
+      command: "exit 1"
+      unsafe: true
+
+  - name: Resolve ffmpeg executable path
+    action: Shell.Run
+    register: ffmpeg_resolve
+    params:
+      command: "powershell -NoProfile -ExecutionPolicy Bypass -File \"${PLAYBOOKS_DIR}\\tutorial\\scripts\\resolve_ffmpeg.ps1\""
+      allow_fail: true
+      unsafe: true
+      timeout_ms: 60000
+
+  - name: Persist error if ffmpeg missing
+    if_not: "${ffmpeg_resolve.stdout}"
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\tutorial_render_error.json"
+      overwrite: true
+      value:
+        ok: false
+        error: "ffmpeg not available."
+        ffmpeg_resolve: "${ffmpeg_resolve}"
+
+  - name: Abort if ffmpeg missing
+    if_not: "${ffmpeg_resolve.stdout}"
+    action: Shell.Run
+    params:
+      command: "exit 1"
+      unsafe: true
+
+  - name: Determine bgm path (optional)
+    action: Set
+    params:
+      name: bgm_path
+      value: "${TUTORIAL_BGM}"
+
+  - name: Check background music exists
+    action: FS.Exists
+    register: bgm_exists
+    params:
+      path: "${TUTORIAL_BGM}"
+
+  - name: Disable bgm when missing
+    if_not: "${bgm_exists}"
+    action: Set
+    params:
+      name: bgm_path
+      value: ""
+
+  - name: Build render plan (video)
+    action: Tutorial.BuildRenderPlan
+    register: render_plan_video
+    params:
+      input_video: "${TUTORIAL_INPUT_VIDEO}"
+      output_dir: "${tutorial_workspace.render_dir}"
+      output_basename: "${TUTORIAL_OUTPUT_BASENAME}"
+      ffmpeg_bin: "${ffmpeg_resolve.stdout}"
+      audio_mode: "mix"
+      bgm_volume: 0.20
+      subtitles:
+        switchable:
+          en: "${tutorial_workspace.subtitles_dir}\\subtitles.en.srt"
+        stacked_ass: "${tutorial_workspace.subtitles_dir}\\subtitles.stacked.ass"
+      subtitle_languages:
+        - "en"
+      bgm_path: "${bgm_path}"
+      manifest_path: "${tutorial_workspace.render_dir}\\render.video.plan.json"
+      command_script_path: "${tutorial_workspace.render_dir}\\render.video.cmd"
+
+  - name: Render switchable subtitles video
+    action: Shell.Run
+    register: render_switchable
+    params:
+      command: '${render_plan_video.switchable_command} 1> "${tutorial_workspace.render_dir}\\ffmpeg.switchable.stdout.txt" 2> "${tutorial_workspace.render_dir}\\ffmpeg.switchable.stderr.txt"'
+      timeout_ms: 7200000
+      allow_fail: true
+      unsafe: true
+
+  - name: Render stacked subtitles video
+    action: Shell.Run
+    register: render_stacked
+    params:
+      command: '${render_plan_video.stacked_command} 1> "${tutorial_workspace.render_dir}\\ffmpeg.stacked.stdout.txt" 2> "${tutorial_workspace.render_dir}\\ffmpeg.stacked.stderr.txt"'
+      timeout_ms: 7200000
+      allow_fail: true
+      unsafe: true
+
+  - name: Persist render results
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\tutorial_render_results.json"
+      overwrite: true
+      value:
+        ok: true
+        switchable_exit_code: "${render_switchable.exit_code}"
+        stacked_exit_code: "${render_stacked.exit_code}"
+        ffmpeg_bin: "${ffmpeg_resolve.stdout}"
+        render_plan: "${render_plan_video}"
+        switchable:
+          result: "${render_switchable}"
+          stdout_path: "${tutorial_workspace.render_dir}\\ffmpeg.switchable.stdout.txt"
+          stderr_path: "${tutorial_workspace.render_dir}\\ffmpeg.switchable.stderr.txt"
+        stacked:
+          result: "${render_stacked}"
+          stdout_path: "${tutorial_workspace.render_dir}\\ffmpeg.stacked.stdout.txt"
+          stderr_path: "${tutorial_workspace.render_dir}\\ffmpeg.stacked.stderr.txt"
+
+  - name: Abort if switchable render failed
+    if: "${render_switchable.exit_code}"
+    action: Shell.Run
+    params:
+      command: "exit 1"
+      unsafe: true
+
+  - name: Abort if stacked render failed
+    if: "${render_stacked.exit_code}"
+    action: Shell.Run
+    params:
+      command: "exit 1"
+      unsafe: true

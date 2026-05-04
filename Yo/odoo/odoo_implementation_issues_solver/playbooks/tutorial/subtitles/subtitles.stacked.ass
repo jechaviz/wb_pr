@@ -1,0 +1,22 @@
+﻿[Script Info]
+Title: Odoo Training Stacked Subtitles
+ScriptType: v4.00+
+WrapStyle: 2
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,42,&H00FFFFFF,&H0000FFFF,&H00101010,&H60000000,0,0,0,0,100,100,0,0,1,2,1,2,30,30,48,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:09.00,Default,,0,0,0,,Asignar activos de renta y disponibilidad inicial en Odoo.\NAllocate rental assets and initial availability in Odoo.
+Dialogue: 0,0:00:09.00,0:00:18.00,Default,,0,0,0,,Generar cotizacion con equipo, fechas y condiciones comerciales.\NCreate a quote with equipment, rental dates, and commercial terms.
+Dialogue: 0,0:00:18.00,0:00:27.00,Default,,0,0,0,,Convertir cotizacion aprobada en contrato de renta.\NConvert approved quote into a rental contract.
+Dialogue: 0,0:00:27.00,0:00:35.00,Default,,0,0,0,,Gestionar contrato de intercambio cuando se reemplaza un activo.\NManage exchange contracts when a rental asset is replaced.
+Dialogue: 0,0:00:35.00,0:00:43.00,Default,,0,0,0,,Registrar devolucion parcial y ajustar facturacion.\NProcess partial returns and adjust billing.
+Dialogue: 0,0:00:43.00,0:00:53.00,Default,,0,0,0,,Ejecutar checklist de devolucion y documentar condicion del activo.\NRun return checklist and document equipment condition.
+Dialogue: 0,0:00:53.00,0:01:02.00,Default,,0,0,0,,Completar control Ready-To-Rent antes de nueva salida.\NComplete Ready-To-Rent quality control before next delivery.
+Dialogue: 0,0:01:02.00,0:01:11.00,Default,,0,0,0,,Facturar por ciclos diarios, semanales y mensuales con regla 3-3-3.\NInvoice daily, weekly, and monthly cycles with the 3-3-3 rule.
+Dialogue: 0,0:01:11.00,0:01:19.00,Default,,0,0,0,,Registrar entrega, ubicacion y evidencia operativa.\NTrack delivery, destination, and operational evidence.
+Dialogue: 0,0:01:19.00,0:01:28.00,Default,,0,0,0,,Cerrar contrato, archivar evidencias y consultar reportes.\NClose contract, archive evidence, and review reports.

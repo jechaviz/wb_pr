@@ -1,0 +1,15 @@
+metadata:
+  category: "finance"
+  subcategory: "sat-declaration"
+  workflow: "declare-zero-2025-onward-submit-clean-confirmed"
+
+steps:
+  prod:
+    - name: Run SAT submit clean with explicit operator confirmation
+      playbook: "${PLAYBOOK_DIR}\\playbook.yml"
+      env: "prod_submit"
+      with:
+        SAT_SUBMIT_CONFIRM: "operator-confirmed-2026-02-17"
+        SAT_LOGIN_TIMEOUT_SECS: 900
+        SAT_SELECT_ALL_OBLIGATIONS: "false"
+        SAT_USE_DEFAULT_CHECKED_OBLIGATIONS: "true"

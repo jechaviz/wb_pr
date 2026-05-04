@@ -1,0 +1,23 @@
+﻿steps:
+  - name: Ensure PRD and SDD are present
+    action: Framework.EnsureProjectDocs
+    params:
+      project_dir: "${PROJECT_DIR}"
+      project_name: "udemyCourseTranscriptionRecovery"
+      category: "cursos"
+      subcategory: "udemy"
+      customer: "Yo"
+      course: "generic-udemy"
+      lesson: "transcription-recovery"
+      task_name: "${TASK_NAME}"
+      task_summary: "${TASK_SUMMARY}"
+      course_url: "${COURSE_URL}"
+      debug_port: "${DEBUG_PORT}"
+      max_units: "${MAX_UNITS}"
+
+  - name: Register baseline framework growth note
+    action: Framework.TrackGrowth
+    params:
+      project_dir: "${PROJECT_DIR}"
+      category: "scraping"
+      note: "Modular playbook tree active: bootstrap/browser/recovery/finalize"

@@ -1,0 +1,45 @@
+steps:
+  - name: Parallel workers smoke (process mode)
+    register: parallel_workers_smoke
+    parallel:
+      mode: process
+      max_workers: 2
+      timeout_ms: 120000
+      tasks:
+        - name: Worker A
+          steps:
+            - name: Validate nested playbook resolution
+              playbook: "./_child/playbook.yml"
+
+            - name: Simulate unit of work
+              action: Shell.Run
+              register: worker_a_sleep
+              params:
+                command: "powershell -NoProfile -Command \"Start-Sleep -Milliseconds 250; Write-Output 'A'\""
+
+        - name: Worker B
+          steps:
+            - name: Validate nested playbook resolution
+              playbook: "./_child/playbook.yml"
+
+            - name: Simulate unit of work
+              action: Shell.Run
+              register: worker_b_sleep
+              params:
+                command: "powershell -NoProfile -Command \"Start-Sleep -Milliseconds 250; Write-Output 'B'\""
+
+  - name: Persist parallel workers smoke result
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\parallel_workers_smoke.json"
+      value: "${parallel_workers_smoke}"
+      overwrite: true
+
+  - name: Track growth parallel process mode
+    action: Framework.TrackGrowth
+    params:
+      project_dir: "${PROJECT_DIR}"
+      category: "automation"
+      spec_extension: "parallel.mode=process"
+      note: "Implemented process-based parallel execution with bounded workers and deterministic result merge."
+

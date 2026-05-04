@@ -1,0 +1,300 @@
+metadata:
+  category: "finance"
+  subcategory: "sat-declaration"
+  workflow: "sat-visual-checkpoint"
+
+variables:
+  SAT_RENDER_READY_TIMEOUT_SECS: 35
+  SAT_RENDER_READY_EXPR: |
+    (() => {
+      const isVisible = (el) => {
+        if (!el) return false;
+        const st = window.getComputedStyle(el);
+        if (!st) return false;
+        if (st.display === "none" || st.visibility === "hidden" || st.opacity === "0") return false;
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0;
+      };
+      const loadingSelectors = [
+        ".o_loading",
+        ".o_spinner",
+        ".spinner",
+        ".loading",
+        ".oe_loading",
+        ".skeleton",
+        ".shimmer",
+        ".progress-bar-animated",
+        "[aria-busy='true']",
+        ".modal-backdrop.show"
+      ];
+      const loadingVisible = loadingSelectors.some((sel) => Array.from(document.querySelectorAll(sel)).some(isVisible));
+      const body = document.body;
+      const hasVisibleBody = !!body && body.getBoundingClientRect().height > 0;
+      return document.readyState === "complete" && hasVisibleBody && !loadingVisible;
+    })()
+
+steps:
+  prod:
+    - name: Default DEBUG_PORT when missing
+      if_not: "${DEBUG_PORT}"
+      action: Set
+      params:
+        name: DEBUG_PORT
+        value: 9333
+
+    - name: Default OUTPUT_DIR when missing
+      if_not: "${OUTPUT_DIR}"
+      action: Set
+      params:
+        name: OUTPUT_DIR
+        value: "${PLAYBOOK_DIR}\\playbooks\\output"
+
+    - name: Default SAT_TARGET_YEAR when missing
+      if_not: "${SAT_TARGET_YEAR}"
+      action: Set
+      params:
+        name: SAT_TARGET_YEAR
+        value: "0000"
+
+    - name: Default SAT_TARGET_MONTH when missing
+      if_not: "${SAT_TARGET_MONTH}"
+      action: Set
+      params:
+        name: SAT_TARGET_MONTH
+        value: "000"
+
+    - name: Default SAT_VISUAL_LABEL when missing
+      if_not: "${SAT_VISUAL_LABEL}"
+      action: Set
+      params:
+        name: SAT_VISUAL_LABEL
+        value: "checkpoint"
+
+    - name: Default SAT_ENABLE_OCR when missing
+      if_not: "${SAT_ENABLE_OCR}"
+      action: Set
+      params:
+        name: SAT_ENABLE_OCR
+        value: true
+
+    - name: Default SAT assets directory when missing
+      if_not: "${SKILL_SAT_TAX_ASSETS_DIR}"
+      action: Set
+      params:
+        name: SKILL_SAT_TAX_ASSETS_DIR
+        value: "${PLAYBOOK_DIR}\\playbooks\\assets"
+
+    - name: Resolve visual checkpoint screenshot path
+      action: Set
+      params:
+        name: SAT_VISUAL_SHOT_PATH
+        value: "${OUTPUT_DIR}\\sat\\diagnostics\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}\\${SAT_VISUAL_LABEL}.png"
+
+    - name: Ensure SAT visual checkpoint directory
+      action: FS.EnsureDir
+      params:
+        path: "${OUTPUT_DIR}\\sat\\diagnostics\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}"
+
+    - name: Wait render-ready before SAT visual checkpoint
+      action: Helium.WaitUntil
+      params:
+        port: "${DEBUG_PORT}"
+        timeout_secs: "${SAT_RENDER_READY_TIMEOUT_SECS}"
+        interval_ms: 600
+        expression: "${SAT_RENDER_READY_EXPR}"
+
+    - name: Capture SAT visual checkpoint screenshot
+      ignore_errors: true
+      action: CDP.Send
+      register: sat_visual_shot
+      params:
+        port: "${DEBUG_PORT}"
+        method: "Page.captureScreenshot"
+        params:
+          format: "png"
+          fromSurface: true
+
+    - name: Save SAT visual checkpoint screenshot
+      if: "${sat_visual_shot.result.data}"
+      ignore_errors: true
+      action: FS.WriteBase64
+      params:
+        path: "${SAT_VISUAL_SHOT_PATH}"
+        overwrite: true
+        base64: "${sat_visual_shot.result.data}"
+
+    - name: Capture SAT visual checkpoint state (deep)
+      action: CDP.EvaluateJson
+      register: sat_visual_state
+      params:
+        port: "${DEBUG_PORT}"
+        expression: |
+          (() => {
+            const norm = (v) => (v == null ? "" : String(v)).replace(/\s+/g, " ").trim();
+            const vis = (e) => {
+              if (!e) return false;
+              const r = e.getBoundingClientRect();
+              const s = getComputedStyle(e);
+              return r.width > 0 && r.height > 0 && s.display !== "none" && s.visibility !== "hidden" && s.opacity !== "0";
+            };
+            const getSel = (e) => {
+              if (!e) return "";
+              const tag = String((e.tagName || "").toLowerCase());
+              if (e.id) return "#" + e.id;
+              if (e.name) return tag + "[name='" + String(e.name).replace(/'/g, "\\'") + "']";
+              return tag;
+            };
+            const getLabel = (e) => {
+              const id = e && e.id ? String(e.id) : "";
+              if (id) {
+                const lb = document.querySelector("label[for='" + id.replace(/'/g, "\\'") + "']");
+                if (lb) return norm(lb.innerText || lb.textContent || "");
+              }
+              const parentLabel = e ? e.closest("label") : null;
+              if (parentLabel) return norm(parentLabel.innerText || parentLabel.textContent || "");
+              return "";
+            };
+            const clickables = Array.from(document.querySelectorAll("a,button,input[type=button],input[type=submit],[role=button]"))
+              .filter((e) => vis(e))
+              .map((e) => ({
+                tag: String((e.tagName || "").toLowerCase()),
+                text: norm(e.innerText || e.textContent || e.value || e.getAttribute("aria-label") || ""),
+                id: String(e.id || ""),
+                disabled: !!e.disabled || e.getAttribute("aria-disabled") === "true"
+              }))
+              .filter((b) => b.text.length > 0 || b.id.length > 0)
+              .slice(0, 120);
+            const fields = Array.from(document.querySelectorAll("input,select,textarea"))
+              .filter((e) => vis(e))
+              .map((e) => {
+                const req = !!e.required || /required|obligat/i.test(String(e.className || "") + " " + String(e.getAttribute("aria-required") || ""));
+                const tag = String((e.tagName || "").toLowerCase());
+                const type = String((e.type || "").toLowerCase());
+                const v = (tag === "select")
+                  ? norm((e.options && e.selectedIndex >= 0 && e.options[e.selectedIndex]) ? e.options[e.selectedIndex].text : (e.value || ""))
+                  : norm(e.value || "");
+                return {
+                  selector: getSel(e),
+                  id: String(e.id || ""),
+                  name: String(e.name || ""),
+                  tag,
+                  type,
+                  label: getLabel(e),
+                  value: v,
+                  required: req,
+                  disabled: !!e.disabled,
+                  read_only: !!e.readOnly,
+                  checked: !!e.checked
+                };
+              })
+              .slice(0, 220);
+            const requiredMissing = fields
+              .filter((f) => !!f.required)
+              .filter((f) => String(f.value || "").length === 0 && !f.checked)
+              .slice(0, 120);
+            const iframes = Array.from(document.querySelectorAll("iframe,frame"))
+              .map((f, i) => ({
+                index: i,
+                id: String(f.id || ""),
+                name: String(f.name || ""),
+                src: String(f.src || f.getAttribute("src") || ""),
+                title: String(f.title || ""),
+                visible: vis(f)
+              }))
+              .slice(0, 60);
+            const forms = Array.from(document.querySelectorAll("form"))
+              .map((f, i) => ({
+                index: i,
+                id: String(f.id || ""),
+                name: String(f.name || ""),
+                action: String(f.action || ""),
+                method: String((f.method || "").toUpperCase()),
+                visible: vis(f),
+                controls: f.querySelectorAll("input,select,textarea,button").length
+              }))
+              .slice(0, 40);
+            const bodyPreview = norm((document.body && document.body.innerText) || "").slice(0, 6000);
+            const lower = bodyPreview.toLowerCase();
+            const blockers = [];
+            if (lower.includes("error")) blockers.push("error_text_detected");
+            if (lower.includes("ocurrio un error") || lower.includes("ocurrió un error")) blockers.push("sat_error_message_detected");
+            if (lower.includes("captcha")) blockers.push("captcha_detected");
+            if (lower.includes("formulario no concluido")) blockers.push("formulario_no_concluido");
+            const active = document.activeElement;
+            return {
+              ok: true,
+              mode: "deep_discovery",
+              label: "${SAT_VISUAL_LABEL}",
+              url: location.href || "",
+              title: document.title || "",
+              ready_state: document.readyState || "",
+              body_preview: bodyPreview,
+              route_flags: {
+                on_temporales: /Declaracion\/Temporales/i.test(location.href || ""),
+                on_perfil: /Declaracion\/PerfilDeclaracion/i.test(location.href || ""),
+                on_formulario: /Declaracion\/Formulario|\/Formulario\/Formulario/i.test(location.href || ""),
+                on_login_wall: /loginda\.siat\.sat\.gob\.mx|\/nidp\/wsfed\//i.test(location.href || "")
+              },
+              active_element: active ? {
+                tag: String((active.tagName || "").toLowerCase()),
+                id: String(active.id || ""),
+                name: String(active.name || "")
+              } : {},
+              forms,
+              fields,
+              clickables,
+              iframes,
+              blockers,
+              missing_required: requiredMissing,
+              counts: {
+                clickables: clickables.length,
+                fields: fields.length,
+                missing_required: requiredMissing.length,
+                forms: forms.length,
+                iframes: iframes.length
+              },
+              ts: new Date().toISOString()
+            };
+          })()
+
+    - name: Save SAT visual checkpoint state
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\diagnostics\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}\\${SAT_VISUAL_LABEL}.json"
+        overwrite: true
+        value: "${sat_visual_state}"
+
+    - name: OCR + image analysis (Windows local OCR)
+      if: "${SAT_ENABLE_OCR}"
+      ignore_errors: true
+      action: Shell.RunJson
+      register: sat_visual_ocr
+      params:
+        unsafe: true
+        timeout_ms: 45000
+        command: "powershell -NoProfile -ExecutionPolicy Bypass -File \"${SKILL_SAT_TAX_ASSETS_DIR}\\sat_deep_discovery_ocr.ps1\" -ImagePath \"${SAT_VISUAL_SHOT_PATH}\" -Label \"${SAT_VISUAL_LABEL}\" -Url \"${sat_visual_state.url}\""
+
+    - name: Save OCR + image analysis result
+      if: "${SAT_ENABLE_OCR}"
+      ignore_errors: true
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\diagnostics\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}\\${SAT_VISUAL_LABEL}.ocr.json"
+        overwrite: true
+        value: "${sat_visual_ocr}"
+
+    - name: Save deep discovery coverage report
+      action: FS.WriteJson
+      params:
+        path: "${OUTPUT_DIR}\\sat\\diagnostics\\${SAT_TARGET_YEAR}\\${SAT_TARGET_MONTH}\\${SAT_VISUAL_LABEL}.coverage.json"
+        overwrite: true
+        value:
+          ok: true
+          mode: "deep_discovery"
+          label: "${SAT_VISUAL_LABEL}"
+          url: "${sat_visual_state.url}"
+          screenshot_requested: true
+          screenshot_path: "${SAT_VISUAL_SHOT_PATH}"
+          dom_probe_captured: "${sat_visual_state.ok}"
+          ocr_enabled: "${SAT_ENABLE_OCR}"
+          ocr_result: "${sat_visual_ocr}"

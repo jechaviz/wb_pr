@@ -1,0 +1,116 @@
+﻿{
+  "cues":[
+    {
+      "end_ms":9000,
+      "id":"cue_1",
+      "start_ms":0,
+      "text":"Asignar activos de renta y disponibilidad inicial en Odoo.",
+      "title":"Asset Allocation",
+      "translations":{
+        "en":"Allocate rental assets and initial availability in Odoo.",
+        "es":"Asignar activos de renta y disponibilidad inicial en Odoo."
+      }
+    },
+    {
+      "end_ms":18000,
+      "id":"cue_2",
+      "start_ms":9000,
+      "text":"Generar cotizacion con equipo, fechas y condiciones comerciales.",
+      "title":"Customer Quote",
+      "translations":{
+        "en":"Create a quote with equipment, rental dates, and commercial terms.",
+        "es":"Generar cotizacion con equipo, fechas y condiciones comerciales."
+      }
+    },
+    {
+      "end_ms":27000,
+      "id":"cue_3",
+      "start_ms":18000,
+      "text":"Convertir cotizacion aprobada en contrato de renta.",
+      "title":"Rental Contract",
+      "translations":{
+        "en":"Convert approved quote into a rental contract.",
+        "es":"Convertir cotizacion aprobada en contrato de renta."
+      }
+    },
+    {
+      "end_ms":35000,
+      "id":"cue_4",
+      "start_ms":27000,
+      "text":"Gestionar contrato de intercambio cuando se reemplaza un activo.",
+      "title":"Exchange Contract",
+      "translations":{
+        "en":"Manage exchange contracts when a rental asset is replaced.",
+        "es":"Gestionar contrato de intercambio cuando se reemplaza un activo."
+      }
+    },
+    {
+      "end_ms":43000,
+      "id":"cue_5",
+      "start_ms":35000,
+      "text":"Registrar devolucion parcial y ajustar facturacion.",
+      "title":"Partial Return",
+      "translations":{
+        "en":"Process partial returns and adjust billing.",
+        "es":"Registrar devolucion parcial y ajustar facturacion."
+      }
+    },
+    {
+      "end_ms":53000,
+      "id":"cue_6",
+      "start_ms":43000,
+      "text":"Ejecutar checklist de devolucion y documentar condicion del activo.",
+      "title":"Rental Return QC",
+      "translations":{
+        "en":"Run return checklist and document equipment condition.",
+        "es":"Ejecutar checklist de devolucion y documentar condicion del activo."
+      }
+    },
+    {
+      "end_ms":62000,
+      "id":"cue_7",
+      "start_ms":53000,
+      "text":"Completar control Ready-To-Rent antes de nueva salida.",
+      "title":"Ready To Rent QC",
+      "translations":{
+        "en":"Complete Ready-To-Rent quality control before next delivery.",
+        "es":"Completar control Ready-To-Rent antes de nueva salida."
+      }
+    },
+    {
+      "end_ms":71000,
+      "id":"cue_8",
+      "start_ms":62000,
+      "text":"Facturar por ciclos diarios, semanales y mensuales con regla 3-3-3.",
+      "title":"Billing Cycle",
+      "translations":{
+        "en":"Invoice daily, weekly, and monthly cycles with the 3-3-3 rule.",
+        "es":"Facturar por ciclos diarios, semanales y mensuales con regla 3-3-3."
+      }
+    },
+    {
+      "end_ms":79000,
+      "id":"cue_9",
+      "start_ms":71000,
+      "text":"Registrar entrega, ubicacion y evidencia operativa.",
+      "title":"Logistics and Delivery",
+      "translations":{
+        "en":"Track delivery, destination, and operational evidence.",
+        "es":"Registrar entrega, ubicacion y evidencia operativa."
+      }
+    },
+    {
+      "end_ms":88000,
+      "id":"cue_10",
+      "start_ms":79000,
+      "text":"Cerrar contrato, archivar evidencias y consultar reportes.",
+      "title":"Archive and Reporting",
+      "translations":{
+        "en":"Close contract, archive evidence, and review reports.",
+        "es":"Cerrar contrato, archivar evidencias y consultar reportes."
+      }
+    }
+  ],
+  "duration_ms":88000,
+  "flow_name":"RP Rental migrated flow in Odoo"
+}

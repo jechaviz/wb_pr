@@ -1,0 +1,40 @@
+﻿1
+00:00:00,000 --> 00:00:09,000
+Allocate rental assets and initial availability in Odoo.
+
+2
+00:00:09,000 --> 00:00:18,000
+Create a quote with equipment, rental dates, and commercial terms.
+
+3
+00:00:18,000 --> 00:00:27,000
+Convert approved quote into a rental contract.
+
+4
+00:00:27,000 --> 00:00:35,000
+Manage exchange contracts when a rental asset is replaced.
+
+5
+00:00:35,000 --> 00:00:43,000
+Process partial returns and adjust billing.
+
+6
+00:00:43,000 --> 00:00:53,000
+Run return checklist and document equipment condition.
+
+7
+00:00:53,000 --> 00:01:02,000
+Complete Ready-To-Rent quality control before next delivery.
+
+8
+00:01:02,000 --> 00:01:11,000
+Invoice daily, weekly, and monthly cycles with the 3-3-3 rule.
+
+9
+00:01:11,000 --> 00:01:19,000
+Track delivery, destination, and operational evidence.
+
+10
+00:01:19,000 --> 00:01:28,000
+Close contract, archive evidence, and review reports.
+

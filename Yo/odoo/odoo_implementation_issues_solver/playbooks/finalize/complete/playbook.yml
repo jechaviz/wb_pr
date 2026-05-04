@@ -1,0 +1,25 @@
+﻿steps:
+  - name: Mark task completed
+    action: Framework.MarkTaskCompleted
+    params:
+      project_dir: "${PROJECT_DIR}"
+      task_name: "${TASK_NAME}"
+      summary: "${TASK_SUMMARY}"
+      artifacts:
+        - "${ROOT_PLAYBOOK_PATH}"
+        - "${PROJECT_DIR}\\playbooks"
+        - "${PROJECT_DIR}\\playbooks\\odoo\\connect\\playbook.yml"
+        - "${PROJECT_DIR}\\playbooks\\odoo\\modules_discovery\\playbook.yml"
+        - "${PROJECT_DIR}\\playbooks\\odoo\\grant_quality_manager\\playbook.yml"
+        - "${PROJECT_DIR}\\playbooks\\odoo\\server_actions\\playbook.yml"
+        - "${PROJECT_DIR}\\playbooks\\odoo\\access_probe\\playbook.yml"
+        - "${PROJECT_DIR}\\playbooks\\odoo\\rpp_data_load\\playbook.yml"
+        - "${OUTPUT_DIR}"
+        - "${OUTPUT_DIR}\\odoo_visit.json"
+        - "${OUTPUT_DIR}\\odoo_modules_discovery.json"
+        - "${OUTPUT_DIR}\\odoo_grant_quality_manager.json"
+        - "${OUTPUT_DIR}\\odoo_server_actions_probe.json"
+        - "${OUTPUT_DIR}\\odoo_access_probe.json"
+        - "${OUTPUT_DIR}\\rpp_data_load.json"
+        - "${PROJECT_DIR}\\PRD.md"
+        - "${PROJECT_DIR}\\SDD.md"

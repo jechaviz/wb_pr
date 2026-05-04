@@ -1,0 +1,41 @@
+[Script Info]
+Title: WAIBA Tutorial Stacked Subtitles
+ScriptType: v4.00+
+WrapStyle: 2
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,42,&H00FFFFFF,&H0000FFFF,&H00101010,&H60000000,0,0,0,0,100,100,0,0,1,2,1,2,30,30,48,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:08.00,Default,,0,0,0,,Welcome. This tutorial covers the daily RP Rental workflow now migrated from manual steps into Odoo.
+Dialogue: 0,0:00:08.00,0:00:17.00,Default,,0,0,0,,Odoo is the source of truth for customers, equipment, availability, contracts, deliveries, returns, quality checks, and billing.
+Dialogue: 0,0:00:17.00,0:00:26.00,Default,,0,0,0,,If it is not in Odoo, it did not happen. Keep every step updated as you work.
+Dialogue: 0,0:00:26.00,0:00:35.00,Default,,0,0,0,,Start from the main Apps menu. Use the global search bar to quickly find Customers, Rentals, and Products.
+Dialogue: 0,0:00:35.00,0:00:44.00,Default,,0,0,0,,Your role controls what you can do. If a button is missing, request access instead of working around the process.
+Dialogue: 0,0:00:44.00,0:00:54.00,Default,,0,0,0,,Before creating a quote, confirm the customer exists and the billing and delivery contacts are correct.
+Dialogue: 0,0:00:54.00,0:01:04.00,Default,,0,0,0,,Create new customers only when needed. Add phone, email, addresses, and set any payment terms required by the business.
+Dialogue: 0,0:01:04.00,0:01:13.00,Default,,0,0,0,,Rental products represent what you sell. Rental assets represent the physical units that get delivered and returned.
+Dialogue: 0,0:01:13.00,0:01:22.00,Default,,0,0,0,,Use the imported catalog and product codes to search quickly. Confirm the item is marked as rentable and available.
+Dialogue: 0,0:01:22.00,0:01:32.00,Default,,0,0,0,,Always confirm availability for the requested dates before promising equipment to the customer.
+Dialogue: 0,0:01:32.00,0:01:43.00,Default,,0,0,0,,Create a new quotation for the customer, then add the rental products and set the rental start and end dates.
+Dialogue: 0,0:01:43.00,0:01:52.00,Default,,0,0,0,,Set the rental period before validating pricing. Dates drive availability and the correct rental price calculation.
+Dialogue: 0,0:01:52.00,0:02:03.00,Default,,0,0,0,,Pricing follows the imported rate matrix. Confirm daily, weekly, and monthly cycles align with the agreed commercial terms.
+Dialogue: 0,0:02:03.00,0:02:13.00,Default,,0,0,0,,When the customer approves, confirm the quotation. This becomes the rental contract and triggers the operational workflow.
+Dialogue: 0,0:02:13.00,0:02:23.00,Default,,0,0,0,,Review the delivery order, ensure the correct warehouse and destination, and prepare assets for dispatch.
+Dialogue: 0,0:02:23.00,0:02:33.00,Default,,0,0,0,,Validate the delivery in Odoo when the equipment leaves. Record any required evidence and confirm the on-site location.
+Dialogue: 0,0:02:33.00,0:02:42.00,Default,,0,0,0,,If dates or quantities change, update the contract immediately. Do not track changes only in chat or email.
+Dialogue: 0,0:02:42.00,0:02:51.00,Default,,0,0,0,,If an asset is replaced, record the exchange so traceability and billing remain correct.
+Dialogue: 0,0:02:51.00,0:03:00.00,Default,,0,0,0,,For partial returns, process the return picking and adjust the contract lines so invoicing stays accurate.
+Dialogue: 0,0:03:00.00,0:03:09.00,Default,,0,0,0,,When all equipment returns, validate the return picking. This is the handoff into quality control.
+Dialogue: 0,0:03:09.00,0:03:20.00,Default,,0,0,0,,Run the Rental Return inspection. Capture condition notes and issues so maintenance and billing decisions are supported.
+Dialogue: 0,0:03:20.00,0:03:31.00,Default,,0,0,0,,Before sending equipment out again, complete the Ready-To-Rent inspection. This prevents avoidable failures in the field.
+Dialogue: 0,0:03:31.00,0:03:41.00,Default,,0,0,0,,Billing is driven by the contract and time. Generate invoices based on the agreed billing cadence.
+Dialogue: 0,0:03:41.00,0:03:52.00,Default,,0,0,0,,If your process uses the 3-3-3 rule, apply it consistently: daily, weekly, and monthly billing logic must match the contract.
+Dialogue: 0,0:03:52.00,0:04:03.00,Default,,0,0,0,,Create the invoice from the rental order, review line items and taxes, then send it to the customer from Odoo.
+Dialogue: 0,0:04:03.00,0:04:12.00,Default,,0,0,0,,When payment is received, register it and reconcile. Keep Accounting accurate so reporting stays reliable.
+Dialogue: 0,0:04:12.00,0:04:22.00,Default,,0,0,0,,Use reports to monitor open rentals, asset utilization, overdue returns, invoices due, and quality backlog.
+Dialogue: 0,0:04:22.00,0:04:31.00,Default,,0,0,0,,Once the rental is fully returned, quality is completed, and invoicing is done, close the loop and archive evidence.
+Dialogue: 0,0:04:31.00,0:04:39.00,Default,,0,0,0,,You are ready to run the daily workflow in Odoo using your real catalog, assets, and rates.

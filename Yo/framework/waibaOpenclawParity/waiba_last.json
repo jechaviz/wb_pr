@@ -1,0 +1,161 @@
+﻿{
+  "context":{
+    "CURRENT_BASELINE":"waiba-v3",
+    "JS_DIR":"${PLAYBOOKS_DIR}\\js",
+    "MAX_UNITS":1,
+    "OUTPUT_DIR":"${PLAYBOOKS_DIR}\\output",
+    "PARITY_TARGET":"openclaw",
+    "PLAYBOOKS_DIR":"${PROJECT_DIR}\\playbooks",
+    "PLAYBOOK_DIR":"C:\\git\\customers\\yo\\waiba\\projects\\Yo\\framework\\waibaOpenclawParity",
+    "PLAYBOOK_ENV":"prod",
+    "PLAYBOOK_PATH":"C:\\git\\customers\\yo\\waiba\\projects\\Yo\\framework\\waibaOpenclawParity\\playbook_test.yaml",
+    "PROJECT_DIR":"${ROOT_PLAYBOOK_DIR}",
+    "PROJECT_NAME":"waibaOpenclawParity",
+    "ROOT_PLAYBOOK_DIR":"C:\\git\\customers\\yo\\waiba\\projects\\Yo\\framework\\waibaOpenclawParity",
+    "ROOT_PLAYBOOK_PATH":"C:\\git\\customers\\yo\\waiba\\projects\\Yo\\framework\\waibaOpenclawParity\\playbook_test.yaml",
+    "RUN_LIVE_LLM_TEST":0,
+    "SCRIPT_DIR":"C:\\git\\customers\\yo\\waiba\\src\\automation",
+    "TASK_NAME":"WAIBA >= OpenClaw parity program (test)",
+    "TASK_SUMMARY":"Smoke execution for parity backlog generation.",
+    "capability_inventory_md":"# WAIBA Capability Inventory (Current State)\n\n## Core Runtime\n- Modular YAML execution with nested `playbook` steps.\n- Middleware pipeline (logging, timing, retry, error boundary).\n- Parallel execution:\n  - deterministic sequential fallback (array form)\n  - process-based workers with bounded concurrency (object form)\n\n## Skills Available\n- Browser/CDP automation (`Browser.*`, `CDP.*`).\n- Filesystem and governance (`FS.*`, `Framework.*`).\n- HTTP + API connectors (`HTTP.*`, `GraphQL.*`, `Messaging.*`).\n- Runtime shell actions with AccessPolicy (`Shell.*`).\n- Multimodal LLM routing (`LLM.*`) with text/vision model selection.\n- Vision facade (`Vision.*`) for describe/ocr/detect with optional YOLO adapter.\n- WebSocket client (`WS.*`).\n- Domain compatibility layer (`Udemy.*`).\n\n## CLI and Operator UX\n- Unified CLI entrypoint (`waiba.ahk`) with subcommands:\n  - `run` / `action`\n  - `telegram send|get-me|updates|poll|parse`\n  - `whatsapp send`\n- Deterministic JSON output and exit codes for automation chaining.\n\n## Messaging Inbound Baseline\n- Telegram inbound parser (`Messaging.Telegram.ParseUpdates`) for command extraction.\n- Checkpoint-ready long-poll action (`Messaging.Telegram.GetUpdatesCheckpointed`) for resumable update fetch.\n- Supports command prefix filtering and structured command payload extraction.\n\n## Safety and Governance\n- AccessPolicy enforcement on read/write operations.\n- Project-level PRD/SDD/TASK_STATUS lifecycle support.\n- Growth tracking via `FRAMEWORK_GROWTH.md`.\n\n## Current Constraints\n- Local YOLO adapter still depends on project-provided script/command wiring.\n- Process-parallel tasks run with a snapshot of context; workers do not mutate parent context directly.\n",
+    "gap_matrix_md":"# WAIBA vs OpenClaw Gap Matrix\n\n| Capability | OpenClaw Baseline | WAIBA Current | Gap | Priority |\n|---|---|---|---|---|\n| Declarative modular workflows | Strong | Strong | None | Low |\n| Browser/CDP automation | Strong | Strong | None | Low |\n| Native shell command skill in runtime | Strong | Strong | None | Low |\n| HTTP / API client | Strong | Strong (`HTTP.*`) | None | Low |\n| GraphQL client | Strong | Strong (`GraphQL.*`) | None | Low |\n| Multimodal model routing (text vs vision) | Strong | Strong (`LLM.*`) | None | Low |\n| Integrated vision/OCR pipeline | Strong | Medium (`Vision.*` facade delivered) | Harden local YOLO adapter packaging | Medium |\n| True parallel task workers | Medium | Strong (process-based workers) | Context merge + cancellation semantics | Medium |\n| Messaging connectors (Telegram/WhatsApp) | Strong | Medium-Strong (`Messaging.*` + Telegram checkpoint poll/parser) | WhatsApp inbound webhook + conversation state persistence | Medium |\n| WebSocket client | Strong | Medium (`WS.*`) | Reliability/stress tests + reconnect strategy | Medium |\n| Unified CLI (subcommands) | Strong | Strong (`run`, `action`, `telegram`, `whatsapp`) | Add planner/ops aliases and richer diagnostics | Medium |\n| Built-in long-horizon planner | Strong | Partial (playbook-driven) | Planner layer | Medium |\n| Recovery/self-healing selectors | Strong | Partial | Heuristic layer | Medium |\n| Unified telemetry dashboard | Strong | Partial (logs only) | Metrics aggregation | Medium |\n\n## Immediate Priority Order\n1. Messaging inbound parity completion (WhatsApp webhook + conversation state store).\n2. Planner layer to convert goals into modular playbook trees.\n3. Harden local YOLO adapter packaging for `Vision.Detect`.\n4. Telemetry layer for parity benchmarking dashboards.\n",
+    "implementation_backlog_md":"# Implementation Backlog (Priority Ordered)\n\n## Completed Baseline Upgrades\n- `Shell.*` skill integrated (`Run`, `RunJson`, `Exists`) with AccessPolicy checks.\n- `LLM.*` multimodal router integrated (`SelectModel`, `BuildPayload`, `Chat`, `Complete`).\n- `Vision.*` facade integrated (`SelectEngine`, `Analyze`, `Describe`, `OCR`, `Detect`).\n- `parallel.mode=process` implemented (process-based workers with bounded concurrency + deterministic result merge).\n- `HTTP.*` + `GraphQL.*` integrated for API connectivity.\n- `Messaging.*` integrated (Telegram Bot API + WhatsApp Cloud API).\n- `WS.*` integrated (WebSocket client facade over thqby `WebSocket.ahk`).\n- Runtime gateway and OpenAPI contract extended for `Shell.*`, `LLM.*`, and `Vision.*`.\n\n## P0 - Unified CLI\n- Status: delivered baseline.\n- Implemented:\n  - `run` playbook\n  - `action` invoke one action with JSON params\n  - connector aliases (`telegram`, `whatsapp`)\n  - machine-readable output (JSON) + deterministic exit codes\n- Remaining:\n  - planner/operator aliases\n  - richer diagnostics/report flags\n\n## P0 - Messaging Inbound + State\n- Telegram:\n  - Status: baseline delivered (`GetUpdatesCheckpointed`, `ParseUpdates`).\n  - Remaining: map inbound commands to playbooks/actions (router dispatch policy).\n- WhatsApp:\n  - Pending: webhook receiver adapter (external or embedded) + event normalization.\n- Optional state store:\n  - Pending: Redis adapter (pub/sub + KV) for conversation state.\n\n## P0 - Vision Local Adapter Hardening\n- Package local YOLO adapter script contract (`script` + JSON schema output).\n- Add project template for deterministic YOLO invocation.\n- Add regression playbook for `Vision.Detect` in local mode.\n\n## P1 - Parallel Worker Hardening\n- Add stress tests for process workers (timeouts, fail_fast, result collection).\n- Add cancellation semantics and step-level timeouts.\n- Add optional context merge strategies (explicit allowlist of keys).\n\n## P1 - Planner Layer\n- Introduce planning module to synthesize modular playbook trees.\n- Keep plan generation auditable via generated artifacts.\n\n## P2 - Telemetry and Benchmarking\n- Aggregate runtime metrics to `playbooks/output/metrics.json`.\n- Add parity report generation vs OpenClaw capability matrix.\r\n",
+    "llm_payload_text":{
+      "decision":{
+        "has_media":0,
+        "mode":"text",
+        "reason":"text-only request"
+      },
+      "endpoint":"https://api.z.ai/api/paas/v4/chat/completions",
+      "payload":{
+        "messages":[
+          {
+            "content":"Generate short checkpoint.",
+            "role":"user"
+          }
+        ],
+        "model":"glm-5",
+        "stream":false
+      },
+      "provider":"zai"
+    },
+    "llm_payload_vision":{
+      "decision":{
+        "has_media":1,
+        "mode":"vision",
+        "reason":"force_vision=true"
+      },
+      "endpoint":"https://api.z.ai/api/paas/v4/chat/completions",
+      "payload":{
+        "messages":[
+          {
+            "content":"Describe attached screenshot.",
+            "role":"user"
+          }
+        ],
+        "model":"glm-4.6v",
+        "stream":false
+      },
+      "provider":"zai"
+    },
+    "llm_text_route":{
+      "endpoint":"https://api.z.ai/api/paas/v4/chat/completions",
+      "has_media":0,
+      "mode":"text",
+      "model":"glm-5",
+      "provider":"zai",
+      "reason":"text-only request",
+      "text_model":"glm-5",
+      "vision_model":"glm-4.6v"
+    },
+    "llm_vision_route":{
+      "endpoint":"https://api.z.ai/api/paas/v4/chat/completions",
+      "has_media":1,
+      "mode":"vision",
+      "model":"glm-4.6v",
+      "provider":"zai",
+      "reason":"force_vision=true",
+      "text_model":"glm-5",
+      "vision_model":"glm-4.6v"
+    },
+    "roadmap_90d_md":"# WAIBA 90 Day Roadmap (Parity and Superiority)\n\n## Sprint 1 (Weeks 1-2): Runtime Execution Power\n- Completed: deliver `Shell.*` skill with policy-based command execution.\n- Completed: deliver `LLM.*` router with automatic text/vision model selection.\n- Completed: deliver `Vision.*` facade (`Describe`, `OCR`, `Detect`).\n- Add regression playbooks for shell and LLM-enabled flows.\n\n## Sprint 2 (Weeks 3-4): Perception Layer\n- Harden local YOLO adapter packaging and JSON output contract.\n- Standardize model path/config strategy in project scope.\n- Add visual assertion actions for automation/testing.\n\n## Sprint 3 (Weeks 5-8): Parallelism and Recovery\n- Implement bounded worker pool for true parallel branches.\n- Add deterministic join semantics and conflict rules.\n- Add selector self-healing heuristics in CDP/UIA paths.\n\n## Sprint 4 (Weeks 9-12): Intelligence and Telemetry\n- Add planner module for goal -> playbook decomposition.\n- Add runtime metrics output for reliability and latency.\n- Publish parity benchmark results vs OpenClaw baselines.\n\n## Exit Criteria\n- >= 95% parity coverage on selected benchmark capabilities.\n- >= 2 areas with WAIBA superiority.\r\n",
+    "telegram_inbound_parse":{
+      "commands":[
+        {
+          "args":"electroprice_bootstrap --env prod",
+          "chat_id":555001,
+          "command":"run",
+          "from_id":9001,
+          "from_username":"waiba_qa",
+          "has_args":1,
+          "message_id":81,
+          "text":"/run electroprice_bootstrap --env prod",
+          "update_id":2001
+        },
+        {
+          "args":"",
+          "chat_id":555001,
+          "command":"status",
+          "from_id":9001,
+          "from_username":"waiba_qa",
+          "has_args":0,
+          "message_id":83,
+          "text":"/status",
+          "update_id":2003
+        }
+      ],
+      "count":2,
+      "ok":1,
+      "prefix":"/"
+    },
+    "telegram_synthetic_updates":[
+      {
+        "message":{
+          "chat":{
+            "id":555001
+          },
+          "from":{
+            "id":9001,
+            "username":"waiba_qa"
+          },
+          "message_id":81,
+          "text":"/run electroprice_bootstrap --env prod"
+        },
+        "update_id":2001
+      },
+      {
+        "message":{
+          "chat":{
+            "id":555001
+          },
+          "from":{
+            "id":9001,
+            "username":"waiba_qa"
+          },
+          "message_id":82,
+          "text":"plain message"
+        },
+        "update_id":2002
+      },
+      {
+        "message":{
+          "chat":{
+            "id":555001
+          },
+          "from":{
+            "id":9001,
+            "username":"waiba_qa"
+          },
+          "message_id":83,
+          "text":"/status"
+        },
+        "update_id":2003
+      }
+    ],
+    "vision_engine_default":"llm_vision",
+    "vision_engine_prefer_local":"llm_vision"
+  },
+  "env":"prod",
+  "ok":1,
+  "playbook":"C:\\git\\customers\\yo\\waiba\\projects\\Yo\\framework\\waibaOpenclawParity\\playbook_test.yaml"
+}

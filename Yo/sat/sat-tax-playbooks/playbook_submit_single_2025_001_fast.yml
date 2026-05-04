@@ -1,0 +1,19 @@
+metadata:
+  category: "finance"
+  subcategory: "sat-declaration"
+  workflow: "declare-zero-single-2025-001-fast-submit"
+
+steps:
+  prod:
+    - name: Run SAT submit for Jan 2025 (fast validated acuse)
+      playbook: "${PLAYBOOK_DIR}\\playbooks\\04_declare_zero_month\\playbook.yml"
+      with:
+        DEBUG_PORT: 9333
+        SAT_SUBMIT_CONFIRM: "operator-confirmed-2026-02-17-single-2025-001-fast"
+        SAT_PROFILE_URL: "https://pstcdypisr.clouda.sat.gob.mx/Declaracion/Temporales"
+        SAT_TARGET_YEAR: 2025
+        SAT_TARGET_MONTH: "001"
+        SAT_DO_PREVIEW: true
+        SAT_DO_SUBMIT: true
+        SAT_SELECT_ALL_OBLIGATIONS: "false"
+        SAT_USE_DEFAULT_CHECKED_OBLIGATIONS: "true"

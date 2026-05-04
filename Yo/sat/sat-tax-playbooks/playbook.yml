@@ -1,0 +1,129 @@
+metadata:
+  category: "finance"
+  subcategory: "sat-declaration"
+  workflow: "declare-zero-2025-onward"
+
+variables:
+  PROJECT_NAME: "sat-tax-playbooks"
+  PROJECT_SKILL_PATH: "Yo.SAT.TaxPlaybooks"
+  PROJECT_DIR: "${ROOT_PLAYBOOK_DIR}"
+  PLAYBOOKS_DIR: "${PROJECT_DIR}\\playbooks"
+  OUTPUT_DIR: "${PLAYBOOKS_DIR}\\output"
+  JS_DIR: "${PLAYBOOKS_DIR}\\assets"
+  PROJECT_SKILLS_FILE: "${PROJECT_DIR}\\skills.yml"
+  AUTONOMY_DOC: "${PROJECT_DIR}\\AUTONOMY.md"
+  ARCHITECT_PROFILE_DOC: "${PROJECT_DIR}\\ARCHITECT_PROFILE.md"
+  TASK_NAME: "Run SAT Mexico declaration workflows safely"
+  TASK_SUMMARY: "Prepare, preview, recover, and optionally submit SAT declaration flows with explicit operator checkpoints."
+  DEBUG_PORT: 9333
+  RUN_MINIMIZED: false
+  WAIBA_HOME: "C:\\Users\\jecha\\.waiba"
+  WAIBA_PLAYBOOK_LIB_DIR: "C:\\git\\wb_pr\\_shared"
+  SKILL_SAT_TAX_ROOT: "${PROJECT_DIR}"
+  SKILL_NAV_SUPERCONTROL_ROOT: "${WAIBA_PLAYBOOK_LIB_DIR}\\web\\waiba-navigation-supercontrol"
+  SKILL_NAV_SUPERCONTROL_PLAYBOOK: "${SKILL_NAV_SUPERCONTROL_ROOT}\\playbooks\\01_supercontrol\\playbook.yml"
+  SAT_USE_NAV_SUPERCONTROL: true
+  SAT_NAV_ENABLE_OCR: false
+  SAT_LOGIN_URL: "https://pstcdypisr.clouda.sat.gob.mx/"
+  SAT_RFC: "${secrets.sat.rfc}"
+  SAT_PASSWORD: "${secrets.sat.password}"
+  SAT_LOGIN_TIMEOUT_SECS: 240
+  SAT_FROM_YEAR: 2025
+  SAT_FROM_MONTH: 1
+  SAT_TO_YEAR: ""
+  SAT_TO_MONTH: ""
+  SAT_PERIODICIDAD: "M"
+  SAT_TIPO_DECLARACION: "001"
+  SAT_OBLIGATION_IDS:
+    - "0112"
+    - "0113"
+    - "0304"
+  SAT_DO_PREVIEW: true
+  SAT_DO_SUBMIT: false
+  SAT_SUBMIT_CONFIRM: ""
+  SAT_FILL_ZEROES: true
+  SAT_USE_DEFAULT_CHECKED_OBLIGATIONS: false
+
+steps:
+  prod:
+    - name: SAT research checklist
+      playbook: "${PLAYBOOKS_DIR}\\01_tax_research_plan\\playbook.yml"
+
+    - name: SAT portal login/session
+      playbook: "${PLAYBOOKS_DIR}\\02_sat_portal_session\\playbook.yml"
+
+    - name: Declare zero from 2025 onward
+      playbook: "${PLAYBOOKS_DIR}\\05_declare_zero_2025_onward\\playbook.yml"
+
+  prod_clean:
+    - name: Ensure clean browser session for SAT port (kills Edge)
+      action: Helium.KillBrowser
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+
+    - name: SAT research checklist
+      playbook: "${PLAYBOOKS_DIR}\\01_tax_research_plan\\playbook.yml"
+
+    - name: SAT portal login/session
+      playbook: "${PLAYBOOKS_DIR}\\02_sat_portal_session\\playbook.yml"
+
+    - name: Declare zero from 2025 onward
+      playbook: "${PLAYBOOKS_DIR}\\05_declare_zero_2025_onward\\playbook.yml"
+
+  prod_submit:
+    - name: Enable SAT submission mode
+      action: Set
+      params:
+        name: SAT_DO_SUBMIT
+        value: true
+
+    - name: Require explicit submit confirmation
+      if: "${SAT_DO_SUBMIT}"
+      if_not: "${SAT_SUBMIT_CONFIRM}"
+      action: Fail
+      params:
+        message: "SAT_DO_SUBMIT is enabled. Set SAT_SUBMIT_CONFIRM (any non-empty value) to acknowledge you want to submit declarations."
+
+    - name: SAT research checklist
+      playbook: "${PLAYBOOKS_DIR}\\01_tax_research_plan\\playbook.yml"
+
+    - name: SAT portal login/session
+      playbook: "${PLAYBOOKS_DIR}\\02_sat_portal_session\\playbook.yml"
+
+    - name: Declare zero from 2025 onward
+      playbook: "${PLAYBOOKS_DIR}\\05_declare_zero_2025_onward\\playbook.yml"
+
+  prod_submit_clean:
+    - name: Enable SAT submission mode
+      action: Set
+      params:
+        name: SAT_DO_SUBMIT
+        value: true
+
+    - name: Require explicit submit confirmation
+      if: "${SAT_DO_SUBMIT}"
+      if_not: "${SAT_SUBMIT_CONFIRM}"
+      action: Fail
+      params:
+        message: "SAT_DO_SUBMIT is enabled. Set SAT_SUBMIT_CONFIRM (any non-empty value) to acknowledge you want to submit declarations."
+
+    - name: Ensure clean browser session for SAT port (kills Edge)
+      action: Helium.KillBrowser
+      ignore_errors: true
+      params:
+        port: "${DEBUG_PORT}"
+
+    - name: SAT research checklist
+      playbook: "${PLAYBOOKS_DIR}\\01_tax_research_plan\\playbook.yml"
+
+    - name: SAT portal login/session
+      playbook: "${PLAYBOOKS_DIR}\\02_sat_portal_session\\playbook.yml"
+
+    - name: Declare zero from 2025 onward
+      playbook: "${PLAYBOOKS_DIR}\\05_declare_zero_2025_onward\\playbook.yml"
+
+  debug:
+    - action: Note
+      params:
+        text: "sat-tax-playbooks debug mode"

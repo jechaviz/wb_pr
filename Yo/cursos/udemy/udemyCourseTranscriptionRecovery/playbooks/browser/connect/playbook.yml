@@ -1,0 +1,14 @@
+﻿steps:
+  - name: Connect to course tab
+    action: CDP.Connect
+    params:
+      port: "${DEBUG_PORT}"
+      open_url: "${COURSE_URL}"
+      target_url_contains: "udemy.com/course/"
+
+  - name: Navigate to course start
+    action: CDP.Navigate
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${COURSE_URL}"
+      wait_ms: 5000

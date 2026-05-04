@@ -1,0 +1,82 @@
+metadata:
+  category: "odoo"
+  subcategory: "training"
+  customer: "Yo"
+  course: "rpr-rental"
+  lesson: "manual-to-odoo-migration"
+
+variables:
+  PROJECT_NAME: "odooMigrationUserTrainingTutorial"
+  PROJECT_SKILL_PATH: "Odoo.MigrationUserTrainingTutorial"
+  PROJECT_DIR: "${ROOT_PLAYBOOK_DIR}"
+  PLAYBOOKS_DIR: "${PROJECT_DIR}\\playbooks"
+  PROJECT_SKILLS_FILE: "${PROJECT_DIR}\\skills.yml"
+  AUTONOMY_DOC: "${PROJECT_DIR}\\AUTONOMY.md"
+  ARCHITECT_PROFILE_DOC: "${PROJECT_DIR}\\ARCHITECT_PROFILE.md"
+  TASK_NAME: "Build Odoo migration user training tutorial package"
+  TASK_SUMMARY: "Visit Odoo instance, build an English daily-workflow storyboard, generate subtitles, mouse zoom timing, and a render plan."
+  DEBUG_PORT: 9222
+  ODOO_URL: "https://yeaipsoluciones-rpp-rental.odoo.com/odoo"
+  COURSE_URL: "${ODOO_URL}"
+  OUTPUT_DIR: "${PLAYBOOKS_DIR}\\output"
+  JS_DIR: "${PLAYBOOKS_DIR}\\js"
+  TUTORIAL_INPUT_VIDEO: "${PLAYBOOKS_DIR}\\tutorial\\assets\\odoo_training_capture.mp4"
+  TUTORIAL_BGM: "${PLAYBOOKS_DIR}\\tutorial\\assets\\background_music.mp3"
+  TUTORIAL_OUTPUT_BASENAME: "rpr_odoo_user_training_en"
+  TUTORIAL_FLOW_STEPS_PATH: "${PLAYBOOKS_DIR}\\tutorial\\flows\\rpr_rental_daily_workflow.json"
+  TUTORIAL_GUIDE_EN_PATH: "${PLAYBOOKS_DIR}\\tutorial\\guide\\user_training_guide.en.md"
+  TUTORIAL_TTS_VOICE: "Microsoft Zira Desktop"
+  TUTORIAL_TTS_RATE: 0
+  TUTORIAL_TTS_VOLUME: 100
+  MAX_UNITS: 5
+
+steps:
+  prod:
+    - name: Bootstrap docs and governance
+      playbook: "./playbooks/01_bootstrap/01_docs/playbook.yml"
+
+    - name: Bootstrap runtime
+      playbook: "./playbooks/01_bootstrap/02_runtime/playbook.yml"
+
+    - name: Execute tutorial build pipeline
+      playbook: "./playbooks/02_task/01_execute/playbook.yml"
+
+    - name: Mark task completed
+      playbook: "./playbooks/03_finalize/01_complete/playbook.yml"
+
+  video:
+    - name: Bootstrap docs and governance
+      playbook: "./playbooks/01_bootstrap/01_docs/playbook.yml"
+
+    - name: Bootstrap runtime
+      playbook: "./playbooks/01_bootstrap/02_runtime/playbook.yml"
+
+    - name: Execute tutorial build pipeline
+      playbook: "./playbooks/02_task/01_execute/playbook.yml"
+
+    - name: Render tutorial video (from screen capture)
+      playbook: "./playbooks/02_task/02_tutorial/01_render_video/playbook.yml"
+
+    - name: Mark task completed
+      playbook: "./playbooks/03_finalize/01_complete/playbook.yml"
+
+  slides:
+    - name: Bootstrap docs and governance
+      playbook: "./playbooks/01_bootstrap/01_docs/playbook.yml"
+
+    - name: Bootstrap runtime
+      playbook: "./playbooks/01_bootstrap/02_runtime/playbook.yml"
+
+    - name: Execute tutorial build pipeline
+      playbook: "./playbooks/02_task/01_execute/playbook.yml"
+
+    - name: Render tutorial slideshow (screenshots + Windows TTS)
+      playbook: "./playbooks/02_task/02_tutorial/02_render_slides/playbook.yml"
+
+    - name: Mark task completed
+      playbook: "./playbooks/03_finalize/01_complete/playbook.yml"
+
+  debug:
+    - action: Note
+      params:
+        text: "Odoo tutorial pipeline (visit + subtitles + render plan)"

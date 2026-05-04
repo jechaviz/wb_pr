@@ -1,0 +1,3 @@
+steps:
+  - name: Collect sidebar snapshot
+    playbook: "../../finalize/sidebar/playbook.yml"

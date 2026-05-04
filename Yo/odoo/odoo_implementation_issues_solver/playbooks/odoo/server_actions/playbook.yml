@@ -1,0 +1,29 @@
+steps:
+  - name: Load server-actions probe JS
+    action: FS.ReadText
+    register: js_server_actions_probe
+    params:
+      path: "${JS_DIR}\\server_actions_probe.js"
+
+  - name: Odoo platform connect
+    action: OdooEnterpriseOnline.Platform.Connect
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${ODOO_URL}/odoo"
+      wait_ms: 3000
+
+  - name: Run server-actions probe
+    action: OdooEnterpriseOnline.ServerActions.DiscoverAndRun
+    register: odoo_server_actions_probe
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_server_actions_probe}"
+      ensure_connected: false
+      await_promise: true
+
+  - name: Persist server-actions artifact
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\odoo_server_actions_probe.json"
+      value: "${odoo_server_actions_probe}"
+      overwrite: true

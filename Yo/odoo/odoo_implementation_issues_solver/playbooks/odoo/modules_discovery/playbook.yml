@@ -1,0 +1,29 @@
+steps:
+  - name: Load modules-discovery JS
+    action: FS.ReadText
+    register: js_modules_discovery
+    params:
+      path: "${JS_DIR}\\modules_discovery.js"
+
+  - name: Odoo platform connect
+    action: OdooEnterpriseOnline.Platform.Connect
+    params:
+      port: "${DEBUG_PORT}"
+      url: "${ODOO_URL}/odoo"
+      wait_ms: 3000
+
+  - name: Discover Odoo modules
+    action: OdooEnterpriseOnline.Modules.Discover
+    register: odoo_modules_discovery
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_modules_discovery}"
+      ensure_connected: false
+      await_promise: true
+
+  - name: Persist modules discovery artifact
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\odoo_modules_discovery.json"
+      value: "${odoo_modules_discovery}"
+      overwrite: true

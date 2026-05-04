@@ -1,0 +1,21 @@
+steps:
+  - name: Baseline capability inventory
+    playbook: "../../baseline/inventory/playbook.yml"
+
+  - name: Build gap matrix
+    playbook: "../../baseline/gap_matrix/playbook.yml"
+
+  - name: Build 90 day roadmap
+    playbook: "../../roadmap/sprints/playbook.yml"
+
+  - name: Define implementation backlog
+    playbook: "../../implementation/core_upgrades/playbook.yml"
+
+  - name: Validate LLM multimodal routing
+    playbook: "../../implementation/llm_router/playbook.yml"
+
+  - name: Validate messaging inbound parser
+    playbook: "../../implementation/messaging_inbound/playbook.yml"
+
+  - name: Validate process parallel workers
+    playbook: "../../implementation/parallel_workers/playbook.yml"

@@ -1,0 +1,12 @@
+steps:
+  - name: Visit Odoo instance
+    playbook: "../../../odoo/connect/playbook.yml"
+
+  - name: Grant Quality Administrator group when possible
+    playbook: "../../../odoo/grant_quality_manager/playbook.yml"
+
+  - name: Verify Odoo access diagnostics
+    playbook: "../../../odoo/access_probe/playbook.yml"
+
+  - name: Execute RP Rental data load
+    playbook: "../../../odoo/rpp_data_load/playbook.yml"

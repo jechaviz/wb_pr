@@ -1,0 +1,3 @@
+steps:
+  - name: Mark task completed
+    playbook: "../../finalize/complete/playbook.yml"

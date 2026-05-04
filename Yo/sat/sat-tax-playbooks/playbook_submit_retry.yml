@@ -1,0 +1,19 @@
+﻿metadata:
+  category: "finance"
+  subcategory: "sat-declaration"
+  workflow: "declare-zero-retry-validated-acuse"
+
+steps:
+  prod:
+    - name: Run SAT submit with validated acuse capture (retry)
+      playbook: "${PLAYBOOK_DIR}\\playbook.yml"
+      env: "prod_submit"
+      with:
+        SAT_SUBMIT_CONFIRM: "operator-confirmed-2026-02-17-retry"
+        SAT_LOGIN_TIMEOUT_SECS: 900
+        SAT_SELECT_ALL_OBLIGATIONS: "false"
+        SAT_USE_DEFAULT_CHECKED_OBLIGATIONS: "true"
+        SAT_FROM_YEAR: 2025
+        SAT_FROM_MONTH: 2
+        SAT_TO_YEAR: 2026
+        SAT_TO_MONTH: 1

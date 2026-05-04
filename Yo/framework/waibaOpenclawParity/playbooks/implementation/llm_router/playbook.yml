@@ -1,0 +1,65 @@
+steps:
+  - name: Select model for text prompt
+    action: LLM.SelectModel
+    register: llm_text_route
+    params:
+      prompt: "Resume WAIBA superiority roadmap en una linea."
+
+  - name: Select model for vision mode
+    action: LLM.SelectModel
+    register: llm_vision_route
+    params:
+      prompt: "Describe visual automation state."
+      force_vision: true
+
+  - name: Build payload in text mode
+    action: LLM.BuildPayload
+    register: llm_payload_text
+    params:
+      prompt: "Generate short checkpoint."
+
+  - name: Build payload in vision mode
+    action: LLM.BuildPayload
+    register: llm_payload_vision
+    params:
+      prompt: "Describe attached screenshot."
+      force_vision: true
+
+  - name: Select vision engine default
+    action: Vision.SelectEngine
+    register: vision_engine_default
+
+  - name: Select vision engine prefer local
+    action: Vision.SelectEngine
+    register: vision_engine_prefer_local
+    params:
+      prefer_local: true
+
+  - name: Persist llm router validation
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\llm_router_validation.json"
+      overwrite: true
+      value:
+        text_route: "${llm_text_route}"
+        vision_route: "${llm_vision_route}"
+        text_payload: "${llm_payload_text}"
+        vision_payload: "${llm_payload_vision}"
+        vision_engine_default: "${vision_engine_default}"
+        vision_engine_prefer_local: "${vision_engine_prefer_local}"
+
+  - name: Optional live llm smoke call
+    if: "${RUN_LIVE_LLM_TEST}"
+    action: LLM.Chat
+    register: llm_live_response
+    params:
+      prompt: "Responde exactamente: waiba-live-ok"
+      max_tokens: 24
+
+  - name: Persist optional live llm response
+    if: "${RUN_LIVE_LLM_TEST}"
+    action: FS.WriteText
+    params:
+      path: "${OUTPUT_DIR}\\llm_live_response.txt"
+      overwrite: true
+      text: "${llm_live_response}"

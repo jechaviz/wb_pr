@@ -1,0 +1,42 @@
+metadata:
+  category: "odoo"
+  subcategory: "implementation"
+  customer: "Yo"
+  course: "rpr-rental"
+  lesson: "access-diagnostics"
+
+variables:
+  PROJECT_NAME: "odoo_implementation_issues_solver"
+  PROJECT_SKILL_PATH: "Odoo.ImplementationIssuesSolver"
+  PROJECT_DIR: "${ROOT_PLAYBOOK_DIR}"
+  PLAYBOOKS_DIR: "${PROJECT_DIR}\\playbooks"
+  PROJECT_SKILLS_FILE: "${PROJECT_DIR}\\skills.yml"
+  AUTONOMY_DOC: "${PROJECT_DIR}\\AUTONOMY.md"
+  ARCHITECT_PROFILE_DOC: "${PROJECT_DIR}\\ARCHITECT_PROFILE.md"
+  TASK_NAME: "Diagnose Odoo access required for implementation sync"
+  TASK_SUMMARY: "Connect to Odoo Enterprise Online, discover modules, try permission grant and server actions hacks, then verify QC creation access."
+  DEBUG_PORT: 9222
+  ODOO_URL: "https://yeaipsoluciones-rpp-rental.odoo.com"
+  COURSE_URL: "${ODOO_URL}"
+  OUTPUT_DIR: "${PLAYBOOKS_DIR}\\output"
+  JS_DIR: "${PLAYBOOKS_DIR}\\js"
+  MAX_UNITS: 5
+
+steps:
+  prod:
+    - name: Bootstrap docs and governance
+      playbook: "./playbooks/01_bootstrap/01_docs/playbook.yml"
+
+    - name: Bootstrap runtime
+      playbook: "./playbooks/01_bootstrap/02_runtime/playbook.yml"
+
+    - name: Execute Odoo implementation diagnostics
+      playbook: "./playbooks/02_task/01_execute/playbook.yml"
+
+    - name: Mark task completed
+      playbook: "./playbooks/03_finalize/01_complete/playbook.yml"
+
+  debug:
+    - action: Note
+      params:
+        text: "Odoo implementation access diagnostics pipeline"

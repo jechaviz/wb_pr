@@ -1,0 +1,28 @@
+steps:
+  - name: Load Odoo page probe JS
+    action: FS.ReadText
+    register: js_main
+    params:
+      path: "${JS_DIR}\\main.js"
+
+  - name: Connect CDP to Odoo tab
+    action: CDP.Connect
+    params:
+      port: "${DEBUG_PORT}"
+      open_url: "${ODOO_URL}"
+      target_type: "page"
+      target_url_contains: ".odoo.com"
+
+  - name: Read Odoo page metadata
+    action: CDP.EvaluateJson
+    register: odoo_visit
+    params:
+      port: "${DEBUG_PORT}"
+      expression: "${js_main}"
+
+  - name: Persist Odoo visit artifact
+    action: FS.WriteJson
+    params:
+      path: "${OUTPUT_DIR}\\odoo_visit.json"
+      value: "${odoo_visit}"
+      overwrite: true

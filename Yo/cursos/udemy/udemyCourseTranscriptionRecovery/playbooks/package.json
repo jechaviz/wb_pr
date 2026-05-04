@@ -1,0 +1,14 @@
+{
+  "name": "playbooks",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@google/genai": "^1.44.0",
+    "dotenv": "^17.3.1"
+  }
+}

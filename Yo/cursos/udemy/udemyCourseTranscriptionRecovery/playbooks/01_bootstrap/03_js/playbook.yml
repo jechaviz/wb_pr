@@ -1,0 +1,3 @@
+steps:
+  - name: Load JS snippets
+    playbook: "../../bootstrap/js/playbook.yml"

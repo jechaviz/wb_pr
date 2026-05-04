@@ -1,0 +1,40 @@
+﻿metadata:
+  category: cursos
+  course: generic-udemy
+  customer: Yo
+  lesson: transcription-recovery
+  subcategory: udemy
+variables:
+  PROJECT_NAME: "udemyCourseTranscriptionRecovery"
+  PROJECT_SKILL_PATH: "Web.UdemyCourseTranscriptionRecovery"
+  PROJECT_DIR: "${ROOT_PLAYBOOK_DIR}"
+  PLAYBOOKS_DIR: "${PROJECT_DIR}\\playbooks"
+  COURSE_URL: "https://www.udemy.com/course/odoo-v15-y-16-funcional-para-implementadores/learn/lecture/53335525#content"
+  DEBUG_PORT: 9222
+  OUTPUT_DIR: "${PLAYBOOKS_DIR}\\output"
+  SIDEBAR_DEBUG_FILE: "${PLAYBOOKS_DIR}\\output\\sidebar_debug.html"
+  JS_DIR: "${PLAYBOOKS_DIR}\\js"
+  PROJECT_SKILLS_FILE: "${PROJECT_DIR}\\skills.yml"
+  AUTONOMY_DOC: "${PROJECT_DIR}\\AUTONOMY.md"
+  ARCHITECT_PROFILE_DOC: "${PROJECT_DIR}\\ARCHITECT_PROFILE.md"
+  MAX_UNITS: 3
+  TASK_NAME: "Udemy full-course transcription recovery (test)"
+  TASK_SUMMARY: "Smoke test for full-course transcript extraction flow."
+steps:
+  prod:
+    - name: Bootstrap docs and governance
+      playbook: "./playbooks/01_bootstrap/01_docs/playbook.yml"
+
+    - name: Bootstrap runtime
+      playbook: "./playbooks/01_bootstrap/02_runtime/playbook.yml"
+
+    - name: Execute transcript recovery smoke
+      playbook: "./playbooks/02_task/01_execute/playbook.yml"
+
+    - name: Mark task completed
+      playbook: "./playbooks/03_finalize/01_complete/playbook.yml"
+
+  debug:
+    - action: Note
+      params:
+        text: "Udemy course transcript recovery test (modular tree mode)"
