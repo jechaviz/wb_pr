@@ -1,0 +1,27 @@
+version: 1
+project:
+  name: antigravity
+  category: apps
+  subcategory: ui-learning
+  skill_path: Apps.Antigravity
+imports:
+  buckets:
+    - core
+  skills:
+    - id: shared.apps.app-navigation
+      kind: shared_playbook_library
+      source: C:\git\wb_pr\_shared\apps\app-navigation
+  actions: []
+policy:
+  autonomy_contract_required: 1
+  architect_profile_required: 1
+  autonomy_manifest: AUTONOMY.md
+  architect_profile_manifest: ARCHITECT_PROFILE.md
+  objective_driven: 1
+  perception_first: 1
+  strict_objective_accuracy: 1
+  continuous_self_optimization: 1
+  playbook_folder_naming: NN_topic/NN_subtopic
+  max_file_lines: 600
+  online_workflows_playbook_only: 1
+  reusable_code_location: C:\git\wb_pr\_shared

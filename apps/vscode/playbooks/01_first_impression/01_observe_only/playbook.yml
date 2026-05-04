@@ -1,0 +1,3 @@
+steps:
+  - name: Delegate first-impression modeling to shared UI learning library
+    playbook: "${UI_LEARNING_LIB_ROOT}\\playbooks\\01_first_impression\\playbook.yml"

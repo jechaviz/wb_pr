@@ -1,0 +1,17 @@
+app:
+  slug: antigravity
+  display_name: "Antigravity"
+readiness:
+  first_impression_complete: false
+  dynamics_observed: false
+  safe_to_act: false
+action_classes:
+  read_only: []
+  reversible: []
+  destructive_requires_confirmation: []
+required_before_action:
+  - region identity
+  - expected effect
+  - state precondition
+  - recovery observation
+  - confidence score

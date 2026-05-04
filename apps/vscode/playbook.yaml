@@ -1,0 +1,40 @@
+metadata:
+  category: "apps"
+  subcategory: "ui-learning"
+  app: "vscode"
+
+variables:
+  PROJECT_NAME: "vscode"
+  PROJECT_SKILL_PATH: "Apps.Vscode"
+  PROJECT_DIR: "${ROOT_PLAYBOOK_DIR}"
+  PLAYBOOKS_DIR: "${PROJECT_DIR}\\playbooks"
+  OUTPUT_DIR: "${PLAYBOOKS_DIR}\\output"
+  EVIDENCE_DIR: "${PROJECT_DIR}\\evidence"
+  MODELS_DIR: "${PROJECT_DIR}\\models"
+  OBSERVATIONS_DIR: "${PROJECT_DIR}\\observations"
+  ACTIONS_DIR: "${PROJECT_DIR}\\actions"
+  WAIBA_PLAYBOOK_LIB_DIR: "C:\\git\\wb_pr\\_shared"
+  UI_LEARNING_LIB_ROOT: "C:\\git\\wb_pr\\_shared\\apps\\app-navigation"
+  UI_APP_SLUG: "vscode"
+  UI_APP_DISPLAY_NAME: "Visual Studio Code"
+  UI_SCREENSHOT_PATH: ""
+  TASK_NAME: "Learn the Visual Studio Code UI safely"
+  TASK_SUMMARY: "Build a first-impression and dynamic workspace model before automating app actions."
+
+steps:
+  first_impression:
+    - name: Observe UI first impression without actions
+      playbook: "./playbooks/01_first_impression/01_observe_only/playbook.yml"
+
+  observe_dynamics:
+    - name: Observe dynamic workspace regions
+      playbook: "./playbooks/02_dynamics/01_observe_workspace/playbook.yml"
+
+  action_readiness:
+    - name: Prepare action readiness contract
+      playbook: "./playbooks/03_actions/01_readiness/playbook.yml"
+
+  debug:
+    - action: Note
+      params:
+        text: "Visual Studio Code UI learning project debug mode"

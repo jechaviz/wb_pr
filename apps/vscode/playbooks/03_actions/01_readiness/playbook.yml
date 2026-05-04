@@ -1,0 +1,3 @@
+steps:
+  - name: Delegate action readiness to shared UI learning library
+    playbook: "${UI_LEARNING_LIB_ROOT}\\playbooks\\03_action_readiness\\playbook.yml"

@@ -1,0 +1,23 @@
+app:
+  slug: vscode
+  display_name: "Visual Studio Code"
+surface:
+  first_impression_complete: false
+  screenshot_path: ""
+regions: []
+uncertainties: []app:
+  slug: vscode
+  display_name: "Visual Studio Code"
+first_impression:
+  rule: "observe_only_no_actions"
+  screenshot_path: ""
+  complete: false
+regions:
+  static_chrome: []
+  dynamic_panels: []
+  workspace_surfaces: []
+  transient_ui: []
+  unknown: []
+hypotheses: []
+uncertainties: []
+next_safe_observations: []
